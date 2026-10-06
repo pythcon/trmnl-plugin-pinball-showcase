@@ -60,8 +60,9 @@
   Artwork per layout size. Each slot's setting is a multi-select of backglass, playfield
   and cabinet: one photo, several side by side (up to 3 on full screen, 2 on the halves,
   1 in a quadrant), "none" for text only, or empty for auto. Photos a machine doesn't
-  have are skipped; if none of the chosen ones exist the slot falls back to auto
-  (backglass, or playfield first in the tall half-vertical slot).
+  have are skipped; if none of the chosen ones exist the slot falls back to auto: the
+  API's `any` (landscape first) or `tall` (playfield first, for half vertical), which
+  use the shown edition's own photos before borrowing another edition's.
   Produces `<slot>` (list of image keys) and `<slot>_count` (how many to draw).
 {%- endcomment -%}
 {%- assign wanted = cfg.art_full | default: 'auto' | join: ',' -%}
@@ -70,7 +71,7 @@
   {%- if wanted contains 'backglass' and images.backglass -%}{%- assign t = t | append: 'backglass,' -%}{%- endif -%}
   {%- if wanted contains 'playfield' and images.playfield -%}{%- assign t = t | append: 'playfield,' -%}{%- endif -%}
   {%- if wanted contains 'cabinet' and images.cabinet -%}{%- assign t = t | append: 'cabinet,' -%}{%- endif -%}
-  {%- if t == '' -%}{%- if images.backglass -%}{%- assign t = 'backglass' -%}{%- elsif images.any -%}{%- assign t = 'any' -%}{%- endif -%}{%- endif -%}
+  {%- if t == '' and images.any -%}{%- assign t = 'any' -%}{%- endif -%}
 {%- endunless -%}
 {%- assign art_full = t | split: ',' -%}
 {%- assign n = art_full.size -%}{%- if n > 3 -%}{%- assign n = 3 -%}{%- endif -%}
@@ -81,7 +82,7 @@
   {%- if wanted contains 'backglass' and images.backglass -%}{%- assign t = t | append: 'backglass,' -%}{%- endif -%}
   {%- if wanted contains 'playfield' and images.playfield -%}{%- assign t = t | append: 'playfield,' -%}{%- endif -%}
   {%- if wanted contains 'cabinet' and images.cabinet -%}{%- assign t = t | append: 'cabinet,' -%}{%- endif -%}
-  {%- if t == '' -%}{%- if images.backglass -%}{%- assign t = 'backglass' -%}{%- elsif images.any -%}{%- assign t = 'any' -%}{%- endif -%}{%- endif -%}
+  {%- if t == '' and images.any -%}{%- assign t = 'any' -%}{%- endif -%}
 {%- endunless -%}
 {%- assign art_hh = t | split: ',' -%}
 {%- assign n = art_hh.size -%}{%- if n > 2 -%}{%- assign n = 2 -%}{%- endif -%}
@@ -92,7 +93,7 @@
   {%- if wanted contains 'backglass' and images.backglass -%}{%- assign t = t | append: 'backglass,' -%}{%- endif -%}
   {%- if wanted contains 'playfield' and images.playfield -%}{%- assign t = t | append: 'playfield,' -%}{%- endif -%}
   {%- if wanted contains 'cabinet' and images.cabinet -%}{%- assign t = t | append: 'cabinet,' -%}{%- endif -%}
-  {%- if t == '' -%}{%- if images.playfield -%}{%- assign t = 'playfield' -%}{%- elsif images.backglass -%}{%- assign t = 'backglass' -%}{%- elsif images.any -%}{%- assign t = 'any' -%}{%- endif -%}{%- endif -%}
+  {%- if t == '' and images.tall -%}{%- assign t = 'tall' -%}{%- endif -%}
 {%- endunless -%}
 {%- assign art_hv = t | split: ',' -%}
 {%- assign n = art_hv.size -%}{%- if n > 2 -%}{%- assign n = 2 -%}{%- endif -%}
@@ -103,7 +104,7 @@
   {%- if wanted contains 'backglass' and images.backglass -%}{%- assign t = t | append: 'backglass,' -%}{%- endif -%}
   {%- if wanted contains 'playfield' and images.playfield -%}{%- assign t = t | append: 'playfield,' -%}{%- endif -%}
   {%- if wanted contains 'cabinet' and images.cabinet -%}{%- assign t = t | append: 'cabinet,' -%}{%- endif -%}
-  {%- if t == '' -%}{%- if images.backglass -%}{%- assign t = 'backglass' -%}{%- elsif images.any -%}{%- assign t = 'any' -%}{%- endif -%}{%- endif -%}
+  {%- if t == '' and images.any -%}{%- assign t = 'any' -%}{%- endif -%}
 {%- endunless -%}
 {%- assign art_q = t | split: ',' -%}
 {%- assign n = art_q.size -%}{%- if n > 1 -%}{%- assign n = 1 -%}{%- endif -%}
@@ -116,14 +117,35 @@
 {%- assign art_second = false -%}{%- if cfg.art_position == 'right' -%}{%- assign art_second = true -%}{%- endif -%}
 
 {%- comment -%}
-  Editions line, e.g. "Standard · CE · LE" with the edition on screen in bold. Shown only
-  when a title has more than one version. `edition_chars` estimates its width.
+  Editions. `edition_badge` names the edition on screen ("CE", "Arcade", "Standard")
+  and only exists when the title has several. `edition_line` lists the others, e.g.
+  "Wizard · Arcade"; `edition_rows` estimates how many lines it needs beside the art.
 {%- endcomment -%}
-{%- assign show_editions = false -%}{%- if editions.size > 1 -%}{%- assign show_editions = true -%}{%- endif -%}
-{%- comment -%} Inline content: wrap it in <span class="label"><span>...</span></span>, because .label is inline-flex. {%- endcomment -%}
-{%- capture edition_line -%}{%- for e in editions -%}{%- if e.shown -%}<span class="text--bold">{{ e.label }}</span>{%- else -%}{{ e.label }}{%- endif -%}{%- unless forloop.last %} · {% endunless -%}{%- endfor -%}{%- endcapture -%}
-{%- assign edition_chars = editions | map: 'label' | join: ' · ' | size -%}
-{%- assign edition_rows = edition_chars | plus: 25 | divided_by: 26 -%}
+{%- assign edition_badge = machine.edition_label -%}
+{%- if is_color and cfg.color_accents != 'off' -%}
+  {%- assign badge_class = 'label--outline bg--yellow' -%}
+{%- else -%}
+  {%- assign badge_class = 'label--inverted' -%}
+{%- endif -%}
+{%- assign edition_line = '' -%}{%- assign edition_count = 0 -%}
+{%- for e in editions -%}{%- unless e.shown -%}
+  {%- if edition_count > 0 -%}{%- assign edition_line = edition_line | append: ' · ' -%}{%- endif -%}
+  {%- assign edition_line = edition_line | append: e.label -%}{%- assign edition_count = edition_count | plus: 1 -%}
+{%- endunless -%}{%- endfor -%}
+{%- assign show_editions = false -%}{%- if edition_count > 0 -%}{%- assign show_editions = true -%}{%- endif -%}
+{%- if edition_badge -%}{%- assign editions_title = 'Other editions' -%}{%- else -%}{%- assign editions_title = 'Editions' -%}{%- endif -%}
+{%- assign edition_rows = edition_line.size | plus: 25 | divided_by: 26 -%}
+{%- comment -%} "Other editions" itself wraps onto two lines in the label column. {%- endcomment -%}
+{%- if edition_badge and edition_rows < 2 -%}{%- assign edition_rows = 2 -%}{%- endif -%}
+
+{%- comment -%}
+  Borrowed art: when a photo on screen belongs to another edition (this one has none of
+  its own), say whose it is, e.g. "Art: Standard". One note per layout slot.
+{%- endcomment -%}
+{%- assign art_full_from = '' -%}{%- for t in art_full limit: art_full_count -%}{%- if images[t].borrowed and art_full_from == '' -%}{%- assign art_full_from = images[t].edition | default: 'another edition' -%}{%- endif -%}{%- endfor -%}
+{%- assign art_hh_from = '' -%}{%- for t in art_hh limit: art_hh_count -%}{%- if images[t].borrowed and art_hh_from == '' -%}{%- assign art_hh_from = images[t].edition | default: 'another edition' -%}{%- endif -%}{%- endfor -%}
+{%- assign art_hv_from = '' -%}{%- for t in art_hv limit: art_hv_count -%}{%- if images[t].borrowed and art_hv_from == '' -%}{%- assign art_hv_from = images[t].edition | default: 'another edition' -%}{%- endif -%}{%- endfor -%}
+{%- assign art_q_from = '' -%}{%- for t in art_q limit: art_q_count -%}{%- if images[t].borrowed and art_q_from == '' -%}{%- assign art_q_from = images[t].edition | default: 'another edition' -%}{%- endif -%}{%- endfor -%}
 
 {%- assign instance_title = trmnl.plugin_settings.instance_name | default: 'Pinball Showcase' -%}
 

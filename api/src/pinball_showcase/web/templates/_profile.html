@@ -6,20 +6,20 @@
     <div class="profile-media">
       {% if m.hero %}
       <a class="hero-photo" href="#photo-1" aria-label="Open {{ m.name }} photos">
-        <img src="{{ m.hero.url }}" alt="{{ m.name }} backglass" width="{{ m.hero.width }}" height="{{ m.hero.height }}">
+        <img src="{{ m.hero.url }}" alt="{{ m.name }}{% if m.hero.edition %} {{ m.hero.edition }}{% endif %} artwork" width="{{ m.hero.width }}" height="{{ m.hero.height }}">
       </a>
+      {% if m.hero.borrowed %}
+      <p class="hero-note">Photo of the {{ m.hero.edition or "another" }} edition. OPDB has no photos of the {{ m.edition_label }} yet.</p>
+      {% endif %}
       {% endif %}
       {{ photo_strip(m) }}
     </div>
     <div class="profile-info">
       {% if back %}<a class="back" href="/">&larr; Today's machine</a>{% endif %}
       <p class="eyebrow eyebrow--accent">{{ eyebrow }}</p>
-      <h1>{{ m.name }}</h1>
-      {% if m.short_name or m.aliases %}
-      <p class="aka">
-        {% if m.short_name %}Known as <strong>{{ m.short_name }}</strong>{% endif %}
-        {% if m.aliases %}{% if m.short_name %} · {% endif %}Also released as {{ m.aliases | join(", ") }}{% endif %}
-      </p>
+      <h1>{{ m.name }}{% if m.edition_label %} <span class="edition-badge">{{ m.edition_label }}</span>{% endif %}</h1>
+      {% if m.short_name %}
+      <p class="aka">Known as <strong>{{ m.short_name }}</strong></p>
       {% endif %}
       <p class="lede">{{ m.manufacturer_full or m.manufacturer }}{% if m.release_label %} <span class="dot">·</span> <span class="accent">{{ m.release_label }}</span>{% endif %}</p>
       {{ chips(m) }}
@@ -68,7 +68,7 @@
   {% if m.type_label %}<li>{{ m.type_label }}</li>{% endif %}
   {% if m.display_label %}<li>{{ m.display_label }}</li>{% endif %}
   {% if m.players_label %}<li>{{ m.players_label }}</li>{% endif %}
-  {% if m.era_label %}<li>{{ m.era_label }}</li>{% endif %}
+  {% if m.era_label and m.era_label != m.type_label %}<li>{{ m.era_label }}</li>{% endif %}
   {% for tag in m.tags %}<li class="chip-outline">{{ tag }}</li>{% endfor %}
 </ul>
 {%- endmacro %}

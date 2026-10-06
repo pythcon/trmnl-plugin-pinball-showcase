@@ -23,6 +23,10 @@ FIXTURES = {
     "square_art": "/api/v1/machines/GrleW-MYeod?tz=America/New_York&date=2026-10-05",
     # Very long title.
     "long_name": "/api/v1/showcase?keyword=wonka&date=2026-10-05",
+    # An edition with no photos of its own (Jersey Jack's Pirates CE): art is borrowed.
+    "borrowed_art": "/api/v1/machines/GRbPY-MBR24?tz=America/New_York",
+    # An alias edition with its own photos (Harry Potter CE).
+    "alias_edition": "/api/v1/machines/GWyBj-MdEbK-AOPdq?tz=America/New_York",
 }
 
 

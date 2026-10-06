@@ -144,3 +144,21 @@ def test_pinning_an_edition_shows_that_edition(client) -> None:
     # A bare group id still picks the best edition.
     group = client.get("/api/v1/showcase", params={"machine": "GBBBB"}).json()
     assert group["machine"]["id"] == "GBBBB-M0002"
+
+
+def test_search_endpoint(client) -> None:
+    body = client.get("/api/v1/search", params={"q": "godzilla prem"}).json()
+    assert body["results"][0] == {
+        "id": "GBBBB-M0001",
+        "url": "/m/GBBBB-M0001",
+        "name": "Godzilla",
+        "edition_label": "Premium/LE",
+        "edition_count": 2,
+        "manufacturer": "Stern",
+        "year": 2021,
+        "image": body["results"][0]["image"],
+        "image_borrowed": True,
+    }
+    assert body["results"][0]["image"].startswith("https://img.opdb.org/")
+    assert client.get("/api/v1/search", params={"q": ""}).status_code == 422
+    assert client.get("/api/v1/search", params={"q": "x" * 81}).status_code == 422

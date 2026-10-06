@@ -4,6 +4,7 @@
     "group_id": "GYWBZ",
     "name": "Willy Wonka & The Chocolate Factory",
     "edition_name": "Willy Wonka & The Chocolate Factory",
+    "edition_label": "Standard",
     "short_name": "WONKA",
     "manufacturer": "Jersey Jack Pinball",
     "manufacturer_full": "Jersey Jack Pinball",
@@ -27,14 +28,18 @@
       "url_medium": "https://img.opdb.org/8e3dbe10-0dd9-4adb-a27e-c377a52d7880-medium.jpg",
       "width": 1000,
       "height": 907,
-      "orientation": "landscape"
+      "orientation": "landscape",
+      "edition": "Standard",
+      "borrowed": false
     },
     "playfield": {
       "url": "https://img.opdb.org/cdd42729-051f-4a49-8952-cc5f7976b85b-large.jpg",
       "url_medium": "https://img.opdb.org/cdd42729-051f-4a49-8952-cc5f7976b85b-medium.jpg",
       "width": 914,
       "height": 1466,
-      "orientation": "portrait"
+      "orientation": "portrait",
+      "edition": "CE",
+      "borrowed": true
     },
     "cabinet": null,
     "any": {
@@ -42,7 +47,18 @@
       "url_medium": "https://img.opdb.org/8e3dbe10-0dd9-4adb-a27e-c377a52d7880-medium.jpg",
       "width": 1000,
       "height": 907,
-      "orientation": "landscape"
+      "orientation": "landscape",
+      "edition": "Standard",
+      "borrowed": false
+    },
+    "tall": {
+      "url": "https://img.opdb.org/8e3dbe10-0dd9-4adb-a27e-c377a52d7880-large.jpg",
+      "url_medium": "https://img.opdb.org/8e3dbe10-0dd9-4adb-a27e-c377a52d7880-medium.jpg",
+      "width": 1000,
+      "height": 907,
+      "orientation": "landscape",
+      "edition": "Standard",
+      "borrowed": false
     }
   },
   "editions": [
@@ -139,7 +155,7 @@
   },
   "featured": {
     "label": "Pinball of the Day",
-    "updated_label": "Oct 5, 2026 4:58 AM UTC",
+    "updated_label": "Oct 5, 2026 5:23 AM UTC",
     "timezone": "UTC",
     "date": "2026-10-05",
     "date_label": "Monday, October 5",

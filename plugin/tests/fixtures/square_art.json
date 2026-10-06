@@ -4,6 +4,7 @@
     "group_id": "GrleW",
     "name": "Strikes and Spares",
     "edition_name": "Strikes and Spares",
+    "edition_label": "Standard",
     "short_name": null,
     "manufacturer": "Bally",
     "manufacturer_full": "Bally Manufacturing Co.",
@@ -27,14 +28,18 @@
       "url_medium": "https://img.opdb.org/10d86a54-5095-41a8-ae0e-6153589354c6-medium.jpg",
       "width": 1008,
       "height": 916,
-      "orientation": "landscape"
+      "orientation": "landscape",
+      "edition": "Standard",
+      "borrowed": false
     },
     "playfield": {
       "url": "https://img.opdb.org/be20b271-eb8e-4e39-86ec-255de8b025ae-large.jpg",
       "url_medium": "https://img.opdb.org/be20b271-eb8e-4e39-86ec-255de8b025ae-medium.jpg",
       "width": 1008,
       "height": 1432,
-      "orientation": "portrait"
+      "orientation": "portrait",
+      "edition": "Standard",
+      "borrowed": false
     },
     "cabinet": null,
     "any": {
@@ -42,7 +47,18 @@
       "url_medium": "https://img.opdb.org/10d86a54-5095-41a8-ae0e-6153589354c6-medium.jpg",
       "width": 1008,
       "height": 916,
-      "orientation": "landscape"
+      "orientation": "landscape",
+      "edition": "Standard",
+      "borrowed": false
+    },
+    "tall": {
+      "url": "https://img.opdb.org/be20b271-eb8e-4e39-86ec-255de8b025ae-large.jpg",
+      "url_medium": "https://img.opdb.org/be20b271-eb8e-4e39-86ec-255de8b025ae-medium.jpg",
+      "width": 1008,
+      "height": 1432,
+      "orientation": "portrait",
+      "edition": "Standard",
+      "borrowed": false
     }
   },
   "editions": [
@@ -50,6 +66,21 @@
       "label": "Standard",
       "id": "GrleW-MYeod",
       "shown": true
+    },
+    {
+      "label": "Wild Schutz",
+      "id": "GrleW-ME0op",
+      "shown": false
+    },
+    {
+      "label": "Challenger IV",
+      "id": "GrleW-MYeod-AO3dY",
+      "shown": false
+    },
+    {
+      "label": "Bloody China",
+      "id": "GrleW-MQYkZ",
+      "shown": false
     }
   ],
   "credits": [
@@ -121,7 +152,7 @@
   },
   "featured": {
     "label": "Pinball of the Day",
-    "updated_label": "Oct 6, 2026 12:58 AM EDT",
+    "updated_label": "Oct 6, 2026 1:23 AM EDT",
     "timezone": "EDT",
     "date": "2026-10-06",
     "date_label": "Tuesday, October 6",

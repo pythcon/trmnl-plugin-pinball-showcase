@@ -4,6 +4,7 @@
     "group_id": "G5WKO",
     "name": "Super Star / Olympics",
     "edition_name": "Olympics",
+    "edition_label": "Olympics",
     "short_name": null,
     "manufacturer": "Chicago Coin",
     "manufacturer_full": "Chicago Coin Machine Mfg. Co.",
@@ -27,14 +28,18 @@
       "url_medium": "https://img.opdb.org/875a9ee7-84e4-4efb-9ac8-b4cf0e858f39-medium.jpg",
       "width": 558,
       "height": 498,
-      "orientation": "landscape"
+      "orientation": "landscape",
+      "edition": "Olympics",
+      "borrowed": false
     },
     "playfield": {
       "url": "https://img.opdb.org/f12a6d91-918d-41f1-9c8c-56c755f34799-large.jpg",
       "url_medium": "https://img.opdb.org/f12a6d91-918d-41f1-9c8c-56c755f34799-medium.jpg",
       "width": 922,
       "height": 1500,
-      "orientation": "portrait"
+      "orientation": "portrait",
+      "edition": "Super Star",
+      "borrowed": true
     },
     "cabinet": null,
     "any": {
@@ -42,14 +47,30 @@
       "url_medium": "https://img.opdb.org/875a9ee7-84e4-4efb-9ac8-b4cf0e858f39-medium.jpg",
       "width": 558,
       "height": 498,
-      "orientation": "landscape"
+      "orientation": "landscape",
+      "edition": "Olympics",
+      "borrowed": false
+    },
+    "tall": {
+      "url": "https://img.opdb.org/875a9ee7-84e4-4efb-9ac8-b4cf0e858f39-large.jpg",
+      "url_medium": "https://img.opdb.org/875a9ee7-84e4-4efb-9ac8-b4cf0e858f39-medium.jpg",
+      "width": 558,
+      "height": 498,
+      "orientation": "landscape",
+      "edition": "Olympics",
+      "borrowed": false
     }
   },
   "editions": [
     {
-      "label": "Standard",
+      "label": "Olympics",
       "id": "G5WKO-MJZRk",
       "shown": true
+    },
+    {
+      "label": "Super Star",
+      "id": "G5WKO-ML32x",
+      "shown": false
     }
   ],
   "credits": [
@@ -121,7 +142,7 @@
   },
   "featured": {
     "label": "Pinball of the Day",
-    "updated_label": "Oct 5, 2026 4:58 AM UTC",
+    "updated_label": "Oct 5, 2026 5:23 AM UTC",
     "timezone": "UTC",
     "date": "2026-10-05",
     "date_label": "Monday, October 5",

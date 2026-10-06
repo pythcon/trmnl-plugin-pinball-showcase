@@ -8,7 +8,10 @@
 {%- elsif mode == 'spec' or art_hv_count == 0 -%}
 <div class="layout layout--col layout--top layout--left gap">
   <div class="flex flex--col flex--left w--full">
-    <span class="title title--xlarge lg:title--xxlarge text--bold" data-clamp="2">{{ machine.name }}</span>
+    <div class="flex flex--row flex--wrap flex--left flex--center-y gap--small w--full">
+      <span class="title title--xlarge lg:title--xxlarge text--bold" data-clamp="2">{{ machine.name }}</span>
+      {%- if edition_badge -%}<span class="label label--large {{ badge_class }} no-shrink">{{ edition_badge }}</span>{%- endif -%}
+    </div>
     <div class="flex flex--row flex--wrap flex--left gap--small w--full">
       <span class="label label--large">{{ machine.manufacturer }}</span>
       <span class="label label--large {{ accent_text }}">{{ machine.release_label | default: machine.year }}</span>
@@ -21,7 +24,7 @@
   </div>
   {%- endif -%}
   {%- if show_editions -%}
-  <span class="label w--full"><span>Editions: {{ edition_line }}</span></span>
+  <span class="label w--full">{{ editions_title }}: {{ edition_line }}</span>
   {%- endif -%}
   {%- if show_credits and credits.size > 0 -%}
   <div class="divider"></div>
@@ -46,14 +49,22 @@
 {%- endcapture -%}
 {%- capture info_block -%}
   <div class="flex flex--col flex--left w--full">
-    <span class="title title--large lg:title--xlarge text--bold" data-clamp="2">{{ machine.name }}</span>
+    <div class="flex flex--row flex--wrap flex--left flex--center-y gap--small w--full">
+      <span class="title title--large lg:title--xlarge text--bold" data-clamp="2">{{ machine.name }}</span>
+      {%- if edition_badge -%}<span class="label {{ badge_class }} no-shrink">{{ edition_badge }}</span>{%- endif -%}
+    </div>
     <div class="flex flex--row flex--wrap flex--left gap--small w--full">
       <span class="label label--large">{{ machine.manufacturer }}</span>
       <span class="label label--large {{ accent_text }}">{{ machine.year }}</span>
       {%- if machine.display_label -%}<span class="label label--large {{ muted }}">{{ machine.display_label }}</span>{%- endif -%}
     </div>
-    {%- if mode != 'gallery' and show_credits and credits.size > 0 -%}
-    {%- for credit in credits limit: 2 -%}
+    {%- if art_hv_from != '' -%}<span class="label {{ muted }}">Art from {{ art_hv_from }}</span>{%- endif -%}
+    {%- comment -%} Two credit lines fit under the art, fewer when the edition badge wraps or the art note shows. {%- endcomment -%}
+    {%- assign credit_lines = 2 -%}
+    {%- if art_hv_from != '' -%}{%- assign credit_lines = credit_lines | minus: 1 -%}{%- endif -%}
+    {%- if edition_badge and machine.name.size > 16 -%}{%- assign credit_lines = credit_lines | minus: 1 -%}{%- endif -%}
+    {%- if mode != 'gallery' and show_credits and credits.size > 0 and credit_lines > 0 -%}
+    {%- for credit in credits limit: credit_lines -%}
     <span class="w--full label {{ muted }}" data-clamp="1">{{ credit.role }}: {{ credit.names }}</span>
     {%- endfor -%}
     {%- endif -%}

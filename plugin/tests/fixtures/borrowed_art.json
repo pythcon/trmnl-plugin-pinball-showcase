@@ -1,0 +1,180 @@
+{
+  "machine": {
+    "id": "GRbPY-MBR24",
+    "group_id": "GRbPY",
+    "name": "Pirates of the Caribbean",
+    "edition_name": "Pirates of the Caribbean (CE)",
+    "edition_label": "CE",
+    "short_name": "POTC",
+    "manufacturer": "Jersey Jack Pinball",
+    "manufacturer_full": "Jersey Jack Pinball",
+    "year": 2018,
+    "release_label": "2018",
+    "type_label": "Solid state",
+    "display_label": "LCD",
+    "players": 4,
+    "players_label": "4 players",
+    "era": "modern",
+    "era_label": "Modern LCD era",
+    "headline": "Jersey Jack Pinball \u00b7 2018",
+    "summary": "Solid state \u00b7 LCD \u00b7 4 players",
+    "tags": [
+      "Widebody"
+    ],
+    "ipdb_id": 6494,
+    "anniversary": false
+  },
+  "images": {
+    "backglass": {
+      "url": "https://img.opdb.org/36ad6234-9594-4e3d-84a3-c5049b27b762-large.jpg",
+      "url_medium": "https://img.opdb.org/36ad6234-9594-4e3d-84a3-c5049b27b762-medium.jpg",
+      "width": 1000,
+      "height": 909,
+      "orientation": "landscape",
+      "edition": "Standard",
+      "borrowed": true
+    },
+    "playfield": {
+      "url": "https://img.opdb.org/b06301d2-8e2a-47d3-9c43-59a39eed45ae-large.jpg",
+      "url_medium": "https://img.opdb.org/b06301d2-8e2a-47d3-9c43-59a39eed45ae-medium.jpg",
+      "width": 1125,
+      "height": 1500,
+      "orientation": "portrait",
+      "edition": "LE",
+      "borrowed": true
+    },
+    "cabinet": null,
+    "any": {
+      "url": "https://img.opdb.org/36ad6234-9594-4e3d-84a3-c5049b27b762-large.jpg",
+      "url_medium": "https://img.opdb.org/36ad6234-9594-4e3d-84a3-c5049b27b762-medium.jpg",
+      "width": 1000,
+      "height": 909,
+      "orientation": "landscape",
+      "edition": "Standard",
+      "borrowed": true
+    },
+    "tall": {
+      "url": "https://img.opdb.org/b06301d2-8e2a-47d3-9c43-59a39eed45ae-large.jpg",
+      "url_medium": "https://img.opdb.org/b06301d2-8e2a-47d3-9c43-59a39eed45ae-medium.jpg",
+      "width": 1125,
+      "height": 1500,
+      "orientation": "portrait",
+      "edition": "LE",
+      "borrowed": true
+    }
+  },
+  "editions": [
+    {
+      "label": "CE",
+      "id": "GRbPY-MBR24",
+      "shown": true
+    },
+    {
+      "label": "Standard",
+      "id": "GRbPY-MePOP",
+      "shown": false
+    },
+    {
+      "label": "LE",
+      "id": "GRbPY-MePOP-A9pVl",
+      "shown": false
+    }
+  ],
+  "credits": [
+    {
+      "role": "Design",
+      "names": "Eric Meunier"
+    },
+    {
+      "role": "Code",
+      "names": "Keith P. Johnson, Joe Katz, JT Harkey, Ted Estes"
+    },
+    {
+      "role": "Animation",
+      "names": "Jean-Paul de Win"
+    },
+    {
+      "role": "Music",
+      "names": "David Thiel"
+    },
+    {
+      "role": "Sound",
+      "names": "David Thiel"
+    }
+  ],
+  "facts": [
+    {
+      "label": "Released",
+      "value": "8 years ago"
+    },
+    {
+      "label": "Era",
+      "value": "Modern LCD era"
+    },
+    {
+      "label": "Jersey Jack Pinball",
+      "value": "Title 4 of 12"
+    },
+    {
+      "label": "Class of 2018",
+      "value": "1 of 11 titles"
+    },
+    {
+      "label": "Editions",
+      "value": "3 variants"
+    }
+  ],
+  "fun_fact": "Players call it POTC.",
+  "same_year": [
+    {
+      "name": "Alice Cooper's Nightmare Castle",
+      "manufacturer": "Spooky Pinball"
+    },
+    {
+      "name": "Iron Maiden: Legacy of the Beast",
+      "manufacturer": "Stern"
+    },
+    {
+      "name": "Supreme x Stern",
+      "manufacturer": "Stern"
+    },
+    {
+      "name": "The Mafia",
+      "manufacturer": "Team Pinball"
+    },
+    {
+      "name": "Deadpool",
+      "manufacturer": "Stern"
+    },
+    {
+      "name": "Cosmic Cart Racing",
+      "manufacturer": "Multimorphic"
+    }
+  ],
+  "same_year_count": 10,
+  "qr": {
+    "url": "https://pinball-showcase.trmnlplugins.com/m/GRbPY-MBR24"
+  },
+  "links": {
+    "page": "https://pinball-showcase.trmnlplugins.com/m/GRbPY-MBR24",
+    "opdb": "https://opdb.org/search?q=GRbPY-MBR24"
+  },
+  "featured": {
+    "label": "Pinball of the Day",
+    "updated_label": "Oct 6, 2026 1:23 AM EDT",
+    "timezone": "EDT",
+    "date": "2026-10-06",
+    "date_label": "Tuesday, October 6",
+    "date_short": "Oct 6",
+    "period": "2026-10-06",
+    "rotation": "daily",
+    "pool_size": 1,
+    "filter_label": null
+  },
+  "source": {
+    "name": "OPDB",
+    "url": "https://opdb.org",
+    "updated": "2026-10-05"
+  },
+  "error": null
+}

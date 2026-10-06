@@ -25,6 +25,7 @@ from .params import (
     to_filters,
 )
 from .presenter import build_error, build_showcase
+from .search import MAX_RESULTS, index_for, result_payload
 from .selection import Filters, PickMemo, Rotation, choose, period_key
 from .store import DatasetStore
 from .web import build_router, mount_static
@@ -182,8 +183,22 @@ def create_app(settings: Settings | None = None, store: DatasetStore | None = No
             pool_size=1,
             period=local_now.date().isoformat(),
             site_url=site_url(request),
+            edition=dataset.lookup_edition(opdb_id),
         )
         return cached(payload, response)
+
+    @app.get("/api/v1/search", tags=["search"])
+    def search(
+        response: Response,
+        q: Annotated[str, Query(min_length=1, max_length=80, description="Search text")],
+        limit: Annotated[int, Query(ge=1, le=MAX_RESULTS)] = 8,
+    ) -> dict[str, Any]:
+        """Type-ahead search by name, short name ("MM"), edition ("potter ce"), maker or year.
+
+        One result per title; naming an edition returns that edition.
+        """
+        results = index_for(require_dataset()).search(q, limit)
+        return cached({"query": q, "results": [result_payload(r) for r in results]}, response)
 
     mount_static(app)
     app.include_router(

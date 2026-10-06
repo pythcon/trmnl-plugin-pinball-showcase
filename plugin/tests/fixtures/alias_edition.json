@@ -1,0 +1,186 @@
+{
+  "machine": {
+    "id": "GWyBj-MdEbK-AOPdq",
+    "group_id": "GWyBj",
+    "name": "Harry Potter",
+    "edition_name": "Harry Potter (CE)",
+    "edition_label": "CE",
+    "short_name": "HP",
+    "manufacturer": "Jersey Jack Pinball",
+    "manufacturer_full": "Jersey Jack Pinball",
+    "year": 2025,
+    "release_label": "June 5, 2025",
+    "type_label": "Solid state",
+    "display_label": "LCD",
+    "players": 4,
+    "players_label": "4 players",
+    "era": "modern",
+    "era_label": "Modern LCD era",
+    "headline": "Jersey Jack Pinball \u00b7 2025",
+    "summary": "Solid state \u00b7 LCD \u00b7 4 players",
+    "tags": [],
+    "ipdb_id": null,
+    "anniversary": false
+  },
+  "images": {
+    "backglass": {
+      "url": "https://img.opdb.org/b0933b67-3189-42fc-9ceb-13a69f45a3b4-large.jpg",
+      "url_medium": "https://img.opdb.org/b0933b67-3189-42fc-9ceb-13a69f45a3b4-medium.jpg",
+      "width": 1200,
+      "height": 1089,
+      "orientation": "landscape",
+      "edition": "CE",
+      "borrowed": false
+    },
+    "playfield": {
+      "url": "https://img.opdb.org/1d47935c-a231-4f43-910f-7951e147dcac-large.jpg",
+      "url_medium": "https://img.opdb.org/1d47935c-a231-4f43-910f-7951e147dcac-medium.jpg",
+      "width": 1008,
+      "height": 1124,
+      "orientation": "portrait",
+      "edition": "CE",
+      "borrowed": false
+    },
+    "cabinet": {
+      "url": "https://img.opdb.org/419d4600-a6bf-43c8-9e5a-d245ef0355ca-large.jpg",
+      "url_medium": "https://img.opdb.org/419d4600-a6bf-43c8-9e5a-d245ef0355ca-medium.jpg",
+      "width": 991,
+      "height": 1500,
+      "orientation": "portrait",
+      "edition": "CE",
+      "borrowed": false
+    },
+    "any": {
+      "url": "https://img.opdb.org/b0933b67-3189-42fc-9ceb-13a69f45a3b4-large.jpg",
+      "url_medium": "https://img.opdb.org/b0933b67-3189-42fc-9ceb-13a69f45a3b4-medium.jpg",
+      "width": 1200,
+      "height": 1089,
+      "orientation": "landscape",
+      "edition": "CE",
+      "borrowed": false
+    },
+    "tall": {
+      "url": "https://img.opdb.org/1d47935c-a231-4f43-910f-7951e147dcac-large.jpg",
+      "url_medium": "https://img.opdb.org/1d47935c-a231-4f43-910f-7951e147dcac-medium.jpg",
+      "width": 1008,
+      "height": 1124,
+      "orientation": "portrait",
+      "edition": "CE",
+      "borrowed": false
+    }
+  },
+  "editions": [
+    {
+      "label": "Wizard",
+      "id": "GWyBj-MdEbK-A973V",
+      "shown": false
+    },
+    {
+      "label": "Arcade",
+      "id": "GWyBj-MdEbK-A9dEy",
+      "shown": false
+    },
+    {
+      "label": "CE",
+      "id": "GWyBj-MdEbK-AOPdq",
+      "shown": true
+    }
+  ],
+  "credits": [
+    {
+      "role": "Design",
+      "names": "Eric Meunier"
+    },
+    {
+      "role": "Code",
+      "names": "Joe Katz, Duncan Brown, Bill Grupp, Jason Allen, Taylor Snyder"
+    },
+    {
+      "role": "Mechanics",
+      "names": "Dan Lachcik, Nick Jensen"
+    },
+    {
+      "role": "Animation",
+      "names": "Jean-Paul de Win, Olaf Gremie, Johnny Wiegel"
+    },
+    {
+      "role": "Sound",
+      "names": "David Thiel, Pierce Colbert"
+    }
+  ],
+  "facts": [
+    {
+      "label": "Released",
+      "value": "1 year ago"
+    },
+    {
+      "label": "Era",
+      "value": "Modern LCD era"
+    },
+    {
+      "label": "Jersey Jack Pinball",
+      "value": "Title 11 of 12"
+    },
+    {
+      "label": "Class of 2025",
+      "value": "1 of 16 titles"
+    },
+    {
+      "label": "Editions",
+      "value": "3 variants"
+    }
+  ],
+  "fun_fact": "Players call it HP.",
+  "same_year": [
+    {
+      "name": "Alice's Adventures in Wonderland",
+      "manufacturer": "Dutch Pinball"
+    },
+    {
+      "name": "Dungeons & Dragons: The Tyrant's Eye",
+      "manufacturer": "Stern"
+    },
+    {
+      "name": "Peter Brock / Holden",
+      "manufacturer": "Vector Pinball"
+    },
+    {
+      "name": "Blues Brothers",
+      "manufacturer": "Homepin"
+    },
+    {
+      "name": "Road Trip",
+      "manufacturer": "Ramp's Pinball"
+    },
+    {
+      "name": "Merlin's Arcade",
+      "manufacturer": "Turner Pinball"
+    }
+  ],
+  "same_year_count": 15,
+  "qr": {
+    "url": "https://pinball-showcase.trmnlplugins.com/m/GWyBj-MdEbK-AOPdq"
+  },
+  "links": {
+    "page": "https://pinball-showcase.trmnlplugins.com/m/GWyBj-MdEbK-AOPdq",
+    "opdb": "https://opdb.org/search?q=GWyBj-MdEbK-AOPdq"
+  },
+  "featured": {
+    "label": "Pinball of the Day",
+    "updated_label": "Oct 6, 2026 1:23 AM EDT",
+    "timezone": "EDT",
+    "date": "2026-10-06",
+    "date_label": "Tuesday, October 6",
+    "date_short": "Oct 6",
+    "period": "2026-10-06",
+    "rotation": "daily",
+    "pool_size": 1,
+    "filter_label": null
+  },
+  "source": {
+    "name": "OPDB",
+    "url": "https://opdb.org",
+    "updated": "2026-10-05"
+  },
+  "error": null
+}

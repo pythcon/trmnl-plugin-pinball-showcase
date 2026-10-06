@@ -97,3 +97,71 @@ def test_editions_list_every_version_and_mark_the_shown_one(dataset: Dataset) ->
     assert labels == ["Standard", "Special"]
     # Edition names are no longer mixed into the feature tags.
     assert "Remake LE" not in payload["machine"]["tags"]
+
+
+def _pirates() -> Dataset:
+    """Jersey Jack's Pirates in OPDB: a standard model with a backglass, a CE with no
+    photos and an LE alias with only a playfield photo."""
+    from pinball_showcase.dataset import build_dataset
+    from tests.conftest import group, image, machine
+
+    le = machine(
+        "GPPPP-M0001-A0001", "Pirates (LE)", year=2018, images=[image("playfield", "le-pf")]
+    )
+    le.update(entryType="alias", opdbMachine="GPPPP-M0001")
+    return build_dataset(
+        {
+            "entries": [
+                group("GPPPP", "Pirates"),
+                machine("GPPPP-M0001", "Pirates", year=2018, images=[image("backglass", "std-bg")]),
+                machine("GPPPP-M0002", "Pirates (CE)", year=2018, images=[]),
+                le,
+            ]
+        }
+    )
+
+
+def _show(ds: Dataset, opdb_id: str) -> dict:
+    return build_showcase(
+        ds,
+        ds.lookup(opdb_id),
+        local_now=datetime(2026, 10, 6),
+        rotation=Rotation.DAILY,
+        filters=Filters(),
+        pool_size=1,
+        period="2026-10-06",
+        site_url="https://pinball-showcase.trmnlplugins.com",
+        edition=ds.lookup_edition(opdb_id),
+    )
+
+
+def test_edition_without_photos_borrows_and_says_so() -> None:
+    p = _show(_pirates(), "GPPPP-M0002")
+    assert p["machine"]["edition_label"] == "CE"
+    art = p["images"]["any"]
+    assert art["url"] == "https://img.opdb.org/std-bg-large.jpg"
+    assert art["borrowed"] is True and art["edition"] == "Standard"
+
+
+def test_auto_art_prefers_the_editions_own_photos() -> None:
+    p = _show(_pirates(), "GPPPP-M0001-A0001")
+    assert p["machine"]["edition_label"] == "LE"
+    # Its own playfield beats the standard model's backglass...
+    assert "le-pf" in p["images"]["any"]["url"]
+    assert p["images"]["any"]["borrowed"] is False
+    assert "le-pf" in p["images"]["tall"]["url"]
+    # ...but an explicit backglass request still borrows, labelled.
+    assert p["images"]["backglass"]["borrowed"] is True
+    assert p["images"]["backglass"]["edition"] == "Standard"
+
+
+def test_single_edition_titles_have_no_label(dataset: Dataset) -> None:
+    p = render(dataset, "GCCCC", datetime(2026, 10, 6))
+    assert p["machine"]["edition_label"] is None
+    assert p["images"]["any"] is None or p["images"]["any"]["borrowed"] is False
+
+
+def test_default_edition_is_labelled_when_there_are_others(dataset: Dataset) -> None:
+    p = render(dataset, "GAAAA", datetime(2026, 10, 6))
+    assert p["machine"]["edition_label"] == "Standard"
+    assert p["images"]["backglass"]["borrowed"] is False

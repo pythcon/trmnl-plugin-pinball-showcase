@@ -25,6 +25,7 @@ from ..presenter import (
     machine_page_url,
     opdb_url,
 )
+from ..search import MAX_RESULTS, index_for, result_payload
 from ..selection import (
     Filters,
     PickMemo,
@@ -121,6 +122,26 @@ def build_router(
             },
         )
 
+    @router.get("/search", response_class=HTMLResponse)
+    def search_page(request: Request, q: str = "") -> HTMLResponse:
+        """Full results page: the no-JavaScript fallback for the header search."""
+        dataset = dataset_or_503()
+        query = q.strip()[:80]
+        results = index_for(dataset).search(query, MAX_RESULTS) if query else []
+        response = render(
+            request,
+            "search.html",
+            {
+                "page_title": f"Search: {query}" if query else "Search",
+                "query": query,
+                "search_query": query,
+                "results": [result_payload(r) for r in results],
+                "catalog_size": len(index_for(dataset)),
+            },
+        )
+        response.headers["X-Robots-Tag"] = "noindex"
+        return response
+
     @router.get("/m/{opdb_id}", response_class=HTMLResponse)
     def machine_page(request: Request, opdb_id: str, tz: str | None = None) -> HTMLResponse:
         dataset = dataset_or_503()
@@ -140,7 +161,11 @@ def build_router(
             "machine.html",
             {
                 "m": view,
-                "page_title": f"{view['name']} ({view['headline']})",
+                "page_title": (
+                    f"{view['name']} {view['edition_label']} ({view['headline']})"
+                    if view["edition_label"]
+                    else f"{view['name']} ({view['headline']})"
+                ),
                 "page_description": view["description"],
                 "og_image": view["hero"]["url"] if view["hero"] else None,
             },
@@ -249,6 +274,7 @@ def machine_view(
     m = base["machine"]
     rep = edition or title.representative
     multi = len(title.versions) > 1
+    labels = title.edition_labels() if multi else {}
 
     # Every photo across every edition, representative first, primary photos first.
     gallery: list[dict[str, Any]] = []
@@ -267,7 +293,7 @@ def machine_view(
                     "url": large,
                     "thumb": image.url("medium") or large,
                     "label": caption,
-                    "edition": machine.name if multi else None,
+                    "edition": labels.get(machine.opdb_id),
                     "orientation": "portrait" if height > width else "landscape",
                 }
             )
@@ -318,7 +344,8 @@ def machine_view(
         if t.group_id != title.group_id and t.representative.images
     ][:12]
 
-    hero = base["images"]["backglass"] or base["images"]["any"]
+    # Same rule as the device: this edition's own photo first; a borrowed one is captioned.
+    hero = base["images"]["any"]
     maker = rep.manufacturer_full or rep.manufacturer or "an unknown maker"
     summary = (
         f"{title.name} is a {(m['type_label'] or 'pinball').lower()} pinball machine by {maker}"

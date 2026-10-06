@@ -30,7 +30,7 @@ def test_machine_page(client) -> None:
     r = client.get("/m/GAAAA-M0001")
     assert r.status_code == 200
     html = r.text
-    assert "<h1>Medieval Madness</h1>" in html
+    assert '<h1>Medieval Madness <span class="edition-badge">Standard</span></h1>' in html
     assert "Brian Eddy" in html
     assert "<dt>Music</dt>" in html and "<dt>Sound</dt>" in html
     assert "Editions" in html  # original + remake
@@ -86,7 +86,7 @@ def test_machine_profile_shows_everything(client, export) -> None:
     assert "Remake" in html
 
 
-def test_aliases_and_resources(settings, export) -> None:
+def test_alias_editions_and_resources(settings, export) -> None:
     from pinball_showcase.main import create_app
 
     entries = export["entries"]
@@ -98,7 +98,9 @@ def test_aliases_and_resources(settings, export) -> None:
     store = StaticStore(settings, build_dataset(export))
     with TestClient(create_app(settings, store)) as c:
         html = c.get("/m/GDDDD").text
-    assert "Also released as Attack from Mars (Special)" in html
+    # Alias versions are listed as editions, not as alternate names.
+    assert "Also released as" not in html
+    assert '<a href="/m/GDDDD-M0001-A0001">Attack from Mars (Special)</a>' in html
     assert "https://pinballprimer.github.io/afm.html" in html
     # Raw GitHub links are turned into readable GitHub pages.
     assert "https://github.com/someone/notes/blob/main/machines/AFM.md" in html
@@ -117,3 +119,45 @@ def test_alias_editions_are_listed_and_linked(client) -> None:
     html = client.get("/m/GDDDD").text
     assert "Attack from Mars (Special)" in html
     assert '<a href="/m/GDDDD-M0001-A0001">Attack from Mars (Special)</a>' in html
+
+
+def test_edition_page_names_the_edition_and_captions_borrowed_photos(client) -> None:
+    # Godzilla Premium/LE has no photos of its own: the hero is the Pro's, captioned.
+    html = client.get("/m/GBBBB-M0001").text
+    assert '<span class="edition-badge">Premium/LE</span>' in html
+    assert "Photo of the Pro edition. OPDB has no photos of the Premium/LE yet." in html
+    assert "<title>Godzilla Premium/LE" in html
+
+
+def test_own_photos_have_no_borrowed_caption(client) -> None:
+    html = client.get("/m/GAAAA-M0001").text
+    assert "hero-note" not in html
+
+
+def test_header_has_search_on_every_page(client) -> None:
+    for path in ("/", "/m/GAAAA-M0001"):
+        html = client.get(path).text
+        assert 'action="/search"' in html and 'role="combobox"' in html
+        assert "/static/search.js" in html
+
+
+def test_search_page_lists_results(client) -> None:
+    r = client.get("/search", params={"q": "godzilla prem"})
+    assert r.status_code == 200
+    assert r.headers["x-robots-tag"] == "noindex"
+    html = r.text
+    assert "1 match for &ldquo;godzilla prem&rdquo;" in html
+    assert '<a class="card" href="/m/GBBBB-M0001">' in html
+    assert '<span class="edition-badge">Premium/LE</span>' in html
+    # The box keeps what was typed.
+    assert 'value="godzilla prem"' in html
+
+
+def test_search_page_empty_and_no_match(client) -> None:
+    assert "Search 5 machines" in client.get("/search").text
+    assert "No machines match that." in client.get("/search", params={"q": "zzzz"}).text
+
+
+def test_search_page_escapes_the_query(client) -> None:
+    html = client.get("/search", params={"q": "<script>alert(1)</script>"}).text
+    assert "<script>alert(1)</script>" not in html

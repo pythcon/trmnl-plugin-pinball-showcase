@@ -7,11 +7,18 @@
 {%- capture header -%}
   <div class="flex flex--row flex--between flex--top gap w--full">
     <div class="flex flex--col flex--left w--full">
-      <span class="title title--xlarge lg:title--xxlarge text--bold w--full" data-clamp="2">{{ machine.name }}</span>
+      <div class="flex flex--row flex--wrap flex--left flex--center-y gap--small w--full">
+        <span class="title title--xlarge lg:title--xxlarge text--bold" data-clamp="2">{{ machine.name }}</span>
+        {%- if edition_badge -%}<span class="label label--large {{ badge_class }} no-shrink">{{ edition_badge }}</span>{%- endif -%}
+      </div>
       <div class="flex flex--row flex--wrap flex--left gap--small w--full">
         <span class="label label--large">{{ machine.manufacturer_full | default: machine.manufacturer }}</span>
         <span class="label label--large {{ muted }}">·</span>
         <span class="label label--large {{ accent_text }}">{{ machine.release_label | default: machine.year }}</span>
+        {%- if art_full_from != '' -%}
+        <span class="label label--large {{ muted }}">·</span>
+        <span class="label label--large {{ muted }}">Art from {{ art_full_from }}</span>
+        {%- endif -%}
       </div>
     </div>
     {%- if show_qr -%}
@@ -27,9 +34,9 @@
 </div>
 
 {%- elsif mode == 'gallery' -%}
-{%- if art_full_count == 0 -%}{%- assign gallery_types = 'backglass,any' | split: ',' -%}{%- assign gallery_count = 1 -%}
+{%- comment -%} Gallery always shows art: "None (text only)" falls back to the automatic pick. {%- endcomment -%}
+{%- if art_full_count == 0 -%}{%- assign gallery_types = 'any' | split: ',' -%}{%- assign gallery_count = 1 -%}
 {%- else -%}{%- assign gallery_types = art_full -%}{%- assign gallery_count = art_full_count -%}{%- endif -%}
-{%- if images.backglass == nil and art_full_count == 0 -%}{%- assign gallery_types = 'any' | split: ',' -%}{%- endif -%}
 <div class="layout layout--col layout--top gap">
   <div class="w--full {% if long_name %}h--[62cqh] lg:h--[68cqh]{% else %}h--[70cqh] lg:h--[76cqh]{% endif %}">
     {% render "art_grid", images: images, types: gallery_types, count: gallery_count, fit: fit_class, medium: false, name: machine.name %}
@@ -54,8 +61,8 @@
       </div>
       {%- if show_editions -%}
       <div class="flex flex--row flex--left flex--top gap--small w--full">
-        <span class="label {{ muted }} no-shrink">Editions</span>
-        <span class="label w--full"><span>{{ edition_line }}</span></span>
+        <span class="label {{ muted }} no-shrink">{{ editions_title }}</span>
+        <span class="label w--full">{{ edition_line }}</span>
       </div>
       {%- endif -%}
       {%- if show_credits and credits.size > 0 -%}
@@ -124,8 +131,8 @@
       {%- if show_editions -%}
       {%- assign used = edition_rows -%}
       <div class="flex flex--row flex--left flex--top gap--small w--full">
-        <span class="label {{ muted }} w--[96px] lg:w--[128px] no-shrink">Editions</span>
-        <span class="label w--full"><span>{{ edition_line }}</span></span>
+        <span class="label {{ muted }} w--[96px] lg:w--[128px] no-shrink">{{ editions_title }}</span>
+        <span class="label w--full">{{ edition_line }}</span>
       </div>
       {%- endif -%}
       {%- if show_credits -%}

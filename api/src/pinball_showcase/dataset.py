@@ -32,6 +32,18 @@ _EDITION_RANK = {
 _PAREN_SUFFIX = re.compile(r"\s*\(([^)]*)\)\s*$")
 
 
+def _base_label(title_name: str, machine: Machine) -> str:
+    if match := _PAREN_SUFFIX.search(machine.name):
+        return _edition_label(match.group(1))
+    name = machine.name.strip()
+    if name.casefold() == title_name.strip().casefold():
+        return "Standard"
+    # "Fire! Champagne Edition" under "Fire!" -> "Champagne"
+    if name.casefold().startswith(title_name.strip().casefold() + " "):
+        return _edition_label(name[len(title_name.strip()) :].strip())
+    return name
+
+
 def _edition_label(text: str) -> str:
     """ "Remake Special Edition" -> "Remake Special"; "Edition" alone stays."""
     trimmed = re.sub(r"\s+edition$", "", text.strip(), flags=re.IGNORECASE)
@@ -73,20 +85,48 @@ class Title:
             and any(m.alias_of == machine.opdb_id and m.images for m in self.machines)
         )
 
+    def label_for(self, machine: Machine) -> str | None:
+        """Short, unique edition label; None for umbrella entries (not editions)."""
+        return self.edition_labels().get(machine.opdb_id)
+
+    def edition_labels(self) -> dict[str, str]:
+        """Label per edition id, distinct within the title.
+
+        - a parenthesised suffix: "Harry Potter (CE)" -> "CE"
+        - else what sets the name apart: "Olympics" in "Super Star / Olympics",
+          "Fire! Champagne Edition" -> "Champagne"
+        - else "Standard"
+        Labels that still collide get the maker, then the year: "Alaska (Interflip)".
+        """
+        base: dict[str, str] = {m.opdb_id: _base_label(self.name, m) for m in self.versions}
+        by_label: dict[str, list[Machine]] = defaultdict(list)
+        for machine in self.versions:
+            by_label[base[machine.opdb_id]].append(machine)
+        labels = dict(base)
+        for label, machines in by_label.items():
+            if len(machines) < 2:
+                continue
+            for extra in (lambda m: m.manufacturer, lambda m: m.year):
+                values = [extra(m) for m in machines]
+                if all(values) and len(set(values)) == len(values):
+                    for machine, value in zip(machines, values, strict=True):
+                        labels[machine.opdb_id] = f"{label} ({value})"
+                    break
+            else:
+                for i, machine in enumerate(machines[1:], start=2):
+                    labels[machine.opdb_id] = f"{label} #{i}"
+        return labels
+
     def edition_list(self, shown: Machine) -> list[dict[str, Any]]:
         """Every version of the title with a short label and the shown one marked.
 
         Labels come from the parenthesised suffix ("Pro", "CE"); a version without one
         is the "Standard" model.
         """
+        labels = self.edition_labels()
         entries: list[dict[str, Any]] = []
-        seen: set[str] = set()
         for machine in self.versions:
-            match = _PAREN_SUFFIX.search(machine.name)
-            label = _edition_label(match.group(1)) if match else "Standard"
-            if label in seen:
-                continue
-            seen.add(label)
+            label = labels[machine.opdb_id]
             entries.append(
                 {"label": label, "id": machine.opdb_id, "shown": machine.opdb_id == shown.opdb_id}
             )

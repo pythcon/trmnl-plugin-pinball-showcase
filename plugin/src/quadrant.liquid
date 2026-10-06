@@ -8,6 +8,7 @@
 <div class="layout layout--col layout--center-y layout--left gap--small">
   <span class="title title--large lg:title--xlarge text--bold" data-clamp="2">{{ machine.name }}</span>
   <div class="flex flex--row flex--wrap flex--left gap--small w--full">
+    {%- if edition_badge -%}<span class="label {{ badge_class }}">{{ edition_badge }}</span>{%- endif -%}
     <span class="label label--large">{{ machine.manufacturer }}</span>
     <span class="label label--large {{ accent_text }}">{{ machine.year }}</span>
   </div>
@@ -24,7 +25,8 @@
   </div>
   <div class="flex flex--row flex--center gap--small w--full">
     <span class="w--full label label--large" data-clamp="1">{{ machine.name }}</span>
-    <span class="label label--large {{ accent_text }}">{{ machine.year }}</span>
+    {%- if edition_badge -%}<span class="label {{ badge_class }} no-shrink">{{ edition_badge }}</span>{%- endif -%}
+    <span class="label label--large {{ accent_text }} no-shrink">{{ machine.year }}</span>
   </div>
 </div>
 
@@ -37,8 +39,10 @@
 {%- capture info_block -%}
     <div class="col--span-6 flex flex--col flex--left flex--center-y gap--small">
       <span class="title title--medium lg:title--large text--bold" data-clamp="3">{{ machine.name }}</span>
+      {%- if edition_badge -%}<span class="label {{ badge_class }}">{{ edition_badge }}</span>{%- endif -%}
       <span class="label label--large">{{ machine.manufacturer }}</span>
       <span class="label label--large {{ accent_text }}">{{ machine.year }}</span>
+      {%- if art_q_from != '' -%}<span class="label {{ muted }}">Art from {{ art_q_from }}</span>{%- endif -%}
     </div>
 {%- endcapture -%}
 <div class="layout layout--row layout--left">

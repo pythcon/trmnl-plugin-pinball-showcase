@@ -23,7 +23,7 @@ RSpec.describe 'Pinball Showcase' do
 
   it_behaves_like 'a publishable recipe', screens: SCREENS
 
-  %w[classic em square_art long_name no_matches].each do |name|
+  %w[classic em square_art long_name borrowed_art alias_edition no_matches].each do |name|
     context "with the #{name} fixture" do
       VIEWS.each do |view|
         [{ device: 'og_png' }, { device: 'v2' }, { device: 'og_bwry' }].each do |screen|
@@ -90,6 +90,32 @@ RSpec.describe 'Pinball Showcase' do
         expect(trmnl.render(device: 'og_png', mocks:, custom_fields: { 'display_mode' => mode }))
           .to have_qr_code(page)
       end
+    end
+  end
+
+  describe 'editions' do
+    # Pirates CE has no photos: landscape slots borrow the standard backglass, the tall
+    # half-vertical slot the LE's playfield.
+    { 'full' => 'Standard', 'half_horizontal' => 'Standard', 'half_vertical' => 'LE',
+      'quadrant' => 'Standard' }.each do |view, source|
+      it "names the edition and whose art it borrows in #{view}" do
+        rendered = trmnl.render(view:, device: 'og_bwry', mocks: { API => { json: fixture('borrowed_art') } })
+        expect(rendered).to have_text('CE').and(have_text("Art from #{source}"))
+      end
+    end
+
+    it 'lists the other editions, not the one on screen' do
+      rendered = trmnl.render(device: 'og_png', mocks: { API => { json: fixture('alias_edition') } })
+      expect(rendered).to have_text('Other editions').and(have_text('Wizard · Arcade'))
+      expect(rendered).to have_no_text('Art from')
+    end
+
+    it 'shows no badge for a single-edition machine' do
+      single = fixture('em')
+      single['machine']['edition_label'] = nil
+      single['editions'] = single['editions'].select { |e| e['shown'] }
+      rendered = trmnl.render(device: 'og_png', mocks: { API => { json: single } })
+      expect(rendered).to have_no_css('.label--inverted').and(have_no_text('Other editions'))
     end
   end
 

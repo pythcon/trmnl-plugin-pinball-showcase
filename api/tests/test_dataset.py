@@ -83,3 +83,31 @@ def test_umbrella_machine_with_alias_editions() -> None:
     ce = ds.lookup_edition("GHHHH-M0001-A0003")
     assert ce is not None and ce.name == "Harry Potter (CE)"
     assert ds.lookup("GHHHH-M0001-A0003") is title
+
+
+def test_edition_labels_are_meaningful_and_unique() -> None:
+    from pinball_showcase.dataset import build_dataset
+    from tests.conftest import group, machine
+
+    ds = build_dataset(
+        {
+            "entries": [
+                group("GSSSS", "Super Star / Olympics"),
+                machine("GSSSS-M0001", "Super Star", year=1975),
+                machine("GSSSS-M0002", "Olympics", year=1975),
+                group("GFFFF", "Fire!"),
+                machine("GFFFF-M0001", "Fire!", year=1987),
+                machine("GFFFF-M0002", "Fire! Champagne Edition", year=1987),
+                group("GRRRR", "Roller Coaster"),
+                machine("GRRRR-M0001", "Roller Coaster", year=1971, maker="Gottlieb"),
+                machine("GRRRR-M0002", "Roller Coaster", year=1972, maker="Maresa"),
+            ]
+        }
+    )
+
+    def labels(group_id: str) -> list[str]:
+        return sorted(ds.by_group[group_id].edition_labels().values())
+
+    assert labels("GSSSS") == ["Olympics", "Super Star"]
+    assert labels("GFFFF") == ["Champagne", "Standard"]
+    assert labels("GRRRR") == ["Standard (Gottlieb)", "Standard (Maresa)"]

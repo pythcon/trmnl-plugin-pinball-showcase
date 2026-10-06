@@ -56,7 +56,10 @@ The container also serves the public site at
 - **`/`**: today's machine, the last six picks, and how to get the plugin
 - **`/m/{opdb_id}`**: a page for every machine with its photo gallery, specs, full credits,
   fast facts, editions, other titles from the same year, and links to OPDB, IPDB, Pinball
-  Primer and rule sheets. The QR code on the TRMNL screen opens this page.
+  Primer and rule sheets. The QR code on the TRMNL screen opens this page. Edition ids
+  (`/m/GWyBj-MdEbK-AOPdq`) show that exact edition; borrowed photos are captioned.
+- **Search** in the header: type-ahead by name, nickname (`mm`), edition (`potter ce`),
+  maker (`jjp`) or year, with art previews; `/search?q=` is the full results page.
 
 Every page credits OPDB and links to the other plugins at [trmnlplugins.com](https://trmnlplugins.com).
 Self-hosters get the same site; set `PINBALL_PUBLIC_URL` so QR codes point at it.
@@ -105,18 +108,35 @@ Interactive docs at `/docs`.
 |---|---|
 | `GET /` , `GET /m/{opdb_id}` | Website (HTML) |
 | `GET /api/v1/showcase` | The featured machine for the current period (the TRMNL polling target) |
-| `GET /api/v1/machines/{opdb_id}` | Payload for any machine, group or alias id |
+| `GET /api/v1/machines/{opdb_id}` | Payload for any machine, group or alias id (an edition id shows that edition) |
+| `GET /api/v1/search?q=` | Type-ahead results: name, edition label, maker, year, thumbnail |
 | `GET /api/v1/options` | Every filter value with title counts (manufacturers, decades, features...) |
 | `GET /api/v1/dataset` | Cached export info: size, fetched at, next refresh, last error |
 | `GET /healthz`, `GET /readyz` | Liveness and readiness |
+
+### Editions and photos
+
+OPDB files a game as a **group** (`GWyBj`) of **machines** (`GWyBj-MdEbK`) and **aliases**
+(`GWyBj-MdEbK-AOPdq`). Both machines and aliases are full editions with their own photos,
+credits and dates. Some games file every real edition as an alias of a bare "umbrella"
+machine with no photos (Harry Potter: Arcade, Wizard and CE); umbrellas are not listed.
+
+- Labels come from names, never OPDB's edition flags (they're inconsistent): the
+  parenthesised suffix (`CE`, `Pro`), else what sets the name apart (`Olympics`,
+  `Champagne`), else `Standard`; collisions get the maker, then the year.
+- The rotation picks a group; its default edition is the first with a backglass, then the
+  standard model before Pro, Premium and LE. A pinned edition id shows that edition.
+- Automatic art uses the edition's own photos first (a CE's playfield beats the standard
+  backglass). An edition with no photos borrows a sibling's, and every photo says whose it
+  is (`images.*.edition`, `images.*.borrowed`), shown as "Art from Standard" on screen.
 
 `/api/v1/showcase` parameters (all optional; multi-value ones accept commas or repeats):
 
 | Param | Example |
 |---|---|
-| `rotation` | `daily` (default), `12h`, `6h`, `hourly` |
+| `rotation` | `daily` (default), `1h`, `2h`, `3h`, `6h`, `12h`, `refresh` (with `interval` minutes), `shuffle` (with `avoid` ids) |
 | `tz` | `America/New_York` (when the day/hour rolls over) |
-| `machine` | `G5pe4` pins one machine |
+| `machine` | `G5pe4` pins a title; an edition id (`GWyBj-MdEbK-AOPdq`) pins that edition |
 | `favorites`, `exclude_id` | `G5pe4,GrqZX` |
 | `era` | `em`, `early_ss`, `dmd`, `modern` (`ss` = all solid state) |
 | `decade` | `1970,1990s` |

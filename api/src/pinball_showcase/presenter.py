@@ -54,9 +54,18 @@ TAG_FEATURES = {"Widebody", "Cocktail table", "Add-a-ball", "Head-to-head play"}
 SAME_YEAR_LIMIT = 6
 
 
-def _image_payload(image: Image | None) -> dict[str, Any] | None:
-    if image is None:
+LANDSCAPE_FIRST = ("backglass", "playfield", "cabinet")
+PORTRAIT_FIRST = ("playfield", "backglass", "cabinet")
+
+
+def _image_payload(
+    picked: tuple[Image, Machine] | None, shown: Machine, labels: dict[str, str]
+) -> dict[str, Any] | None:
+    """A photo plus where it came from: `borrowed` when it belongs to another edition
+    of the title, with that edition's label so screens can say "Art: Standard"."""
+    if picked is None:
         return None
+    image, source = picked
     width, height = image.sizes.get("large", (0, 0))
     return {
         "url": image.url("large"),
@@ -64,6 +73,8 @@ def _image_payload(image: Image | None) -> dict[str, Any] | None:
         "width": width,
         "height": height,
         "orientation": "portrait" if height > width else "landscape",
+        "edition": labels.get(source.opdb_id),
+        "borrowed": source.opdb_id != shown.opdb_id,
     }
 
 
@@ -156,6 +167,9 @@ def build_showcase(
 ) -> dict[str, Any]:
     # A pinned edition id shows that exact edition; otherwise the title's best one.
     rep = edition or title.representative
+    editions = title.edition_list(rep)
+    multi = len(title.versions) > 1
+    labels = title.edition_labels() if multi else {}
     page_url = machine_page_url(site_url, rep)
     today = local_now.date()
     era = title_era(title)
@@ -209,6 +223,9 @@ def build_showcase(
             "group_id": title.group_id,
             "name": title.name,
             "edition_name": rep.name,
+            # Short OPDB label ("CE", "Arcade", "Standard") when the title has several
+            # editions; None for single-edition titles and umbrella entries.
+            "edition_label": labels.get(rep.opdb_id),
             "short_name": title.short_name,
             "manufacturer": rep.manufacturer,
             "manufacturer_full": rep.manufacturer_full,
@@ -226,13 +243,16 @@ def build_showcase(
             "ipdb_id": rep.ipdb_id,
             "anniversary": anniversary,
         },
+        # backglass/playfield/cabinet: that photo type, borrowed if this edition lacks it.
+        # any/tall: automatic art, the edition's own photos first (landscape or tall slot).
         "images": {
-            "backglass": _image_payload(_first_image(title, "backglass", rep)),
-            "playfield": _image_payload(_first_image(title, "playfield", rep)),
-            "cabinet": _image_payload(_first_image(title, "cabinet", rep)),
-            "any": _image_payload(_any_image(title, rep)),
+            "backglass": _image_payload(_photo_of_kind(title, "backglass", rep), rep, labels),
+            "playfield": _image_payload(_photo_of_kind(title, "playfield", rep), rep, labels),
+            "cabinet": _image_payload(_photo_of_kind(title, "cabinet", rep), rep, labels),
+            "any": _image_payload(_auto_photo(title, rep, LANDSCAPE_FIRST), rep, labels),
+            "tall": _image_payload(_auto_photo(title, rep, PORTRAIT_FIRST), rep, labels),
         },
-        "editions": title.edition_list(rep),
+        "editions": editions,
         "credits": _credits(title, rep),
         "facts": facts,
         "fun_fact": fun_fact,
@@ -265,18 +285,47 @@ def build_showcase(
     }
 
 
-def _first_image(title: Title, kind: str, rep: Machine) -> Image | None:
-    """The shown edition's photo, else a sibling edition's (CE/LE often have none)."""
-    for machine in (rep, title.representative, *title.machines):
+def _siblings(title: Title, shown: Machine) -> list[Machine]:
+    """Other editions to borrow photos from, the title's default edition first."""
+    seen = {shown.opdb_id}
+    siblings: list[Machine] = []
+    for machine in (title.representative, *title.machines):
+        if machine.opdb_id not in seen:
+            seen.add(machine.opdb_id)
+            siblings.append(machine)
+    return siblings
+
+
+def _photo_of_kind(title: Title, kind: str, shown: Machine) -> tuple[Image, Machine] | None:
+    """An explicit photo type: the shown edition's own, else a sibling's."""
+    for machine in (shown, *_siblings(title, shown)):
         if image := machine.image(kind):
-            return image
+            return image, machine
     return None
 
 
-def _any_image(title: Title, rep: Machine) -> Image | None:
-    for machine in (rep, title.representative, *title.machines):
+def _auto_photo(
+    title: Title, shown: Machine, preference: tuple[str, ...]
+) -> tuple[Image, Machine] | None:
+    """The art used when nothing specific was asked for.
+
+    The shown edition's own photos always win, even if that means a playfield instead
+    of a backglass; only an edition with no photos at all borrows from a sibling.
+    """
+    for kind in preference:
+        if image := shown.image(kind):
+            return image, shown
+    if shown.images:
+        return shown.images[0], shown
+    # Borrow by photo type first, so a tall slot gets a sibling's playfield before
+    # another sibling's backglass.
+    for kind in preference:
+        for machine in _siblings(title, shown):
+            if image := machine.image(kind):
+                return image, machine
+    for machine in _siblings(title, shown):
         if machine.images:
-            return machine.image("backglass") or machine.images[0]
+            return machine.images[0], machine
     return None
 
 

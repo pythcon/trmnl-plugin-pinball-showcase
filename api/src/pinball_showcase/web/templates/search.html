@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Search</p>
+      {% if query %}
+      <h1 class="search-title">{{ results | length }} {{ "match" if results | length == 1 else "matches" }} for &ldquo;{{ query }}&rdquo;</h1>
+      {% else %}
+      <h1 class="search-title">Search {{ "{:,}".format(catalog_size) }} machines</h1>
+      {% endif %}
+      <p class="muted">Search by name, nickname (MM, TZ), edition (&ldquo;potter ce&rdquo;), maker or year.</p>
+    </div>
+    {% if results %}
+    <div class="card-grid">
+      {% for r in results %}
+      <a class="card" href="{{ r.url }}">
+        <div class="card-art">
+          {% if r.image %}<img src="{{ r.image }}" alt="{{ r.name }} artwork" loading="lazy">{% endif %}
+        </div>
+        <div class="card-body">
+          <h3>{{ r.name }}{% if r.edition_label %} <span class="edition-badge">{{ r.edition_label }}</span>{% endif %}</h3>
+          <p class="muted">{{ r.manufacturer or "Unknown maker" }}{% if r.year %} · {{ r.year }}{% endif %}{% if r.edition_count > 1 %} · {{ r.edition_count }} editions{% endif %}</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% elif query %}
+    <p>No machines match that. Try fewer words, or just the start of a name.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

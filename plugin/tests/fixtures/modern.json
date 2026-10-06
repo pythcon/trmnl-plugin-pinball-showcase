@@ -4,6 +4,7 @@
     "group_id": "GK17D",
     "name": "Jurassic Park",
     "edition_name": "Jurassic Park (Pro)",
+    "edition_label": "Pro",
     "short_name": "JP",
     "manufacturer": "Stern",
     "manufacturer_full": "Stern Pinball, Inc.",
@@ -27,28 +28,45 @@
       "url_medium": "https://img.opdb.org/e7197795-c83e-4278-8b7a-9b20480d0a3d-medium.jpg",
       "width": 763,
       "height": 489,
-      "orientation": "landscape"
+      "orientation": "landscape",
+      "edition": "Pro",
+      "borrowed": false
     },
     "playfield": {
       "url": "https://img.opdb.org/670ee3de-8122-49b6-aa3b-34c54ad6a030-large.jpg",
       "url_medium": "https://img.opdb.org/670ee3de-8122-49b6-aa3b-34c54ad6a030-medium.jpg",
       "width": 936,
       "height": 1209,
-      "orientation": "portrait"
+      "orientation": "portrait",
+      "edition": "Pro",
+      "borrowed": false
     },
     "cabinet": {
       "url": "https://img.opdb.org/e8ad1c6e-77ef-4144-b9bf-f605cb397d41-large.jpg",
       "url_medium": "https://img.opdb.org/e8ad1c6e-77ef-4144-b9bf-f605cb397d41-medium.jpg",
       "width": 1335,
       "height": 1500,
-      "orientation": "portrait"
+      "orientation": "portrait",
+      "edition": "Pro",
+      "borrowed": false
     },
     "any": {
       "url": "https://img.opdb.org/e7197795-c83e-4278-8b7a-9b20480d0a3d-large.jpg",
       "url_medium": "https://img.opdb.org/e7197795-c83e-4278-8b7a-9b20480d0a3d-medium.jpg",
       "width": 763,
       "height": 489,
-      "orientation": "landscape"
+      "orientation": "landscape",
+      "edition": "Pro",
+      "borrowed": false
+    },
+    "tall": {
+      "url": "https://img.opdb.org/670ee3de-8122-49b6-aa3b-34c54ad6a030-large.jpg",
+      "url_medium": "https://img.opdb.org/670ee3de-8122-49b6-aa3b-34c54ad6a030-medium.jpg",
+      "width": 936,
+      "height": 1209,
+      "orientation": "portrait",
+      "edition": "Pro",
+      "borrowed": false
     }
   },
   "editions": [
@@ -162,7 +180,7 @@
   },
   "featured": {
     "label": "Pinball of the Day",
-    "updated_label": "Oct 6, 2026 12:58 AM EDT",
+    "updated_label": "Oct 6, 2026 1:23 AM EDT",
     "timezone": "EDT",
     "date": "2026-10-06",
     "date_label": "Tuesday, October 6",
