@@ -1,36 +1,24 @@
 {% extends "base.html" %}
-{% from "_macros.html" import machine_card, chips, credits_list %}
+{% import "_profile.html" as p %}
 
 {% block content %}
-<section class="hero">
-  <div class="wrap hero-grid">
-    <a class="hero-art" href="{{ today.page_url }}">
-      {% if today.hero %}<img src="{{ today.hero.url }}" alt="{{ today.name }} backglass" width="{{ today.hero.width }}" height="{{ today.hero.height }}">{% endif %}
-    </a>
-    <div class="hero-info">
-      <p class="eyebrow eyebrow--accent">Pinball of the Day · {{ date_label }}</p>
-      <h1>{{ today.name }}</h1>
-      <p class="lede">{{ today.manufacturer_full or today.manufacturer }}{% if today.release_label %} <span class="dot">·</span> <span class="accent">{{ today.release_label }}</span>{% endif %}</p>
-      {{ chips(today) }}
-      {% if today.fun_fact %}<p class="callout">{{ today.fun_fact }}</p>{% endif %}
-      {% if today.credits %}{{ credits_list(today.credits[:4]) }}{% endif %}
-      <div class="actions">
-        <a class="button" href="{{ today.page_url }}">Explore {{ today.name }} &rarr;</a>
-        <a class="button button--ghost" href="#plugin">Get it on your TRMNL</a>
-      </div>
-    </div>
-  </div>
-</section>
+{% call p.hero(today, "Pinball of the Day · " ~ date_label) %}
+  <a class="button" href="{{ today.page_url }}">Full profile &rarr;</a>
+  <a class="button button--ghost" href="#plugin">Get it on your TRMNL</a>
+{% endcall %}
+
+{{ p.glance(today) }}
+{{ p.details(today) }}
 
 {% if recent %}
 <section class="section">
   <div class="wrap">
     <div class="section-head">
-      <h2>Recently featured</h2>
+      <h2 class="section-title">Recently featured</h2>
       <p class="muted">Every machine in the rotation appears once before any repeats.</p>
     </div>
     <div class="card-grid">
-      {% for c in recent %}{{ machine_card(c) }}{% endfor %}
+      {% for c in recent %}{{ p.machine_card(c) }}{% endfor %}
     </div>
   </div>
 </section>
@@ -54,7 +42,7 @@
       </div>
       <div class="feature">
         <h3>Made for every TRMNL</h3>
-        <p>TRMNL OG, TRMNL X and B/W/R/Y panels in every mashup size and orientation. Scan the QR code on screen to land on the machine's page here.</p>
+        <p>TRMNL OG, TRMNL X and B/W/R/Y panels in every mashup size and orientation. Scan the QR code on screen to open the machine's profile here.</p>
       </div>
     </div>
     <ol class="steps">
@@ -68,4 +56,6 @@
     </div>
   </div>
 </section>
+
+{{ p.lightbox(today) }}
 {% endblock %}

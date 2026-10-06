@@ -116,7 +116,11 @@ def sample_export() -> dict[str, Any]:
             machine("GEEEE-M0001", "Virtual Only", year=2000, physical=False),
             group("GFFFF", "No Images"),
             machine("GFFFF-M0001", "No Images", year=1980, display="alphanumeric", images=[]),
-            {"opdbId": "GDDDD-M0001-A0001", "entryType": "alias", "name": "AFM (alias)"},
+            {
+                "opdbId": "GDDDD-M0001-A0001",
+                "entryType": "alias",
+                "name": "Attack from Mars (Special)",
+            },
         ]
     }
 

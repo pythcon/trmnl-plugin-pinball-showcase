@@ -72,3 +72,33 @@ def test_public_url_setting(tmp_path, export) -> None:
 def test_site_is_503_until_data_loads(settings) -> None:
     with TestClient(create_app(settings, StaticStore(settings, None))) as c:
         assert c.get("/").status_code == 503
+
+
+def test_machine_profile_shows_everything(client, export) -> None:
+    # Give Medieval Madness the optional OPDB links and a captioned closeup.
+    html = client.get("/m/GAAAA-M0001").text
+    assert "At a glance" in html
+    assert "Known as <strong>MM</strong>" in html
+    assert "plays up to 4 players" in html
+    assert 'id="photo-1"' in html and 'href="#photo-2"' in html  # lightbox navigation
+    assert "photos</p>" in html  # photo strip
+    assert "Shown</span>" in html  # current edition in the editions table
+    assert "Remake" in html
+
+
+def test_aliases_and_resources(settings, export) -> None:
+    from pinball_showcase.main import create_app
+
+    entries = export["entries"]
+    afm = next(e for e in entries if e.get("opdbId") == "GDDDD-M0001")
+    afm["pinballPrimerUrl"] = "https://pinballprimer.github.io/afm.html"
+    afm["competitionNotesUrl"] = (
+        "https://raw.githubusercontent.com/someone/notes/refs/heads/main/machines/AFM.md"
+    )
+    store = StaticStore(settings, build_dataset(export))
+    with TestClient(create_app(settings, store)) as c:
+        html = c.get("/m/GDDDD").text
+    assert "Also released as Attack from Mars (Special)" in html
+    assert "https://pinballprimer.github.io/afm.html" in html
+    # Raw GitHub links are turned into readable GitHub pages.
+    assert "https://github.com/someone/notes/blob/main/machines/AFM.md" in html

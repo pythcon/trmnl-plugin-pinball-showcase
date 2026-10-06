@@ -11,6 +11,7 @@ from typing import Any
 class Image:
     type: str  # backglass | playfield | cabinet | closeup | other
     primary: bool
+    title: str | None
     urls: dict[str, str]  # small | medium | large
     sizes: dict[str, tuple[int, int]]
 
@@ -43,6 +44,11 @@ class Machine:
     ipdb_id: int | None
     primer_url: str | None
     rules_url: str | None
+    cards_url: str | None = None
+    bobs_guide_url: str | None = None
+    competition_setup_url: str | None = None
+    competition_notes_url: str | None = None
+    description: str | None = None
     features: tuple[tuple[str, str], ...] = ()  # (name, group)
     people: tuple[Person, ...] = ()
     images: tuple[Image, ...] = ()
@@ -84,6 +90,7 @@ def _parse_image(raw: dict[str, Any]) -> Image | None:
     return Image(
         type=str(raw.get("type") or "other"),
         primary=bool(raw.get("primary")),
+        title=(raw.get("title") or None),
         urls=urls,
         sizes=sizes,
     )
@@ -121,6 +128,11 @@ def parse_machine(raw: dict[str, Any]) -> Machine:
         ipdb_id=raw.get("ipdbId"),
         primer_url=raw.get("pinballPrimerUrl"),
         rules_url=raw.get("pinballRulesUrl"),
+        cards_url=raw.get("pinballCardsUrl"),
+        bobs_guide_url=raw.get("bobsGuideUrl"),
+        competition_setup_url=raw.get("competitionSetupUrl"),
+        competition_notes_url=raw.get("competitionNotesUrl"),
+        description=(raw.get("description") or "").strip() or None,
         features=tuple(
             (f["name"], str(f.get("group") or ""))
             for f in raw.get("features") or []

@@ -20,7 +20,6 @@ from ..config import Settings
 from ..dataset import Dataset, Title
 from ..presenter import (
     DISPLAY_LABELS,
-    TYPE_LABELS,
     build_showcase,
     machine_page_url,
     opdb_url,
@@ -163,8 +162,66 @@ def card_view(title: Title, site_url: str, shown_on: date | None = None) -> dict
     }
 
 
+FEATURE_GROUPS = {
+    "game": "Gameplay",
+    "appearance": "Cabinet",
+    "edition": "Editions",
+    "other": "Other",
+}
+
+
+def _github_page(url: str) -> str:
+    """raw.githubusercontent.com/<o>/<r>/refs/heads/<b>/<path> -> github.com/<o>/<r>/blob/<b>/<path>."""
+    prefix = "https://raw.githubusercontent.com/"
+    if not url.startswith(prefix):
+        return url
+    owner, repo, *rest = url[len(prefix) :].split("/")
+    if rest[:2] == ["refs", "heads"]:
+        rest = rest[2:]
+    return f"https://github.com/{owner}/{repo}/blob/{'/'.join(rest)}"
+
+
+def _first(title: Title, attr: str) -> str | None:
+    return next(
+        (getattr(m, attr) for m in (title.representative, *title.machines) if getattr(m, attr)),
+        None,
+    )
+
+
+def _resources(title: Title) -> list[dict[str, str]]:
+    rep = title.representative
+    links = [
+        {
+            "label": "Open Pinball Database",
+            "url": opdb_url(rep),
+            "note": "The full OPDB record this page is built from",
+        }
+    ]
+    if rep.ipdb_id:
+        links.append(
+            {
+                "label": "Internet Pinball Database",
+                "url": f"https://www.ipdb.org/machine.cgi?id={rep.ipdb_id}",
+                "note": "Production history, documents and more photos",
+            }
+        )
+    for attr, label, note, github in [
+        ("primer_url", "Pinball Primer", "Beginner-friendly overview and strategy", False),
+        ("rules_url", "Rule sheet", "Detailed rules from the community", False),
+        ("bobs_guide_url", "Bob's Guide", "Machine guide and photos", False),
+        ("cards_url", "Pinball Cards", "Collectible card for this machine", False),
+        ("competition_notes_url", "Tournament notes", "How it plays in competition", True),
+        ("competition_setup_url", "Tournament setup", "Recommended competition settings", True),
+    ]:
+        if url := _first(title, attr):
+            links.append(
+                {"label": label, "url": _github_page(url) if github else url, "note": note}
+            )
+    return links
+
+
 def machine_view(dataset: Dataset, title: Title, now: datetime, site_url: str) -> dict[str, Any]:
-    """Everything the machine page shows, built on the same payload the plugin renders."""
+    """Everything OPDB knows about a title, organised for the profile page."""
     base = build_showcase(
         dataset,
         title,
@@ -177,80 +234,105 @@ def machine_view(dataset: Dataset, title: Title, now: datetime, site_url: str) -
     )
     m = base["machine"]
     rep = title.representative
+    multi = len(title.machines) > 1
 
+    # Every photo across every edition, representative first, primary photos first.
     gallery: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for machine in (rep, *title.machines):
+    for machine in (rep, *(x for x in title.machines if x is not rep)):
         for image in sorted(machine.images, key=lambda i: (not i.primary, i.type)):
             large = image.url("large")
             if not large or large in seen:
                 continue
             seen.add(large)
-            label = IMAGE_LABELS.get(image.type, "Photo")
-            if len(title.machines) > 1 and machine is not rep:
-                label = f"{label} · {machine.name}"
-            gallery.append({"url": large, "thumb": image.url("medium"), "label": label})
+            kind = IMAGE_LABELS.get(image.type, "Photo")
+            caption = image.title if image.title and image.title.lower() != kind.lower() else kind
+            width, height = image.sizes.get("large", (0, 0))
+            gallery.append(
+                {
+                    "url": large,
+                    "thumb": image.url("medium") or large,
+                    "label": caption,
+                    "edition": machine.name if multi else None,
+                    "orientation": "portrait" if height > width else "landscape",
+                }
+            )
+
+    features: dict[str, list[str]] = {}
+    for machine in title.machines:
+        for name, group in machine.features:
+            names = features.setdefault(FEATURE_GROUPS.get(group, "Other"), [])
+            if name not in names:
+                names.append(name)
 
     editions = [
         {
             "name": machine.name,
-            "date": machine.manufacture_date.year if machine.manufacture_date else machine.year,
+            "released": _release(machine),
+            "display": DISPLAY_LABELS.get(machine.display or "", "—"),
+            "players": machine.players or "—",
             "features": ", ".join(machine.edition_features) or "Standard",
-            "url": machine_page_url(site_url, machine),
+            "photos": len(machine.images),
             "current": machine is rep,
         }
         for machine in title.machines
     ]
 
-    links = [{"label": "Open Pinball Database", "url": opdb_url(rep), "note": "Full OPDB record"}]
-    if rep.ipdb_id:
-        links.append(
-            {
-                "label": "Internet Pinball Database",
-                "url": f"https://www.ipdb.org/machine.cgi?id={rep.ipdb_id}",
-                "note": "Photos, documents and history",
-            }
-        )
-    if primer := next((m_.primer_url for m_ in title.machines if m_.primer_url), None):
-        links.append(
-            {"label": "Pinball Primer", "url": primer, "note": "Beginner's guide and rules"}
-        )
-    if rules := next((m_.rules_url for m_ in title.machines if m_.rules_url), None):
-        links.append({"label": "Rules", "url": rules, "note": "Detailed rule sheet"})
+    position = dataset.manufacturer_position(title)
+    glance = [
+        ("Released", m["release_label"]),
+        ("Type", m["type_label"]),
+        ("Display", m["display_label"]),
+        ("Players", rep.players),
+        ("Era", m["era_label"]),
+        ("Editions", len(title.machines)),
+        ("Photos", len(gallery)),
+        (f"{rep.manufacturer} catalogue", f"#{position[0]} of {position[1]}" if position else None),
+    ]
 
     same_year = [
         card_view(t, site_url)
         for t in dataset.titles_by_year.get(title.year or 0, [])
         if t.group_id != title.group_id and t.representative.images
-    ][:8]
-
-    specs = [
-        ("Manufacturer", rep.manufacturer_full or rep.manufacturer),
-        ("Released", m["release_label"]),
-        ("Type", TYPE_LABELS.get(rep.type or "")),
-        ("Display", DISPLAY_LABELS.get(rep.display or "")),
-        ("Players", rep.players),
-        ("Era", m["era_label"]),
-        ("OPDB id", rep.opdb_id),
-    ]
+    ][:12]
 
     hero = base["images"]["backglass"] or base["images"]["any"]
-    description = (
-        f"{title.name} is a {m['release_label'] or ''} {m['type_label'] or 'pinball'} machine "
-        f"by {rep.manufacturer_full or rep.manufacturer or 'an unknown maker'}."
-    ).replace("  ", " ")
+    maker = rep.manufacturer_full or rep.manufacturer or "an unknown maker"
+    summary = (
+        f"{title.name} is a {(m['type_label'] or 'pinball').lower()} pinball machine by {maker}"
+    )
+    if m["release_label"]:
+        summary += f", released {m['release_label']}"
+    summary += "."
+    if m["display_label"] and rep.players:
+        summary += (
+            f" It has a {m['display_label'].lower()} display and plays up to {m['players_label']}."
+        )
     return {
         **m,
-        "description": description,
+        "summary_text": summary,
+        "description": _first(title, "description") or summary,
         "hero": hero,
         "gallery": gallery,
         "credits": base["credits"],
         "facts": base["facts"],
         "fun_fact": base["fun_fact"],
-        "specs": [(k, v) for k, v in specs if v],
+        "glance": [(k, v) for k, v in glance if v not in (None, "", 0)],
+        "features": features,
         "editions": editions,
-        "links": links,
+        "aliases": list(title.aliases),
+        "resources": _resources(title),
         "same_year": same_year,
         "same_year_count": base["same_year_count"],
         "page_url": base["links"]["page"],
+        "opdb_url": base["links"]["opdb"],
     }
+
+
+def _release(machine: Any) -> str:
+    d = machine.manufacture_date
+    if d is None:
+        return str(machine.year or "—")
+    if d.month == 1 and d.day == 1:
+        return str(d.year)
+    return f"{d:%b} {d.year}" if d.day == 1 else f"{d:%b} {d.day}, {d.year}"

@@ -39,6 +39,8 @@ class Title:
     short_name: str | None
     representative: Machine
     machines: tuple[Machine, ...]
+    # Alternate names and limited runs OPDB lists as aliases ("The Beatles (Platinum)").
+    aliases: tuple[str, ...] = ()
 
     @property
     def year(self) -> int | None:
@@ -128,6 +130,7 @@ def build_dataset(raw: dict[str, Any], *, source_last_modified: str | None = Non
 
     group_names: dict[str, tuple[str, str | None]] = {}
     machines_by_group: dict[str, list[Machine]] = defaultdict(list)
+    aliases_by_group: dict[str, list[str]] = defaultdict(list)
 
     for entry in entries:
         if not isinstance(entry, dict) or not entry.get("opdbId"):
@@ -141,7 +144,10 @@ def build_dataset(raw: dict[str, Any], *, source_last_modified: str | None = Non
         elif kind == "machine":
             machine = parse_machine(entry)
             machines_by_group[machine.group_id].append(machine)
-        # Aliases (alternate names/translations) are resolved through their machine id.
+        elif kind == "alias" and entry.get("name"):
+            # Alternate names / limited runs; lookups resolve alias ids via their machine id.
+            group_id = entry.get("opdbGroup") or entry["opdbId"].split("-")[0]
+            aliases_by_group[group_id].append(entry["name"])
 
     titles: list[Title] = []
     for group_id, machines in machines_by_group.items():
@@ -156,6 +162,7 @@ def build_dataset(raw: dict[str, Any], *, source_last_modified: str | None = Non
                 name=name,
                 short_name=short_name or rep.short_name,
                 representative=rep,
+                aliases=tuple(dict.fromkeys(aliases_by_group.get(group_id, []))),
                 machines=tuple(
                     sorted(
                         machines,

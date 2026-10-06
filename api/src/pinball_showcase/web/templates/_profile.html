@@ -1,0 +1,176 @@
+{#- Building blocks for a machine profile, shared by the home page and /m/{id}. -#}
+
+{% macro hero(m, eyebrow, back=false) -%}
+<section class="profile-hero">
+  <div class="wrap profile-hero-grid">
+    <div class="profile-media">
+      {% if m.hero %}
+      <a class="hero-photo" href="#photo-1" aria-label="Open {{ m.name }} photos">
+        <img src="{{ m.hero.url }}" alt="{{ m.name }} backglass" width="{{ m.hero.width }}" height="{{ m.hero.height }}">
+      </a>
+      {% endif %}
+      {{ photo_strip(m) }}
+    </div>
+    <div class="profile-info">
+      {% if back %}<a class="back" href="/">&larr; Today's machine</a>{% endif %}
+      <p class="eyebrow eyebrow--accent">{{ eyebrow }}</p>
+      <h1>{{ m.name }}</h1>
+      {% if m.short_name or m.aliases %}
+      <p class="aka">
+        {% if m.short_name %}Known as <strong>{{ m.short_name }}</strong>{% endif %}
+        {% if m.aliases %}{% if m.short_name %} · {% endif %}Also released as {{ m.aliases | join(", ") }}{% endif %}
+      </p>
+      {% endif %}
+      <p class="lede">{{ m.manufacturer_full or m.manufacturer }}{% if m.release_label %} <span class="dot">·</span> <span class="accent">{{ m.release_label }}</span>{% endif %}</p>
+      {{ chips(m) }}
+      <p class="summary">{{ m.description }}</p>
+      {% if m.fun_fact %}<p class="callout">{{ m.fun_fact }}</p>{% endif %}
+      <div class="actions">
+        {{ caller() if caller }}
+      </div>
+    </div>
+  </div>
+</section>
+{%- endmacro %}
+
+{% macro photo_strip(m) -%}
+{% if m.gallery | length > 1 %}
+<div class="photo-strip" id="photos">
+  <p class="strip-title">{{ m.gallery | length }} photos</p>
+  <div class="strip">
+    {% for g in m.gallery %}
+    <a class="strip-item" href="#photo-{{ loop.index }}" title="{{ g.label }}{% if g.edition %} · {{ g.edition }}{% endif %}">
+      <img src="{{ g.thumb }}" alt="{{ m.name }} {{ g.label }}" loading="lazy">
+      <span>{{ g.label }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{%- endmacro %}
+
+{% macro lightbox(m) -%}
+{% for g in m.gallery %}
+<div class="lightbox" id="photo-{{ loop.index }}" role="dialog" aria-label="{{ g.label }}">
+  <a class="lightbox-close" href="#photos" aria-label="Close">&times;</a>
+  <figure>
+    <img src="{{ g.url }}" alt="{{ m.name }} {{ g.label }}" loading="lazy">
+    <figcaption>{{ g.label }}{% if g.edition %} · {{ g.edition }}{% endif %} <span class="muted">({{ loop.index }} of {{ loop.length }})</span></figcaption>
+  </figure>
+  {% if not loop.first %}<a class="lightbox-nav lightbox-prev" href="#photo-{{ loop.index - 1 }}" aria-label="Previous">&lsaquo;</a>{% endif %}
+  {% if not loop.last %}<a class="lightbox-nav lightbox-next" href="#photo-{{ loop.index + 1 }}" aria-label="Next">&rsaquo;</a>{% endif %}
+</div>
+{% endfor %}
+{%- endmacro %}
+
+{% macro chips(m) -%}
+<ul class="chips">
+  {% if m.type_label %}<li>{{ m.type_label }}</li>{% endif %}
+  {% if m.display_label %}<li>{{ m.display_label }}</li>{% endif %}
+  {% if m.players_label %}<li>{{ m.players_label }}</li>{% endif %}
+  {% if m.era_label %}<li>{{ m.era_label }}</li>{% endif %}
+  {% for tag in m.tags %}<li class="chip-outline">{{ tag }}</li>{% endfor %}
+</ul>
+{%- endmacro %}
+
+{% macro glance(m) -%}
+<section class="section section--tight">
+  <div class="wrap">
+    <h2 class="section-title">At a glance</h2>
+    <div class="tiles">
+      {% for label, value in m.glance %}
+      <div class="tile"><span class="tile-label">{{ label }}</span><span class="tile-value">{{ value }}</span></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{%- endmacro %}
+
+{% macro details(m) -%}
+<section class="section section--tight">
+  <div class="wrap panels">
+    {% if m.credits %}
+    <article class="panel">
+      <h2 class="panel-title">Credits</h2>
+      <dl class="rows">
+        {% for c in m.credits %}<div><dt>{{ c.role }}</dt><dd>{{ c.names }}</dd></div>{% endfor %}
+      </dl>
+    </article>
+    {% endif %}
+    {% if m.facts %}
+    <article class="panel">
+      <h2 class="panel-title">Fast facts</h2>
+      <dl class="rows">
+        {% for f in m.facts %}<div><dt>{{ f.label }}</dt><dd>{{ f.value }}</dd></div>{% endfor %}
+        <div><dt>OPDB id</dt><dd><code>{{ m.id }}</code></dd></div>
+      </dl>
+    </article>
+    {% endif %}
+    {% if m.features %}
+    <article class="panel">
+      <h2 class="panel-title">Features</h2>
+      {% for group, names in m.features.items() %}
+      <p class="feature-group">{{ group }}</p>
+      <ul class="chips chips--compact">{% for n in names %}<li>{{ n }}</li>{% endfor %}</ul>
+      {% endfor %}
+    </article>
+    {% endif %}
+  </div>
+</section>
+{%- endmacro %}
+
+{% macro editions(m) -%}
+{% if m.editions | length > 1 %}
+<section class="section section--tight">
+  <div class="wrap">
+    <h2 class="section-title">Editions <span class="count">{{ m.editions | length }}</span></h2>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Machine</th><th>Released</th><th>Edition</th><th>Display</th><th>Players</th><th>Photos</th></tr></thead>
+        <tbody>
+          {% for e in m.editions %}
+          <tr{% if e.current %} class="is-current"{% endif %}>
+            <td data-label="Machine">{{ e.name }}{% if e.current %} <span class="badge">Shown</span>{% endif %}</td>
+            <td data-label="Released">{{ e.released }}</td>
+            <td data-label="Edition">{{ e.features }}</td>
+            <td data-label="Display">{{ e.display }}</td>
+            <td data-label="Players">{{ e.players }}</td>
+            <td data-label="Photos">{{ e.photos }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endif %}
+{%- endmacro %}
+
+{% macro resources(m) -%}
+<section class="section section--tight">
+  <div class="wrap">
+    <h2 class="section-title">Learn more</h2>
+    <div class="resource-grid">
+      {% for l in m.resources %}
+      <a class="resource" href="{{ l.url }}" rel="noopener">
+        <span class="resource-label">{{ l.label }} <span aria-hidden="true">&nearr;</span></span>
+        <span class="muted">{{ l.note }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{%- endmacro %}
+
+{% macro machine_card(c) -%}
+<a class="card" href="{{ c.url }}">
+  <div class="card-art">
+    {% if c.image %}<img src="{{ c.image }}" alt="{{ c.name }} backglass" loading="lazy">{% endif %}
+  </div>
+  <div class="card-body">
+    {% if c.shown_on %}<p class="card-date">{{ c.shown_on }}</p>{% endif %}
+    <h3>{{ c.name }}</h3>
+    <p class="muted">{{ c.maker }}{% if c.year %} · {{ c.year }}{% endif %}</p>
+  </div>
+</a>
+{%- endmacro %}
