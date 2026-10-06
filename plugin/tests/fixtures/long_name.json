@@ -29,7 +29,13 @@
       "height": 907,
       "orientation": "landscape"
     },
-    "playfield": null,
+    "playfield": {
+      "url": "https://img.opdb.org/cdd42729-051f-4a49-8952-cc5f7976b85b-large.jpg",
+      "url_medium": "https://img.opdb.org/cdd42729-051f-4a49-8952-cc5f7976b85b-medium.jpg",
+      "width": 914,
+      "height": 1466,
+      "orientation": "portrait"
+    },
     "cabinet": null,
     "any": {
       "url": "https://img.opdb.org/8e3dbe10-0dd9-4adb-a27e-c377a52d7880-large.jpg",
@@ -52,7 +58,7 @@
     },
     {
       "label": "CE",
-      "id": null,
+      "id": "GYWBZ-MW9B0-A9jqd",
       "shown": false
     }
   ],
@@ -85,15 +91,15 @@
     },
     {
       "label": "Jersey Jack Pinball",
-      "value": "Title 5 of 6"
+      "value": "Title 5 of 12"
     },
     {
       "label": "Class of 2019",
-      "value": "1 of 14 titles"
+      "value": "1 of 15 titles"
     },
     {
       "label": "Editions",
-      "value": "2 variants"
+      "value": "3 variants"
     }
   ],
   "fun_fact": "Players call it WONKA.",
@@ -123,7 +129,7 @@
       "manufacturer": "Suncoast Pinball"
     }
   ],
-  "same_year_count": 13,
+  "same_year_count": 14,
   "qr": {
     "url": "https://pinball-showcase.trmnlplugins.com/m/GYWBZ-MkPrr"
   },
@@ -133,7 +139,7 @@
   },
   "featured": {
     "label": "Pinball of the Day",
-    "updated_label": "Oct 5, 2026 4:31 AM UTC",
+    "updated_label": "Oct 5, 2026 4:58 AM UTC",
     "timezone": "UTC",
     "date": "2026-10-05",
     "date_label": "Monday, October 5",

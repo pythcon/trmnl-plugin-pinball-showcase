@@ -56,15 +56,32 @@ class Title:
     def manufacturer(self) -> str | None:
         return self.representative.manufacturer
 
-    def edition_list(self, shown: Machine) -> list[dict[str, Any]]:
-        """Every version of the title, OPDB editions first, then alias-only versions.
+    @property
+    def versions(self) -> tuple[Machine, ...]:
+        """Real editions: every machine and alias, minus umbrella entries.
 
-        Labels come from the parenthesised suffix ("Pro", "Premium/LE"); an edition
-        without one is the "Standard" model.
+        OPDB sometimes files a title's editions as aliases of one bare machine that has
+        no photos itself ("Harry Potter" with Arcade, Wizard and CE aliases). That bare
+        entry isn't an edition anyone can buy, so it's left out.
+        """
+        return tuple(m for m in self.machines if not self._is_umbrella(m))
+
+    def _is_umbrella(self, machine: Machine) -> bool:
+        return (
+            machine.alias_of is None
+            and not machine.images
+            and any(m.alias_of == machine.opdb_id and m.images for m in self.machines)
+        )
+
+    def edition_list(self, shown: Machine) -> list[dict[str, Any]]:
+        """Every version of the title with a short label and the shown one marked.
+
+        Labels come from the parenthesised suffix ("Pro", "CE"); a version without one
+        is the "Standard" model.
         """
         entries: list[dict[str, Any]] = []
         seen: set[str] = set()
-        for machine in self.machines:
+        for machine in self.versions:
             match = _PAREN_SUFFIX.search(machine.name)
             label = _edition_label(match.group(1)) if match else "Standard"
             if label in seen:
@@ -73,19 +90,13 @@ class Title:
             entries.append(
                 {"label": label, "id": machine.opdb_id, "shown": machine.opdb_id == shown.opdb_id}
             )
-        for alias in self.aliases:
-            match = _PAREN_SUFFIX.search(alias)
-            label = _edition_label(match.group(1)) if match else None
-            if label and label not in seen:
-                seen.add(label)
-                entries.append({"label": label, "id": None, "shown": False})
         return entries
 
     @property
     def editions(self) -> list[str]:
         """Edition names derived from machine names, e.g. ["Pro", "Premium/LE"]."""
         names: list[str] = []
-        for machine in self.machines:
+        for machine in self.versions:
             match = _PAREN_SUFFIX.search(machine.name)
             label = match.group(1) if match else None
             if label and label not in names:
@@ -119,15 +130,16 @@ class Dataset:
         return self.by_group.get(parts[0])
 
     def lookup_edition(self, opdb_id: str) -> Machine | None:
-        """The exact edition for a machine (or alias) id; None for a bare group id."""
+        """The exact edition for a machine or alias id; None for a bare group id."""
         parts = opdb_id.strip().split("-")
-        if len(parts) < 2:
-            return None
-        machine_id = "-".join(parts[:2])
-        title = self.by_machine.get(machine_id)
-        if title is None:
-            return None
-        return next((m for m in title.machines if m.opdb_id == machine_id), None)
+        for size in (3, 2):
+            if len(parts) < size:
+                continue
+            edition_id = "-".join(parts[:size])
+            title = self.by_machine.get(edition_id)
+            if title is not None:
+                return next(m for m in title.machines if m.opdb_id == edition_id)
+        return None
 
     def manufacturer_position(self, title: Title) -> tuple[int, int] | None:
         """1-based position of a title in its manufacturer's catalogue, and the total."""
@@ -187,9 +199,11 @@ def build_dataset(raw: dict[str, Any], *, source_last_modified: str | None = Non
             machine = parse_machine(entry)
             machines_by_group[machine.group_id].append(machine)
         elif kind == "alias" and entry.get("name"):
-            # Alternate names / limited runs; lookups resolve alias ids via their machine id.
-            group_id = entry.get("opdbGroup") or entry["opdbId"].split("-")[0]
-            aliases_by_group[group_id].append(entry["name"])
+            # Aliases are full editions of a machine (Harry Potter's CE, Pirates' LE).
+            parent = entry.get("opdbMachine") or "-".join(entry["opdbId"].split("-")[:2])
+            machine = parse_machine(entry, alias_of=parent)
+            machines_by_group[machine.group_id].append(machine)
+            aliases_by_group[machine.group_id].append(entry["name"])
 
     titles: list[Title] = []
     for group_id, machines in machines_by_group.items():

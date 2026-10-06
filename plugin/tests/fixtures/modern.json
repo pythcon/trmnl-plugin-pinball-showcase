@@ -53,28 +53,23 @@
   },
   "editions": [
     {
-      "label": "Premium/LE",
-      "id": "GK17D-MKNKd",
-      "shown": false
-    },
-    {
       "label": "Pro",
       "id": "GK17D-MdEqz",
       "shown": true
     },
     {
+      "label": "LE",
+      "id": "GK17D-MKNKd-AOyKv",
+      "shown": false
+    },
+    {
       "label": "Premium",
-      "id": null,
+      "id": "GK17D-MKNKd-A15Yn",
       "shown": false
     },
     {
       "label": "30th Anniversary",
-      "id": null,
-      "shown": false
-    },
-    {
-      "label": "LE",
-      "id": null,
+      "id": "GK17D-MKNKd-AOxoz",
       "shown": false
     }
   ],
@@ -119,15 +114,15 @@
     },
     {
       "label": "Stern",
-      "value": "Title 58 of 80"
+      "value": "Title 58 of 83"
     },
     {
       "label": "Class of 2019",
-      "value": "1 of 14 titles"
+      "value": "1 of 15 titles"
     },
     {
       "label": "Editions",
-      "value": "2 variants"
+      "value": "4 variants"
     }
   ],
   "fun_fact": "Players call it JP.",
@@ -157,7 +152,7 @@
       "manufacturer": "Jersey Jack Pinball"
     }
   ],
-  "same_year_count": 13,
+  "same_year_count": 14,
   "qr": {
     "url": "https://pinball-showcase.trmnlplugins.com/m/GK17D-MdEqz"
   },
@@ -167,7 +162,7 @@
   },
   "featured": {
     "label": "Pinball of the Day",
-    "updated_label": "Oct 6, 2026 12:31 AM EDT",
+    "updated_label": "Oct 6, 2026 12:58 AM EDT",
     "timezone": "EDT",
     "date": "2026-10-06",
     "date_label": "Tuesday, October 6",

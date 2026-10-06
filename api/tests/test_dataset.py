@@ -31,3 +31,55 @@ def test_manufacturer_position_is_chronological(dataset: Dataset) -> None:
     mm = dataset.by_group["GAAAA"]
     # Williams titles (physical): No Images (1980), Medieval Madness (1997).
     assert dataset.manufacturer_position(mm) == (2, 2)
+
+
+def test_umbrella_machine_with_alias_editions() -> None:
+    """Harry Potter: a bare machine without photos whose real editions are aliases."""
+    from pinball_showcase.dataset import build_dataset
+    from tests.conftest import group, image, machine
+
+    def alias(opdb_id: str, name: str, features: list, images: list) -> dict:
+        entry = machine(opdb_id, name, year=2025, maker="Jersey Jack Pinball", images=images)
+        entry.update(
+            entryType="alias",
+            opdbMachine="GHHHH-M0001",
+            features=[{"featureId": 0, "name": n, "group": "edition"} for n in features],
+        )
+        return entry
+
+    ds = build_dataset(
+        {
+            "entries": [
+                group("GHHHH", "Harry Potter"),
+                machine("GHHHH-M0001", "Harry Potter", year=2025, images=[]),
+                alias(
+                    "GHHHH-M0001-A0001",
+                    "Harry Potter (Arcade)",
+                    ["Pro edition"],
+                    [image("backglass", "hp-a")],
+                ),
+                alias(
+                    "GHHHH-M0001-A0002",
+                    "Harry Potter (Wizard)",
+                    ["Premium edition"],
+                    [image("backglass", "hp-w")],
+                ),
+                alias(
+                    "GHHHH-M0001-A0003",
+                    "Harry Potter (CE)",
+                    ["Premium edition"],
+                    [image("backglass", "hp-c")],
+                ),
+            ]
+        }
+    )
+    title = ds.by_group["GHHHH"]
+    # The bare umbrella entry is not an edition, and nothing is called "Standard".
+    labels = [e["label"] for e in title.edition_list(title.representative)]
+    assert sorted(labels) == ["Arcade", "CE", "Wizard"]
+    # Default: the Pro-equivalent edition with photos.
+    assert title.representative.opdb_id == "GHHHH-M0001-A0001"
+    # An alias id pins that exact edition.
+    ce = ds.lookup_edition("GHHHH-M0001-A0003")
+    assert ce is not None and ce.name == "Harry Potter (CE)"
+    assert ds.lookup("GHHHH-M0001-A0003") is title

@@ -189,8 +189,8 @@ def build_showcase(
         facts.append(
             {"label": f"Class of {title.year}", "value": f"1 of {len(same_year) + 1} titles"}
         )
-    if len(title.machines) > 1:
-        facts.append({"label": "Editions", "value": _plural(len(title.machines), "variant")})
+    if len(title.versions) > 1:
+        facts.append({"label": "Editions", "value": _plural(len(title.versions), "variant")})
 
     anniversary = (
         _has_exact_date(rep)
@@ -324,10 +324,10 @@ def _fun_fact(
         return f"The newest of {position[1]} {maker} titles in the database."
     if title.short_name and title.short_name.lower() != title.name.lower():
         return f"Players call it {title.short_name}."
-    if len(title.machines) > 1:
+    if len(title.versions) > 1:
         if title.editions:
-            return f"Built in {len(title.machines)} variants: {', '.join(title.editions)}."
-        return f"Built in {len(title.machines)} variants."
+            return f"Built in {len(title.versions)} variants: {', '.join(title.editions)}."
+        return f"Built in {len(title.versions)} variants."
     if same_year:
         return f"One of {same_year + 1} titles released in {title.year}."
     return f"Made by {rep.manufacturer_full or maker}."

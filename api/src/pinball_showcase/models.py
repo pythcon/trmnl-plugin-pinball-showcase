@@ -53,6 +53,8 @@ class Machine:
     people: tuple[Person, ...] = ()
     images: tuple[Image, ...] = ()
     keywords: tuple[str, ...] = field(default_factory=tuple)
+    # OPDB alias entries are full editions (own photos, features, people) of a machine.
+    alias_of: str | None = None
 
     @property
     def edition_features(self) -> tuple[str, ...]:
@@ -96,7 +98,7 @@ def _parse_image(raw: dict[str, Any]) -> Image | None:
     )
 
 
-def parse_machine(raw: dict[str, Any]) -> Machine:
+def parse_machine(raw: dict[str, Any], *, alias_of: str | None = None) -> Machine:
     manufacturer = raw.get("manufacturer") or {}
     people = tuple(
         sorted(
@@ -141,4 +143,5 @@ def parse_machine(raw: dict[str, Any]) -> Machine:
         people=people,
         images=images,
         keywords=tuple(k for k in raw.get("keywords") or [] if isinstance(k, str)),
+        alias_of=alias_of,
     )

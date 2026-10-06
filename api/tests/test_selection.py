@@ -99,9 +99,10 @@ def test_display_players_features(dataset: Dataset) -> None:
     remakes = Filters(features=frozenset({"remake"}))
     assert ids(candidate_pool(dataset, remakes)) == {"GAAAA"}
     multi = Filters(features=frozenset({"multi_edition"}))
-    assert ids(candidate_pool(dataset, multi)) == {"GAAAA", "GBBBB"}
+    # Attack from Mars counts: its "Special" alias is an edition too.
+    assert ids(candidate_pool(dataset, multi)) == {"GAAAA", "GBBBB", "GDDDD"}
     no_multi = Filters(exclude_features=frozenset({"multi_edition"}))
-    assert ids(candidate_pool(dataset, no_multi)) == {"GCCCC", "GDDDD"}
+    assert ids(candidate_pool(dataset, no_multi)) == {"GCCCC"}
 
 
 def test_keywords_people_and_playfield(dataset: Dataset) -> None:

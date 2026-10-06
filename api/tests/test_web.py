@@ -113,7 +113,7 @@ def test_edition_url_shows_that_edition(client) -> None:
     assert '<p class="feature-group">Editions</p>' not in html
 
 
-def test_alias_only_versions_are_listed(client) -> None:
+def test_alias_editions_are_listed_and_linked(client) -> None:
     html = client.get("/m/GDDDD").text
     assert "Attack from Mars (Special)" in html
-    assert "(name only in OPDB)" in html
+    assert '<a href="/m/GDDDD-M0001-A0001">Attack from Mars (Special)</a>' in html

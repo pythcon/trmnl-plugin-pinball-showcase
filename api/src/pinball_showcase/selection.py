@@ -164,7 +164,7 @@ def title_era(title: Title) -> Era:
 def title_features(title: Title) -> set[str]:
     names = {name for m in title.machines for name, _ in m.features}
     keys = {key for key, name in FEATURES.items() if name in names}
-    if len(title.machines) > 1:
+    if len(title.versions) > 1:
         keys.add(MULTI_EDITION)
     return keys
 

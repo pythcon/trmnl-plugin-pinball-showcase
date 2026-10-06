@@ -248,7 +248,7 @@ def machine_view(
     )
     m = base["machine"]
     rep = edition or title.representative
-    multi = len(title.machines) > 1
+    multi = len(title.versions) > 1
 
     # Every photo across every edition, representative first, primary photos first.
     gallery: list[dict[str, Any]] = []
@@ -281,23 +281,22 @@ def machine_view(
             if name not in names:
                 names.append(name)
 
-    # Same labels as the device ("Standard", "CE", "LE"), plus versions OPDB only lists
-    # as alternate names. OPDB's own edition flags are inconsistent, so they're not shown.
+    # Same labels as the device ("Standard", "CE", "LE"); OPDB's own edition flags are
+    # inconsistent, so they're not shown.
     by_id = {machine.opdb_id: machine for machine in title.machines}
     editions = []
     for entry in title.edition_list(rep):
-        machine = by_id.get(entry["id"]) if entry["id"] else None
+        machine = by_id[entry["id"]]
         editions.append(
             {
-                "name": machine.name if machine else f"{title.name} ({entry['label']})",
-                "url": f"/m/{machine.opdb_id}" if machine else None,
-                "released": _release(machine) if machine else "—",
-                "display": DISPLAY_LABELS.get(machine.display or "", "—") if machine else "—",
-                "players": (machine.players or "—") if machine else "—",
+                "name": machine.name,
+                "url": f"/m/{machine.opdb_id}",
+                "released": _release(machine),
+                "display": DISPLAY_LABELS.get(machine.display or "", "—"),
+                "players": machine.players or "—",
                 "features": entry["label"],
-                "photos": len(machine.images) if machine else "—",
+                "photos": len(machine.images),
                 "current": entry["shown"],
-                "alias": machine is None,
             }
         )
 
@@ -308,7 +307,7 @@ def machine_view(
         ("Display", m["display_label"]),
         ("Players", rep.players),
         ("Era", m["era_label"]),
-        ("Editions", len(title.machines)),
+        ("Editions", len(title.versions)),
         ("Photos", len(gallery)),
         (f"{rep.manufacturer} catalogue", f"#{position[0]} of {position[1]}" if position else None),
     ]
