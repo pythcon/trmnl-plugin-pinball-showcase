@@ -20,7 +20,8 @@ def test_home_page(client) -> None:
     assert "text/html" in r.headers["content-type"]
     html = r.text
     assert "Pinball of the Day" in html
-    assert "Recently featured" in html
+    # A fresh install has no rotation history, so nothing is claimed as "recent".
+    assert "Recently featured" not in html
     assert "Open Pinball Database (OPDB)" in html  # credit
     assert "https://trmnlplugins.com" in html  # more plugins
     assert 'href="http://testserver/m/' in html
@@ -175,3 +176,108 @@ def test_security_headers(client) -> None:
     # The API docs keep working (their CDN script isn't blocked).
     assert "content-security-policy" not in client.get("/docs").headers
     assert client.get("/api/v1/showcase").headers["x-content-type-options"] == "nosniff"
+
+
+def test_recently_featured_comes_from_the_rotation_history(settings, export) -> None:
+    import json
+    from datetime import date, timedelta
+
+    from pinball_showcase.selection import Filters, PickMemo
+
+    yesterday = date.today() - timedelta(days=1)
+    settings.data_dir.mkdir(parents=True, exist_ok=True)
+    key = PickMemo.key(f"daily:{yesterday.isoformat()}", Filters())
+    (settings.data_dir / "picks.json").write_text(json.dumps({key: "GCCCC"}))
+    store = StaticStore(settings, build_dataset(export))
+    with TestClient(create_app(settings, store)) as c:
+        html = c.get("/", params={"tz": "UTC"}).text
+    section = html[html.index("Recently featured") :]
+    assert "Gold Star" in section
+
+
+def _head(html: str) -> str:
+    return html[: html.index("</head>")]
+
+
+def test_machine_page_seo_and_link_previews(client) -> None:
+    import json
+    import re
+
+    html = client.get("/m/GBBBB-M0001").text
+    head = _head(html)
+    assert '<link rel="canonical" href="http://testserver/m/GBBBB-M0001">' in head
+    assert '<meta property="og:type" content="article">' in head
+    assert '<meta name="twitter:card" content="summary_large_image">' in head
+    # The preview image is the machine's art, with its size and alt text.
+    assert re.search(r'<meta property="og:image" content="https://img\.opdb\.org/[^"]+">', head)
+    assert '<meta property="og:image:width" content="1224">' in head
+    assert 'og:image:alt" content="Godzilla Premium/LE pinball artwork"' in head
+    data = json.loads(
+        re.search(r'<script type="application/ld\+json">(.*?)</script>', head).group(1)
+    )
+    types = {block["@type"] for block in data["@graph"]}
+    assert types == {"WebSite", "BreadcrumbList", "Product"}
+    product = next(b for b in data["@graph"] if b["@type"] == "Product")
+    assert product["name"] == "Godzilla (Premium/LE)" and product["sku"] == "GBBBB-M0001"
+    assert product["manufacturer"]["name"] == "Stern Inc."
+
+
+def test_group_url_points_search_engines_at_one_page(client) -> None:
+    head = _head(client.get("/m/GBBBB").text)
+    assert '<link rel="canonical" href="http://testserver/m/GBBBB-M0002">' in head
+
+
+def test_pages_without_art_use_the_brand_card(client) -> None:
+    head = _head(client.get("/search").text)
+    assert '<meta property="og:image" content="http://testserver/static/og-card.png">' in head
+    assert '<meta name="robots" content="noindex, follow">' in head
+    assert '<meta name="robots" content="noindex">' in _head(client.get("/m/NOPE").text)
+
+
+def test_home_page_has_site_search_structured_data(client) -> None:
+    head = _head(client.get("/").text)
+    assert '"@type":"SearchAction"' in head
+    assert '"urlTemplate":"http://testserver/search?q={search_term_string}"' in head
+    assert '<link rel="manifest" href="/manifest.webmanifest">' in head
+    assert '<link rel="apple-touch-icon" href="/apple-touch-icon.png">' in head
+
+
+def test_robots_and_sitemap(client) -> None:
+    robots = client.get("/robots.txt").text
+    assert "Sitemap: http://testserver/sitemap.xml" in robots and "Disallow: /api/" in robots
+    r = client.get("/sitemap.xml")
+    assert r.headers["content-type"].startswith("application/xml")
+    assert "<loc>http://testserver/</loc>" in r.text
+    assert "<loc>http://testserver/m/GBBBB-M0001</loc>" in r.text  # editions get their own page
+    assert "GEEEE" not in r.text  # virtual-only machines aren't listed
+
+
+def test_web_app_manifest_and_service_worker(client) -> None:
+    from pinball_showcase.web import ASSET_VERSION
+
+    manifest = client.get("/manifest.webmanifest")
+    assert manifest.headers["content-type"].startswith("application/manifest+json")
+    body = manifest.json()
+    assert body["display"] == "standalone" and body["start_url"].startswith("/")
+    purposes = {(i["sizes"], i["purpose"]) for i in body["icons"]}
+    assert {("192x192", "any"), ("512x512", "any"), ("512x512", "maskable")} <= purposes
+    sw = client.get("/sw.js")
+    assert sw.headers["cache-control"] == "no-cache"
+    assert f'var VERSION = "{ASSET_VERSION}";' in sw.text
+    # Asset URLs carry the same content hash, so a deploy refreshes caches.
+    assert f"site.css?v={ASSET_VERSION}" in client.get("/").text
+    assert client.get("/offline").status_code == 200
+
+
+def test_root_icons(client) -> None:
+    for path in ("/favicon.ico", "/apple-touch-icon.png", "/apple-touch-icon-precomposed.png"):
+        r = client.get(path)
+        assert r.status_code == 200 and len(r.content) > 500, path
+    for path in (
+        "/static/icon-192.png",
+        "/static/icon-512.png",
+        "/static/icon-maskable-512.png",
+        "/static/og-card.png",
+        "/static/logo.svg",
+    ):
+        assert client.get(path).status_code == 200, path

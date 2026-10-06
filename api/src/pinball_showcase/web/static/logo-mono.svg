@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Pinball Showcase">
+  <circle cx="256" cy="186" r="112" fill="#000"/>
+  <circle cx="218" cy="146" r="34" fill="#fff"/>
+  <path d="M96 336 L214 410 M416 336 L298 410" stroke="#000" stroke-width="60" stroke-linecap="round" fill="none"/>
+</svg>

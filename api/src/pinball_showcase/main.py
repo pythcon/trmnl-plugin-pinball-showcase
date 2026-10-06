@@ -47,7 +47,9 @@ CONTENT_SECURITY_POLICY = "; ".join(
         "style-src 'self' https://fonts.googleapis.com",
         "font-src https://fonts.gstatic.com",
         "script-src 'self'",
-        "connect-src 'self'",
+        "connect-src 'self' https://img.opdb.org",  # the service worker caches OPDB photos
+        "worker-src 'self'",
+        "manifest-src 'self'",
         "frame-ancestors 'none'",
         "base-uri 'self'",
         "form-action 'self'",

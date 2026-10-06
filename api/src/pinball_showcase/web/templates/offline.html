@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section">
+  <div class="wrap narrow offline">
+    <img src="{{ url_for('static', path='logo.svg') }}?v={{ version }}" alt="" width="72" height="72">
+    <h1>You're offline</h1>
+    <p class="muted">Pinball Showcase needs a connection to load new machines. Pages you've visited recently still open; try again when you're back online.</p>
+    <a class="button" href="/">Try again</a>
+  </div>
+</section>
+{% endblock %}

@@ -5,13 +5,14 @@ The QR code on the TRMNL screen links to ``/m/{opdb_id}``.
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Callable
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -26,18 +27,25 @@ from ..presenter import (
     opdb_url,
 )
 from ..search import MAX_RESULTS, index_for, result_payload
-from ..selection import (
-    Filters,
-    PickMemo,
-    Rotation,
-    candidate_pool,
-    choose,
-    period_index,
-    pick,
-)
+from ..selection import Filters, PickMemo, Rotation, choose, period_key
+from . import seo
 
 HERE = Path(__file__).parent
 STATIC_DIR = HERE / "static"
+
+
+def _asset_version() -> str:
+    """Content hash of the static files: changes whenever any of them does, so ?v= URLs
+    and the service worker's caches roll over on every deploy that touches them."""
+    digest = hashlib.sha256()
+    for path in sorted(STATIC_DIR.rglob("*")):
+        if path.is_file():
+            digest.update(path.relative_to(STATIC_DIR).as_posix().encode())
+            digest.update(path.read_bytes())
+    return f"{__version__}-{digest.hexdigest()[:10]}"
+
+
+ASSET_VERSION = _asset_version()
 MORE_PLUGINS_URL = "https://trmnlplugins.com"
 GITHUB_URL = "https://github.com/pythcon/trmnl-plugin-pinball-showcase"
 RECENT_DAYS = 6
@@ -97,7 +105,7 @@ templates = Jinja2Templates(directory=HERE / "templates")
 templates.env.globals.update(
     more_plugins_url=MORE_PLUGINS_URL,
     github_url=GITHUB_URL,
-    version=__version__,
+    version=ASSET_VERSION,
     current_year=date.today().year,
 )
 
@@ -126,7 +134,13 @@ def build_router(
     def render(
         request: Request, name: str, context: dict[str, Any], status: int = 200
     ) -> HTMLResponse:
-        context = {"site_url": base_url(request), **context}
+        site = base_url(request)
+        context = {
+            "site_url": site,
+            "default_og_image": seo.default_image(site),
+            "structured_data": seo.json_ld(seo.website(site)),
+            **context,
+        }
         response = templates.TemplateResponse(request, name, context, status_code=status)
         response.headers["Cache-Control"] = f"public, max-age={settings.cache_max_age_seconds}"
         return response
@@ -141,11 +155,13 @@ def build_router(
         site = base_url(request)
         today = machine_view(dataset, title, now, site)
 
-        pool = candidate_pool(dataset, Filters())
+        # What the daily rotation actually showed (the rotation memory), newest first.
+        memo = get_memo()
         recent = []
         for days_back in range(1, RECENT_DAYS + 1):
             then = now - timedelta(days=days_back)
-            past = pick(pool, period_index(then, Rotation.DAILY), Filters())
+            shown = memo.get(f"daily:{period_key(then, Rotation.DAILY)}", Filters())
+            past = dataset.by_group.get(shown) if shown else None
             if past is not None:
                 recent.append(card_view(past, site, then.date()))
 
@@ -162,7 +178,9 @@ def build_router(
                     f"Today's featured pinball machine is {today['name']} "
                     f"({today['headline']}). A new machine every day on your TRMNL."
                 ),
-                "og_image": today["hero"]["url"] if today["hero"] else None,
+                "canonical": f"{site}/",
+                "og_image": seo.machine_image(today),
+                "structured_data": seo.json_ld(seo.website(site), seo.machine(site, today)),
             },
         )
 
@@ -181,6 +199,8 @@ def build_router(
                 "search_query": query,
                 "results": [result_payload(r) for r in results],
                 "catalog_size": len(index_for(dataset)),
+                "canonical": f"{base_url(request)}/search",
+                "robots": "noindex, follow",
             },
         )
         response.headers["X-Robots-Tag"] = "noindex"
@@ -194,12 +214,11 @@ def build_router(
             return render(
                 request,
                 "not_found.html",
-                {"page_title": "Machine not found", "opdb_id": opdb_id},
+                {"page_title": "Machine not found", "opdb_id": opdb_id, "robots": "noindex"},
                 status=404,
             )
-        view = machine_view(
-            dataset, title, local_now(tz), base_url(request), dataset.lookup_edition(opdb_id)
-        )
+        site = base_url(request)
+        view = machine_view(dataset, title, local_now(tz), site, dataset.lookup_edition(opdb_id))
         return render(
             request,
             "machine.html",
@@ -211,11 +230,68 @@ def build_router(
                     else f"{view['name']} ({view['headline']})"
                 ),
                 "page_description": view["description"],
-                "og_image": view["hero"]["url"] if view["hero"] else None,
+                "canonical": view["page_url"],
+                "og_type": "article",
+                "og_image": seo.machine_image(view),
+                "structured_data": seo.json_ld(
+                    seo.website(site),
+                    seo.breadcrumbs(site, (view["name"], view["page_url"])),
+                    seo.machine(site, view),
+                ),
             },
         )
 
+    # ---- Crawlers, install and offline ------------------------------------------------
+
+    @router.get("/robots.txt", response_class=PlainTextResponse)
+    def robots(request: Request) -> PlainTextResponse:
+        return PlainTextResponse(seo.robots_txt(base_url(request)), headers=_day_cache)
+
+    @router.get("/sitemap.xml")
+    def sitemap(request: Request) -> Response:
+        xml = seo.sitemap_xml(base_url(request), dataset_or_503())
+        return Response(xml, media_type="application/xml", headers=_day_cache)
+
+    @router.get("/manifest.webmanifest")
+    def manifest() -> JSONResponse:
+        return JSONResponse(
+            seo.manifest(ASSET_VERSION),
+            media_type="application/manifest+json",
+            headers=_day_cache,
+        )
+
+    @router.get("/sw.js")
+    def service_worker() -> Response:
+        script = (STATIC_DIR / "sw.js").read_text().replace("__VERSION__", ASSET_VERSION)
+        # Browsers re-check the worker on every navigation; never let a cache pin it.
+        return Response(
+            script,
+            media_type="text/javascript",
+            headers={"Cache-Control": "no-cache", "Service-Worker-Allowed": "/"},
+        )
+
+    @router.get("/offline", response_class=HTMLResponse)
+    def offline(request: Request) -> HTMLResponse:
+        return render(
+            request,
+            "offline.html",
+            {"page_title": "You're offline", "robots": "noindex"},
+        )
+
+    # Browsers and iOS ask for these at the site root regardless of <link> tags.
+    for name in ("favicon.ico", "apple-touch-icon.png", "apple-touch-icon-precomposed.png"):
+        target = "apple-touch-icon.png" if name.startswith("apple") else name
+
+        def icon(target: str = target) -> FileResponse:
+            return FileResponse(STATIC_DIR / target, headers=_week_cache)
+
+        router.add_api_route(f"/{name}", icon, methods=["GET"], include_in_schema=False)
+
     return router
+
+
+_day_cache = {"Cache-Control": "public, max-age=86400"}
+_week_cache = {"Cache-Control": "public, max-age=604800"}
 
 
 # -- view models ---------------------------------------------------------------------------
@@ -384,6 +460,7 @@ def machine_view(
     return {
         **m,
         "summary_text": summary,
+        "release_iso": seo.release_iso(rep.manufacture_date),
         "description": _first(title, "description") or summary,
         "hero": hero,
         "gallery": gallery,

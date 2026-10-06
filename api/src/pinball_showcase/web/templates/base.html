@@ -2,28 +2,64 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}{{ page_title }}{% endblock %} · Pinball Showcase</title>
-  <meta name="description" content="{{ page_description | default('A different pinball machine every day on your TRMNL e-ink display.') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  {%- set full_title = (page_title ~ " · Pinball Showcase") if page_title else "Pinball Showcase: a new pinball machine every day" %}
+  {%- set description = page_description | default("A different pinball machine every day on your TRMNL e-ink display, with every photo, edition and credit from the Open Pinball Database.") %}
+  {%- set image = og_image or default_og_image %}
+  <title>{{ full_title }}</title>
+  <meta name="description" content="{{ description | truncate(300, true, '…') }}">
+  <meta name="robots" content="{{ robots | default('index, follow, max-image-preview:large, max-snippet:-1') }}">
+  {% if canonical %}<link rel="canonical" href="{{ canonical }}">{% endif %}
+
+  {#- Link previews: iMessage, WhatsApp, Slack, Discord, Facebook, LinkedIn, X, Mastodon... #}
   <meta property="og:site_name" content="Pinball Showcase">
-  <meta property="og:title" content="{{ page_title }}">
-  <meta property="og:description" content="{{ page_description | default('A different pinball machine every day on your TRMNL e-ink display.') }}">
-  {% if og_image %}<meta property="og:image" content="{{ og_image }}">
-  <meta name="twitter:card" content="summary_large_image">{% endif %}
-  <meta name="theme-color" content="#111111">
-  <link rel="icon" href="{{ url_for('static', path='favicon.svg') }}" type="image/svg+xml">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="{{ og_type | default('website') }}">
+  <meta property="og:title" content="{{ page_title or 'Pinball Showcase' }}">
+  <meta property="og:description" content="{{ description | truncate(200, true, '…') }}">
+  {% if canonical %}<meta property="og:url" content="{{ canonical }}">{% endif %}
+  <meta property="og:image" content="{{ image.url }}">
+  <meta property="og:image:secure_url" content="{{ image.url }}">
+  {% if image.type %}<meta property="og:image:type" content="{{ image.type }}">{% endif %}
+  {% if image.width %}<meta property="og:image:width" content="{{ image.width }}">{% endif %}
+  {% if image.height %}<meta property="og:image:height" content="{{ image.height }}">{% endif %}
+  <meta property="og:image:alt" content="{{ image.alt }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ page_title or 'Pinball Showcase' }}">
+  <meta name="twitter:description" content="{{ description | truncate(200, true, '…') }}">
+  <meta name="twitter:image" content="{{ image.url }}">
+  <meta name="twitter:image:alt" content="{{ image.alt }}">
+
+  {#- App: icons, install, theme #}
+  <meta name="application-name" content="Pinball Showcase">
+  <meta name="apple-mobile-web-app-title" content="Pinball">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101010" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" href="{{ url_for('static', path='favicon.svg') }}?v={{ version }}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+
+  <link rel="preconnect" href="https://img.opdb.org" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', path='site.css') }}?v={{ version }}">
   <script src="{{ url_for('static', path='search.js') }}?v={{ version }}" defer></script>
   <script src="{{ url_for('static', path='gallery.js') }}?v={{ version }}" defer></script>
+  <script src="{{ url_for('static', path='app.js') }}?v={{ version }}" defer></script>
+  {% if structured_data %}<script type="application/ld+json">{{ structured_data | safe }}</script>{% endif %}
 </head>
 <body>
   <header class="site-header">
     <div class="wrap header-inner">
       <a class="brand" href="/">
-        <img src="{{ url_for('static', path='favicon.svg') }}" alt="" width="28" height="28">
+        <img src="{{ url_for('static', path='logo.svg') }}?v={{ version }}" alt="" width="30" height="30">
         <span>Pinball Showcase</span>
       </a>
       <form class="search" action="/search" method="get" role="search" data-search>
