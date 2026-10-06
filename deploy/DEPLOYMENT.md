@@ -12,7 +12,7 @@ push to master (api/**, deploy/docker-compose.yml)
   └─ GitHub Actions "API"
        ├─ test    ruff + pytest
        ├─ image   multi-arch build -> ghcr.io/pythcon/trmnl-plugin-pinball-showcase:{latest,<sha7>}
-       └─ deploy  (self-hosted runner on the Mac Studio, everything from secrets)
+       └─ deploy  (self-hosted runner, everything from secrets)
             1. write deploy key to the runner's temp dir
             2. sync deploy/docker-compose.yml and .env (ENV_PRODUCTION + IMAGE_TAG=<sha7>)
             3. docker login ghcr.io, docker compose pull && up -d, prune old images
@@ -28,17 +28,17 @@ push to master (api/**, deploy/docker-compose.yml)
 
 ## Runner
 
-The server only accepts SSH from allow-listed addresses, so GitHub-hosted runners
-(which connect from changing IPs) time out. The deploy job runs on this repo's
-self-hosted runner instead:
+All CI jobs (API tests, image build, deploy, plugin lint and render tests) run on a
+self-hosted runner registered to this repo (`runs-on: self-hosted`). The server only
+accepts SSH from allow-listed addresses, so GitHub-hosted runners, which connect from
+changing IPs, can't deploy.
 
-- directory `~/Development/runners/pythcon/trmnl-plugin-pinball-showcase`
-- name `trmnl-plugin-pinball-showcase-macstudio`, labels `self-hosted, trmnl-plugin-pinball-showcase`
-- managed like the other runners: `runners status`, `runners start pinball-showcase`,
-  auto-started at login by `StartRunners.app` (see `~/Development/runners/README.md`)
+The runner host needs Docker with buildx (Docker Desktop on Apple Silicon builds the
+`linux/amd64` image through its built-in emulation), plus `ssh`, `curl` and `bash`.
+Register it per `~/Development/runners/README.md` and manage it with `runners`.
 
-If the runner is offline the deploy job waits in the queue rather than failing; check
-with `gh api repos/pythcon/trmnl-plugin-pinball-showcase/actions/runners`.
+If no runner is online, jobs wait in the queue rather than failing; check with
+`gh api repos/pythcon/trmnl-plugin-pinball-showcase/actions/runners`.
 
 ## Secrets
 

@@ -19,13 +19,18 @@ concurrency:
   group: api-${{ github.ref }}
   cancel-in-progress: false
 
+# Every job runs on the repo's self-hosted runner: the production server only admits
+# SSH from allow-listed addresses, and the runner needs Docker (with buildx), ssh,
+# curl and uv. Building linux/amd64 on an Apple Silicon runner uses Docker Desktop's
+# built-in emulation, so there is no QEMU setup step.
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/trmnl-plugin-pinball-showcase
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     defaults:
       run:
         working-directory: api
@@ -42,7 +47,7 @@ jobs:
   image:
     needs: test
     if: inputs.image_tag == ''
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: read
       packages: write
@@ -50,7 +55,6 @@ jobs:
       digest: ${{ steps.build.outputs.digest }}
     steps:
       - uses: actions/checkout@v7
-      - uses: docker/setup-qemu-action@v4
       - uses: docker/setup-buildx-action@v4
       - if: github.event_name != 'pull_request'
         uses: docker/login-action@v4
@@ -89,10 +93,7 @@ jobs:
       always() && vars.DEPLOY_PROD != 'false' && needs.test.result == 'success' &&
       (needs.image.result == 'success' || (needs.image.result == 'skipped' && inputs.image_tag != '')) &&
       (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))
-    # The server only admits SSH from allow-listed addresses, so this job runs on the
-    # repo's self-hosted runner (Mac Studio, ~/Development/runners/pythcon/...). It
-    # needs only ssh and curl there; Docker work happens on the server.
-    runs-on: [self-hosted, trmnl-plugin-pinball-showcase]
+    runs-on: self-hosted
     environment: production
     permissions:
       contents: read
