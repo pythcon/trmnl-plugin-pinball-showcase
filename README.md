@@ -77,8 +77,8 @@ docker compose up -d          # uses ghcr.io/pythcon/trmnl-plugin-pinball-showca
 curl localhost:8080/readyz    # ready once the export is loaded (a few seconds)
 ```
 
-Then, in your TRMNL plugin settings, replace `https://pinball.trmnlplugins.com` in the
-**Polling URL** with your own address (it must be reachable from TRMNL's servers). Every
+Then set **Self-hosted API URL** in the plugin's settings to your address (it must be
+reachable from TRMNL's servers). Every
 setting is optional; see [`.env.example`](.env.example).
 
 Without Docker: `cd api && uv run pinball-showcase` (Python 3.12+).
@@ -122,6 +122,7 @@ make help            # all tasks
 make api-dev         # API with reload on :8080
 make api-test        # pytest
 make plugin-lint     # trmnlp lint
+make preview         # virtual TRMNL at http://localhost:4567 backed by the local API
 make plugin-test     # render every view on OG / OG 2-bit / X / portrait / B/W/R/Y
 open plugin/report/index.html
 make fixtures        # refresh plugin test fixtures from today's export

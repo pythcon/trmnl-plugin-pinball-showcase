@@ -39,7 +39,7 @@
 {%- if mode == 'gallery' -%}{%- assign art_height = 'h--[78cqh]' -%}{%- else -%}{%- assign art_height = 'h--[62cqh]' -%}{%- endif -%}
 {%- capture art_block -%}
   <div class="w--full {{ art_height }}">
-    {% render "art_grid", images: images, types: art_hv, spans: art_hv_spans, count: art_hv_count, fit: fit_class, medium: false, name: machine.name %}
+    {% render "art_grid", images: images, types: art_hv, count: art_hv_count, fit: fit_class, medium: false, name: machine.name %}
   </div>
 {%- endcapture -%}
 {%- capture info_block -%}

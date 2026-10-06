@@ -15,7 +15,7 @@ recipe_overview: |-
   Narrow the rotation to the machines you love. Mix and match eras, decades, year ranges, manufacturers, title keywords for themes, designers and artists, score display types, player counts and features like widebody or remake, or build your own favorites list. Every machine in your selection appears once before any repeats. Choose daily, twice daily, four times a day or hourly changes, and pick the Showcase, Gallery or Spec Sheet layout. Works on TRMNL OG, TRMNL X and color B/W/R/Y screens, in every mashup size.
 strategy: polling
 polling_verb: get
-polling_url: "https://pinball.trmnlplugins.com/api/v1/showcase?tz={{ trmnl.user.time_zone_iana | url_encode }}&rotation={{ rotation }}&machine={{ pinned_machine | url_encode }}&favorites={{ favorites | url_encode }}&era={{ eras | join: ',' }}&decade={{ decades | join: ',' }}&min_year={{ min_year }}&max_year={{ max_year }}&manufacturer={{ manufacturers | url_encode }}&exclude_manufacturer={{ exclude_manufacturers | url_encode }}&display={{ displays | join: ',' }}&players={{ players | join: ',' }}&feature={{ features | join: ',' }}&exclude_feature={{ exclude_features | join: ',' }}&keyword={{ keywords | url_encode }}&exclude_keyword={{ exclude_keywords | url_encode }}&person={{ people | url_encode }}&exclude_id={{ exclude_ids | url_encode }}&require_playfield={{ require_playfield }}"
+polling_url: "{{ api_url | default: 'https://pinball.trmnlplugins.com' }}/api/v1/showcase?tz={{ trmnl.user.time_zone_iana | url_encode }}&rotation={{ rotation }}&machine={{ pinned_machine | url_encode }}&favorites={{ favorites | url_encode }}&era={{ eras | join: ',' }}&decade={{ decades | join: ',' }}&min_year={{ min_year }}&max_year={{ max_year }}&manufacturer={{ manufacturers | url_encode }}&exclude_manufacturer={{ exclude_manufacturers | url_encode }}&display={{ displays | join: ',' }}&players={{ players | join: ',' }}&feature={{ features | join: ',' }}&exclude_feature={{ exclude_features | join: ',' }}&keyword={{ keywords | url_encode }}&exclude_keyword={{ exclude_keywords | url_encode }}&person={{ people | url_encode }}&exclude_id={{ exclude_ids | url_encode }}&require_playfield={{ require_playfield }}"
 polling_headers: ''
 polling_body: ''
 refresh_interval: 60
@@ -290,3 +290,11 @@ custom_fields:
   optional: true
   placeholder: G4ODR, GRBE4
   description: Comma-separated OPDB ids to skip.
+
+# ---- Advanced ---------------------------------------------------------------------------
+- keyname: api_url
+  name: Self-hosted API URL
+  field_type: url
+  optional: true
+  placeholder: https://pinball.example.com
+  description: Leave empty to use the hosted API. If you run your own copy (see GitHub), enter its address without a trailing slash.

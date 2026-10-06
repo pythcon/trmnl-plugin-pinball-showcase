@@ -21,7 +21,7 @@
 {%- elsif mode == 'gallery' -%}
 <div class="layout layout--col gap--small">
   <div class="w--full stretch-y">
-    {% render "art_grid", images: images, types: art_q, spans: art_q_spans, count: art_q_count, fit: fit_class, medium: true, name: machine.name %}
+    {% render "art_grid", images: images, types: art_q, count: art_q_count, fit: fit_class, medium: true, name: machine.name %}
   </div>
   <div class="flex flex--row flex--center gap--small w--full">
     <span class="w--full label label--small" data-clamp="1">{{ machine.name }}</span>
@@ -32,7 +32,7 @@
 {%- else -%}
 {%- capture art_block -%}
     <div class="col--span-6 h--full">
-      {% render "art_grid", images: images, types: art_q, spans: art_q_spans, count: art_q_count, fit: fit_class, medium: true, name: machine.name %}
+      {% render "art_grid", images: images, types: art_q, count: art_q_count, fit: fit_class, medium: true, name: machine.name %}
     </div>
 {%- endcapture -%}
 {%- capture info_block -%}

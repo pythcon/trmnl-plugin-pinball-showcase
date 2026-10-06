@@ -6,12 +6,12 @@
 </div>
 
 {%- elsif mode == 'gallery' -%}
-{%- if art_full_count == 0 -%}{%- assign gallery_types = 'backglass,any' | split: ',' -%}{%- assign gallery_count = 1 -%}{%- assign gallery_spans = '12' | split: ',' -%}
-{%- else -%}{%- assign gallery_types = art_full -%}{%- assign gallery_count = art_full_count -%}{%- assign gallery_spans = art_full_spans -%}{%- endif -%}
+{%- if art_full_count == 0 -%}{%- assign gallery_types = 'backglass,any' | split: ',' -%}{%- assign gallery_count = 1 -%}
+{%- else -%}{%- assign gallery_types = art_full -%}{%- assign gallery_count = art_full_count -%}{%- endif -%}
 {%- if images.backglass == nil and art_full_count == 0 -%}{%- assign gallery_types = 'any' | split: ',' -%}{%- endif -%}
 <div class="layout layout--col layout--top gap">
   <div class="w--full h--[74cqh] lg:h--[80cqh]">
-    {% render "art_grid", images: images, types: gallery_types, spans: gallery_spans, count: gallery_count, fit: fit_class, medium: false, name: machine.name %}
+    {% render "art_grid", images: images, types: gallery_types, count: gallery_count, fit: fit_class, medium: false, name: machine.name %}
   </div>
   <div class="flex flex--row flex--between flex--center-y w--full gap">
     <div class="flex flex--col flex--left w--full">
@@ -100,7 +100,7 @@
 {%- capture art_block -%}
 {%- if art_full_count > 0 -%}
     <div class="{{ art_span }} h--full portrait:h--[45cqh]">
-      {% render "art_grid", images: images, types: art_full, spans: art_full_spans, count: art_full_count, fit: fit_class, medium: false, name: machine.name %}
+      {% render "art_grid", images: images, types: art_full, count: art_full_count, fit: fit_class, medium: false, name: machine.name %}
     </div>
 {%- endif -%}
 {%- endcapture -%}

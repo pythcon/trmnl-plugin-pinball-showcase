@@ -62,7 +62,7 @@
   1 in a quadrant), "none" for text only, or empty for auto. Photos a machine doesn't
   have are skipped; if none of the chosen ones exist the slot falls back to auto
   (backglass, or playfield first in the tall half-vertical slot).
-  Produces `<slot>` (list of image keys), `<slot>_count` and `<slot>_spans` (grid spans).
+  Produces `<slot>` (list of image keys) and `<slot>_count` (how many to draw).
 {%- endcomment -%}
 {%- assign wanted = cfg.art_full | default: 'auto' | join: ',' -%}
 {%- assign t = '' -%}
@@ -74,12 +74,6 @@
 {%- endunless -%}
 {%- assign art_full = t | split: ',' -%}
 {%- assign n = art_full.size -%}{%- if n > 3 -%}{%- assign n = 3 -%}{%- endif -%}
-{%- case n -%}
-  {%- when 1 -%}{%- assign art_full_spans = '12' | split: ',' -%}
-  {%- when 2 -%}{%- if art_full.first == 'backglass' -%}{%- assign art_full_spans = '9,3' | split: ',' -%}{%- else -%}{%- assign art_full_spans = '6,6' | split: ',' -%}{%- endif -%}
-  {%- when 3 -%}{%- assign art_full_spans = '6,3,3' | split: ',' -%}
-  {%- else -%}{%- assign art_full_spans = '' | split: ',' -%}
-{%- endcase -%}
 {%- assign art_full_count = n -%}
 {%- assign wanted = cfg.art_half_horizontal | default: 'auto' | join: ',' -%}
 {%- assign t = '' -%}
@@ -91,12 +85,6 @@
 {%- endunless -%}
 {%- assign art_hh = t | split: ',' -%}
 {%- assign n = art_hh.size -%}{%- if n > 2 -%}{%- assign n = 2 -%}{%- endif -%}
-{%- case n -%}
-  {%- when 1 -%}{%- assign art_hh_spans = '12' | split: ',' -%}
-  {%- when 2 -%}{%- if art_hh.first == 'backglass' -%}{%- assign art_hh_spans = '9,3' | split: ',' -%}{%- else -%}{%- assign art_hh_spans = '6,6' | split: ',' -%}{%- endif -%}
-  {%- when 3 -%}{%- assign art_hh_spans = '6,3,3' | split: ',' -%}
-  {%- else -%}{%- assign art_hh_spans = '' | split: ',' -%}
-{%- endcase -%}
 {%- assign art_hh_count = n -%}
 {%- assign wanted = cfg.art_half_vertical | default: 'auto' | join: ',' -%}
 {%- assign t = '' -%}
@@ -108,12 +96,6 @@
 {%- endunless -%}
 {%- assign art_hv = t | split: ',' -%}
 {%- assign n = art_hv.size -%}{%- if n > 2 -%}{%- assign n = 2 -%}{%- endif -%}
-{%- case n -%}
-  {%- when 1 -%}{%- assign art_hv_spans = '12' | split: ',' -%}
-  {%- when 2 -%}{%- if art_hv.first == 'backglass' -%}{%- assign art_hv_spans = '9,3' | split: ',' -%}{%- else -%}{%- assign art_hv_spans = '6,6' | split: ',' -%}{%- endif -%}
-  {%- when 3 -%}{%- assign art_hv_spans = '6,3,3' | split: ',' -%}
-  {%- else -%}{%- assign art_hv_spans = '' | split: ',' -%}
-{%- endcase -%}
 {%- assign art_hv_count = n -%}
 {%- assign wanted = cfg.art_quadrant | default: 'auto' | join: ',' -%}
 {%- assign t = '' -%}
@@ -125,12 +107,6 @@
 {%- endunless -%}
 {%- assign art_q = t | split: ',' -%}
 {%- assign n = art_q.size -%}{%- if n > 1 -%}{%- assign n = 1 -%}{%- endif -%}
-{%- case n -%}
-  {%- when 1 -%}{%- assign art_q_spans = '12' | split: ',' -%}
-  {%- when 2 -%}{%- if art_q.first == 'backglass' -%}{%- assign art_q_spans = '9,3' | split: ',' -%}{%- else -%}{%- assign art_q_spans = '6,6' | split: ',' -%}{%- endif -%}
-  {%- when 3 -%}{%- assign art_q_spans = '6,3,3' | split: ',' -%}
-  {%- else -%}{%- assign art_q_spans = '' | split: ',' -%}
-{%- endcase -%}
 {%- assign art_q_count = n -%}
 
 {%- comment -%} Fit shows the whole photo; fill crops it to use all the space. {%- endcomment -%}
@@ -143,10 +119,17 @@
 {%- capture instance_meta -%}{% if featured.date_short %}{{ featured.date_short }} · {% endif %}{% if featured.filter_label %}{{ featured.filter_label }} · {% endif %}OPDB{%- endcapture -%}
 
 {%- comment -%}
-  Photo grid: one or more photos side by side in a 12-column grid.
-  Params: images, types (list of image keys), spans, count, fit, medium (true = smaller files), name.
+  Photo grid: up to three photos side by side in a 12-column grid. The backglass, which
+  is landscape, gets the most room. Params: images, types (image keys), count, fit,
+  medium (true = smaller files), name.
 {%- endcomment -%}
 {% template art_grid %}
+{%- assign first = types.first -%}
+{%- case count -%}
+  {%- when 2 -%}{%- if first == 'backglass' -%}{%- assign spans = '9,3' | split: ',' -%}{%- else -%}{%- assign spans = '6,6' | split: ',' -%}{%- endif -%}
+  {%- when 3 -%}{%- assign spans = '6,3,3' | split: ',' -%}
+  {%- else -%}{%- assign spans = '12' | split: ',' -%}
+{%- endcase -%}
 <div class="grid gap--small w--full h--full">
   {%- for t in types limit: count -%}
   {%- assign img = images[t] -%}

@@ -41,7 +41,7 @@
 {%- capture art_block -%}
 {%- if art_hh_count > 0 -%}
     <div class="{{ art_span }} h--full">
-      {% render "art_grid", images: images, types: art_hh, spans: art_hh_spans, count: art_hh_count, fit: fit_class, medium: true, name: machine.name %}
+      {% render "art_grid", images: images, types: art_hh, count: art_hh_count, fit: fit_class, medium: true, name: machine.name %}
     </div>
 {%- endif -%}
 {%- endcapture -%}

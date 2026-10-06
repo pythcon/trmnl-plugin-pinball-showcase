@@ -1,6 +1,6 @@
 # trmnlp local dev config (not uploaded to TRMNL).
-# `bin/trmnlp serve` polls the hosted API from src/settings.yml. For offline work use
-# `make plugin-test` (renders tests/fixtures, which are real API responses).
+# `make preview` runs the API locally and opens this viewer against it
+# (PINBALL_API_URL). Without it, `bin/trmnlp serve` polls the hosted API.
 ---
 watch:
   - .trmnlp.yml
@@ -9,6 +9,7 @@ watch:
 time_zone: America/New_York
 
 custom_fields:
+  api_url: "{{ env.PINBALL_API_URL }}"
   display_mode: showcase
   art_fit: fit
   art_position: left
