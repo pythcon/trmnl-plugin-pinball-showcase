@@ -12,7 +12,7 @@ push to master (api/**, deploy/docker-compose.yml)
   └─ GitHub Actions "API"
        ├─ test    ruff + pytest
        ├─ image   multi-arch build -> ghcr.io/pythcon/trmnl-plugin-pinball-showcase:{latest,<sha7>}
-       └─ deploy  (GitHub-hosted runner, everything from secrets)
+       └─ deploy  (self-hosted runner on the Mac Studio, everything from secrets)
             1. write deploy key to the runner's temp dir
             2. sync deploy/docker-compose.yml and .env (ENV_PRODUCTION + IMAGE_TAG=<sha7>)
             3. docker login ghcr.io, docker compose pull && up -d, prune old images
@@ -25,6 +25,20 @@ push to master (api/**, deploy/docker-compose.yml)
 - **Pause deploys**: set the repository variable `DEPLOY_PROD=false`.
 - The server's address, user, path and port live only in secrets, so they never appear
   in the workflow file or the (masked) logs.
+
+## Runner
+
+The server only accepts SSH from allow-listed addresses, so GitHub-hosted runners
+(which connect from changing IPs) time out. The deploy job runs on this repo's
+self-hosted runner instead:
+
+- directory `~/Development/runners/pythcon/trmnl-plugin-pinball-showcase`
+- name `trmnl-plugin-pinball-showcase-macstudio`, labels `self-hosted, trmnl-plugin-pinball-showcase`
+- managed like the other runners: `runners status`, `runners start pinball-showcase`,
+  auto-started at login by `StartRunners.app` (see `~/Development/runners/README.md`)
+
+If the runner is offline the deploy job waits in the queue rather than failing; check
+with `gh api repos/pythcon/trmnl-plugin-pinball-showcase/actions/runners`.
 
 ## Secrets
 

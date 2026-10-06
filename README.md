@@ -164,7 +164,8 @@ api/                     FastAPI service (uv project)
 plugin/                  TRMNL plugin (trmnlp project)
   src/                   full / half_horizontal / half_vertical / quadrant / shared .liquid, settings.yml
   tests/                 render tests + fixtures
-deploy/                  production compose, Caddyfile, DEPLOYMENT.md
+deploy/                  production compose, nginx vhost, DEPLOYMENT.md
+scripts/                 load-secrets.sh (.env.production -> GitHub secrets)
 compose.yaml             self-hosting
 .github/workflows/       API (test, image, optional deploy) and Plugin (lint, render, optional push)
 ```

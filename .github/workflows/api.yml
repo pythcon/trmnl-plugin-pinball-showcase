@@ -89,7 +89,10 @@ jobs:
       always() && vars.DEPLOY_PROD != 'false' && needs.test.result == 'success' &&
       (needs.image.result == 'success' || (needs.image.result == 'skipped' && inputs.image_tag != '')) &&
       (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))
-    runs-on: ubuntu-latest
+    # The server only admits SSH from allow-listed addresses, so this job runs on the
+    # repo's self-hosted runner (Mac Studio, ~/Development/runners/pythcon/...). It
+    # needs only ssh and curl there; Docker work happens on the server.
+    runs-on: [self-hosted, trmnl-plugin-pinball-showcase]
     environment: production
     permissions:
       contents: read
