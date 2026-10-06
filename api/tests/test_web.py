@@ -79,7 +79,7 @@ def test_machine_profile_shows_everything(client, export) -> None:
     html = client.get("/m/GAAAA-M0001").text
     assert "At a glance" in html
     assert "Known as <strong>MM</strong>" in html
-    assert "plays up to 4 players" in html
+    assert "has a dot matrix display and plays up to 4 players" in html
     assert 'id="photo-1"' in html and 'href="#photo-2"' in html  # lightbox navigation
     assert "photos</p>" in html  # photo strip
     assert "Shown</span>" in html  # current edition in the editions table

@@ -130,7 +130,7 @@ p { margin: 0 0 1em; }
 .tile-value { font-size: clamp(1rem, 2vw, 1.2rem); font-weight: 700; overflow-wrap: anywhere; }
 
 /* Panels */
-.panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; align-items: start; }
+.panels { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; align-items: start; }
 @media (max-width: 520px) { .panels { grid-template-columns: 1fr; } }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; min-width: 0; }
 .panel-title { font-size: 1.1rem; margin-bottom: 12px; }

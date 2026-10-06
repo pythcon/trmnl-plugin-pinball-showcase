@@ -305,9 +305,9 @@ def machine_view(dataset: Dataset, title: Title, now: datetime, site_url: str) -
         summary += f", released {m['release_label']}"
     summary += "."
     if m["display_label"] and rep.players:
-        summary += (
-            f" It has a {m['display_label'].lower()} display and plays up to {m['players_label']}."
-        )
+        display = m["display_label"].lower()
+        article = "an" if display[0] in "aeiou" else "a"
+        summary += f" It has {article} {display} display and plays up to {m['players_label']}."
     return {
         **m,
         "summary_text": summary,
