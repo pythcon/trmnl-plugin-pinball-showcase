@@ -49,6 +49,50 @@ IMAGE_LABELS = {
     "other": "Photo",
 }
 
+# Gallery order within an edition: the art people know a machine by first.
+_IMAGE_ORDER = {"backglass": 0, "playfield": 1, "cabinet": 2, "closeup": 3, "other": 4}
+
+
+def _gallery(title: Title, shown: Machine, labels: dict[str, str]) -> list[dict[str, Any]]:
+    """Every photo of every edition: the shown edition's first, then the others in edition
+    order; within an edition backglass, playfield, cabinet, close-ups. Duplicate files
+    (OPDB reuses images across editions) appear once, under the first edition that has them.
+    """
+    order = {entry["id"]: i for i, entry in enumerate(title.edition_list(shown))}
+    machines = sorted(
+        title.machines,
+        key=lambda m: (m.opdb_id != shown.opdb_id, order.get(m.opdb_id, len(order))),
+    )
+    photos: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for machine in machines:
+        ranked = sorted(machine.images, key=lambda i: (_IMAGE_ORDER.get(i.type, 9), not i.primary))
+        for image in ranked:
+            large = image.url("large")
+            if not large or large in seen:
+                continue
+            seen.add(large)
+            kind = IMAGE_LABELS.get(image.type, "Photo")
+            caption = image.title if image.title and image.title.lower() != kind.lower() else kind
+            width, height = image.sizes.get("large", (0, 0))
+            medium_width, _ = image.sizes.get("medium", (0, 0))
+            photos.append(
+                {
+                    "url": large,
+                    "medium": image.url("medium") or large,
+                    "thumb": image.url("small") or image.url("medium") or large,
+                    "width": width,
+                    "height": height,
+                    "medium_width": medium_width,
+                    "label": caption,
+                    "edition": labels.get(machine.opdb_id),
+                    "other_edition": machine.opdb_id != shown.opdb_id,
+                    "orientation": "portrait" if height > width else "landscape",
+                }
+            )
+    return photos
+
+
 templates = Jinja2Templates(directory=HERE / "templates")
 templates.env.globals.update(
     more_plugins_url=MORE_PLUGINS_URL,
@@ -276,27 +320,7 @@ def machine_view(
     multi = len(title.versions) > 1
     labels = title.edition_labels() if multi else {}
 
-    # Every photo across every edition, representative first, primary photos first.
-    gallery: list[dict[str, Any]] = []
-    seen: set[str] = set()
-    for machine in (rep, *(x for x in title.machines if x is not rep)):
-        for image in sorted(machine.images, key=lambda i: (not i.primary, i.type)):
-            large = image.url("large")
-            if not large or large in seen:
-                continue
-            seen.add(large)
-            kind = IMAGE_LABELS.get(image.type, "Photo")
-            caption = image.title if image.title and image.title.lower() != kind.lower() else kind
-            width, height = image.sizes.get("large", (0, 0))
-            gallery.append(
-                {
-                    "url": large,
-                    "thumb": image.url("medium") or large,
-                    "label": caption,
-                    "edition": labels.get(machine.opdb_id),
-                    "orientation": "portrait" if height > width else "landscape",
-                }
-            )
+    gallery = _gallery(title, rep, labels)
 
     features: dict[str, list[str]] = {}
     for machine in title.machines:

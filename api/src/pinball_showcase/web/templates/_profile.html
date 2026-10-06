@@ -4,15 +4,7 @@
 <section class="profile-hero">
   <div class="wrap profile-hero-grid">
     <div class="profile-media">
-      {% if m.hero %}
-      <a class="hero-photo" href="#photo-1" aria-label="Open {{ m.name }} photos">
-        <img src="{{ m.hero.url }}" alt="{{ m.name }}{% if m.hero.edition %} {{ m.hero.edition }}{% endif %} artwork" width="{{ m.hero.width }}" height="{{ m.hero.height }}">
-      </a>
-      {% if m.hero.borrowed %}
-      <p class="hero-note">Photo of the {{ m.hero.edition or "another" }} edition. OPDB has no photos of the {{ m.edition_label }} yet.</p>
-      {% endif %}
-      {% endif %}
-      {{ photo_strip(m) }}
+      {{ gallery(m) }}
     </div>
     <div class="profile-info">
       {% if back %}<a class="back" href="/">&larr; Today's machine</a>{% endif %}
@@ -33,34 +25,59 @@
 </section>
 {%- endmacro %}
 
-{% macro photo_strip(m) -%}
-{% if m.gallery | length > 1 %}
-<div class="photo-strip" id="photos">
-  <p class="strip-title">{{ m.gallery | length }} photos</p>
-  <div class="strip">
-    {% for g in m.gallery %}
-    <a class="strip-item" href="#photo-{{ loop.index }}" title="{{ g.label }}{% if g.edition %} · {{ g.edition }}{% endif %}">
-      <img src="{{ g.thumb }}" alt="{{ m.name }} {{ g.label }}" loading="lazy">
-      <span>{{ g.label }}</span>
+{#- Photo gallery: a swipeable carousel with a thumbnail rail; static/gallery.js adds the
+    arrows, counter, live caption and the full-screen viewer. Without JavaScript the
+    carousel still scrolls and each photo links to its full-size file. -#}
+{% macro gallery(m) -%}
+{% set photos = m.gallery %}
+{% if photos %}
+<div class="gallery" data-gallery data-title="{{ m.name }}"{% if m.edition_label %} data-edition="{{ m.edition_label }}"{% endif %} id="photos">
+  <div class="gallery-stage">
+    <div class="gallery-track" tabindex="0" role="region" aria-roledescription="carousel" aria-label="{{ m.name }} photos">
+      {% for g in photos %}
+      <figure class="gallery-slide" id="photo-{{ loop.index }}" role="group" aria-roledescription="slide" aria-label="{{ loop.index }} of {{ loop.length }}"
+              data-full="{{ g.url }}" data-label="{{ g.label }}"{% if g.edition %} data-edition="{{ g.edition }}"{% endif %}{% if g.other_edition %} data-other="1"{% endif %} data-width="{{ g.width }}" data-height="{{ g.height }}">
+        <a class="gallery-open" href="{{ g.url }}" target="_blank" rel="noopener" aria-label="Open {{ g.label }}{% if g.edition %} ({{ g.edition }}){% endif %} full size">
+          <img src="{{ g.medium }}"
+               {% if g.medium_width and g.width and g.width > g.medium_width %}srcset="{{ g.medium }} {{ g.medium_width }}w, {{ g.url }} {{ g.width }}w" sizes="(max-width: 1080px) 100vw, 640px"{% endif %}
+               width="{{ g.width or 1200 }}" height="{{ g.height or 900 }}"
+               alt="{{ m.name }} {{ g.label | lower }}{% if g.edition %}, {{ g.edition }}{% endif %}"
+               {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %} decoding="async">
+        </a>
+      </figure>
+      {% endfor %}
+    </div>
+    {% if photos | length > 1 %}
+    <button class="gallery-nav gallery-prev" type="button" aria-label="Previous photo" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button class="gallery-nav gallery-next" type="button" aria-label="Next photo" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+    <span class="gallery-count" aria-hidden="true"><span data-gallery-index>1</span> / {{ photos | length }}</span>
+    {% endif %}
+    <button class="gallery-expand" type="button" aria-label="View full screen" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+  </div>
+  <p class="gallery-caption" aria-live="polite">
+    <span class="gallery-label" data-gallery-label>{{ photos[0].label }}</span>
+    <span class="gallery-edition" data-gallery-edition{% if not photos[0].edition %} hidden{% endif %}>{{ photos[0].edition or "" }}</span>
+    <span class="gallery-note" data-gallery-note{% if not (photos[0].other_edition and m.edition_label) %} hidden{% endif %}>{% if photos[0].other_edition and m.edition_label %}Photo of the {{ photos[0].edition or "another" }} edition. OPDB has no photos of the {{ m.edition_label }} yet.{% endif %}</span>
+  </p>
+  {% if photos | length > 1 %}
+  <div class="gallery-thumbs" role="list" aria-label="All {{ photos | length }} photos">
+    {% for g in photos %}
+    <a class="gallery-thumb" role="listitem" href="#photo-{{ loop.index }}" data-index="{{ loop.index0 }}"{% if loop.first %} aria-current="true"{% endif %}>
+      <img src="{{ g.thumb }}" alt="" loading="lazy" decoding="async">
+      <span class="gallery-thumb-label">{{ g.label }}{% if g.edition %}<em>{{ g.edition }}</em>{% endif %}</span>
     </a>
     {% endfor %}
   </div>
+  {% endif %}
+</div>
+{% else %}
+<div class="gallery gallery--empty">
+  <div class="gallery-empty">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 17-5-5-9 7"/></svg>
+    <p><strong>No photos yet</strong><br>OPDB doesn't have pictures of this machine.</p>
+  </div>
 </div>
 {% endif %}
-{%- endmacro %}
-
-{% macro lightbox(m) -%}
-{% for g in m.gallery %}
-<div class="lightbox" id="photo-{{ loop.index }}" role="dialog" aria-label="{{ g.label }}">
-  <a class="lightbox-close" href="#photos" aria-label="Close">&times;</a>
-  <figure>
-    <img src="{{ g.url }}" alt="{{ m.name }} {{ g.label }}" loading="lazy">
-    <figcaption>{{ g.label }}{% if g.edition %} · {{ g.edition }}{% endif %} <span class="muted">({{ loop.index }} of {{ loop.length }})</span></figcaption>
-  </figure>
-  {% if not loop.first %}<a class="lightbox-nav lightbox-prev" href="#photo-{{ loop.index - 1 }}" aria-label="Previous">&lsaquo;</a>{% endif %}
-  {% if not loop.last %}<a class="lightbox-nav lightbox-next" href="#photo-{{ loop.index + 1 }}" aria-label="Next">&rsaquo;</a>{% endif %}
-</div>
-{% endfor %}
 {%- endmacro %}
 
 {% macro chips(m) -%}

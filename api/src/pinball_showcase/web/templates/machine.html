@@ -4,7 +4,7 @@
 {% block content %}
 {% call p.hero(m, "Machine profile", back=true) %}
   <a class="button" href="{{ m.opdb_url }}" rel="noopener">View on OPDB &nearr;</a>
-  {% if m.gallery | length > 1 %}<a class="button button--ghost" href="#photo-1">See all {{ m.gallery | length }} photos</a>{% endif %}
+  {% if m.gallery | length > 1 %}<a class="button button--ghost" href="#photos" data-gallery-open>See all {{ m.gallery | length }} photos</a>{% endif %}
 {% endcall %}
 
 {{ p.glance(m) }}
@@ -36,5 +36,4 @@
   </div>
 </section>
 
-{{ p.lightbox(m) }}
 {% endblock %}
