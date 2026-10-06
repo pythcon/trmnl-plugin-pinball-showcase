@@ -1,86 +1,90 @@
-# Deployment plan
+# Deployment
 
-How the hosted API at **`https://pinball-showcase.trmnlplugins.com`** gets built, shipped and run.
+The hosted API and website at **https://pinball-showcase.trmnlplugins.com** run on the
+existing TRMNL plugins server, next to the other plugins. The server is pre-built and
+permanent: deploys never provision or recreate it, they only update one container.
 Self-hosters only need the root `compose.yaml` (see the main README).
 
-## Pipeline
+## How a deploy works
 
 ```
-push to master ─▶ GitHub Actions "API" ─▶ ruff + pytest
-                                      └─▶ multi-arch image ─▶ ghcr.io/pythcon/trmnl-plugin-pinball-showcase:{latest,<sha>,<semver>}
-                                                         └─▶ (optional) SSH deploy job ─▶ server: docker compose pull && up -d ─▶ /readyz check
-
-push to master ─▶ GitHub Actions "Plugin" ─▶ trmnlp lint + render tests (OG, OG 2-bit, X, portrait, B/W/R/Y)
-                                         └─▶ (optional) trmnlp push ─▶ TRMNL private plugin / recipe
+push to master (api/**, deploy/docker-compose.yml)
+  └─ GitHub Actions "API"
+       ├─ test    ruff + pytest
+       ├─ image   multi-arch build -> ghcr.io/pythcon/trmnl-plugin-pinball-showcase:{latest,<sha7>}
+       └─ deploy  (GitHub-hosted runner, everything from secrets)
+            1. write deploy key to the runner's temp dir
+            2. sync deploy/docker-compose.yml and .env (ENV_PRODUCTION + IMAGE_TAG=<sha7>)
+            3. docker login ghcr.io, docker compose pull && up -d, prune old images
+            4. health check from inside the server: curl 127.0.0.1:$PINBALL_HOST_PORT/readyz
+            5. advisory public check of $PINBALL_PUBLIC_URL, then delete the key
 ```
 
-## Runtime
+- **Redeploy / roll back** without rebuilding: Actions -> API -> Run workflow, with
+  `image_tag` set to an earlier 7-character SHA (or `latest`).
+- **Pause deploys**: set the repository variable `DEPLOY_PROD=false`.
+- The server's address, user, path and port live only in secrets, so they never appear
+  in the workflow file or the (masked) logs.
 
-| Piece | Choice |
+## Secrets
+
+All secrets come from the git-ignored `.env.production` at the repo root
+(template: `deploy/.env.production.example`):
+
+```bash
+scripts/load-secrets.sh          # re-run whenever .env.production changes
+```
+
+| Secret | From | Used for |
+|---|---|---|
+| `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_PORT`, `DEPLOY_PATH` | `DEPLOY_*` lines | where to SSH and which directory holds the stack |
+| `DEPLOY_SSH_KEY` | the file named by `DEPLOY_SSH_KEY_FILE` | the deploy key (ed25519, no passphrase, used only by CI) |
+| `ENV_PRODUCTION` | every other line | written to `$DEPLOY_PATH/.env` on the server |
+
+App settings in `ENV_PRODUCTION`: `PINBALL_HOST_PORT` (localhost port nginx proxies to),
+`PINBALL_PUBLIC_URL` (used in QR codes), `PINBALL_REFRESH_TIME` +
+`PINBALL_REFRESH_TIMEZONE` (daily OPDB download, midnight New York), and
+`PINBALL_DEFAULT_TIMEZONE` (when the website's "Pinball of the Day" rolls over).
+
+## Server layout (one-time setup, already done)
+
+| Piece | Where |
 |---|---|
-| Image | `ghcr.io/pythcon/trmnl-plugin-pinball-showcase` (amd64 + arm64), non-root, read-only rootfs |
-| Process | uvicorn (single worker is plenty: responses are computed in ~2 ms from memory) |
-| State | `/data` volume: cached `opdb-v2.json`, its ETag/Last-Modified, and `picks.json` (keeps today's pick stable across restarts) |
-| Data refresh | In-process daily job at 07:00 UTC (after Match Play's ~06:30 rebuild), conditional GET, retries every 15 min on failure, keeps serving the last good export |
-| Health | `GET /healthz` (liveness), `GET /readyz` (dataset loaded; 503 otherwise), `GET /api/v1/dataset` (age, next refresh, last error) |
-| TLS / proxy | Caddy (`deploy/Caddyfile`, compose profile `caddy`) or the server's existing proxy → `127.0.0.1:8080` |
-| Caching | `Cache-Control: public, max-age=300` on showcase responses and pages |
-| Website | `/` and `/m/{opdb_id}` served by the same container; `PINBALL_PUBLIC_URL` sets the address used in QR codes |
+| Stack | `$DEPLOY_PATH/docker-compose.yml` + `.env` (written by every deploy) |
+| Data | Docker volume `pinball-data` (cached OPDB export, ETag, pick memo) |
+| Container | `trmnl-plugin-pinball-showcase`, bound to `127.0.0.1:$PINBALL_HOST_PORT` only |
+| TLS + proxy | host nginx, `/etc/nginx/conf.d/pinball-showcase.conf` (copy in `deploy/nginx/`) |
+| Certificate | Let's Encrypt via certbot (webroot `/var/www/html`), renewed by `certbot.timer` |
+| DNS | `pinball-showcase.trmnlplugins.com` proxied through Cloudflare |
 
-## First-time setup
+The nginx config is installed by hand, not by the workflow, because the same nginx
+serves the other plugins and a bad reload would take them down too. To change it:
 
-1. **DNS**: `pinball-showcase.trmnlplugins.com` → the server (A/AAAA, or CNAME/Cloudflare proxy like the other plugins).
-2. **Server**:
-   ```bash
-   mkdir -p /opt/trmnl-pinball && cd /opt/trmnl-pinball
-   # copy deploy/docker-compose.yml, deploy/Caddyfile, deploy/.env.example -> .env
-   docker compose pull && docker compose up -d                 # API only (existing proxy)
-   docker compose --profile caddy up -d                         # or API + Caddy
-   curl -fsS http://127.0.0.1:8080/readyz
-   ```
-3. **GHCR**: after the first image push, make the package public (GitHub → Packages →
-   trmnl-plugin-pinball-showcase → Package settings → Change visibility) so the server and
-   self-hosters can pull without credentials.
-4. **Smoke test**: `curl -s https://pinball-showcase.trmnlplugins.com/api/v1/showcase | jq .machine.name`
-5. **TRMNL**: `cd plugin && bin/trmnlp login && bin/trmnlp push`, then add the `id:` it
-   reports to `plugin/src/settings.yml` and commit, so later pushes update the same plugin.
+```bash
+scp deploy/nginx/pinball-showcase.conf root@<host>:/etc/nginx/conf.d/
+ssh root@<host> 'nginx -t && systemctl reload nginx'
+```
 
-## Continuous deployment (optional, off by default)
+Recreating the setup on a new server:
 
-The `deploy` job in `.github/workflows/api.yml` runs only when the repository variable
-`DEPLOY_ENABLED` is `true`. It needs a `production` environment with these secrets:
+```bash
+mkdir -p $DEPLOY_PATH
+# temporary HTTP-only vhost serving /.well-known from /var/www/html, then:
+certbot certonly --webroot -w /var/www/html -d pinball-showcase.trmnlplugins.com
+# install deploy/nginx/pinball-showcase.conf, nginx -t, reload
+# add the deploy key's .pub to ~/.ssh/authorized_keys of DEPLOY_USER
+```
 
-| Secret | Value |
-|---|---|
-| `DEPLOY_HOST` | server hostname/IP |
-| `DEPLOY_USER` | SSH user with Docker access |
-| `DEPLOY_SSH_KEY` | private key (deploy-only key recommended) |
-| `DEPLOY_PORT` | optional, default 22 |
-| `DEPLOY_PATH` | e.g. `/opt/trmnl-pinball` |
+## Operations
 
-Alternative without inbound SSH: run Watchtower (or a systemd timer doing
-`docker compose pull && docker compose up -d`) on the server, scoped to this container.
+```bash
+ssh root@<host>
+cd $DEPLOY_PATH
+docker compose ps
+docker compose logs -f
+curl -s 127.0.0.1:8082/api/v1/dataset   # export age, next refresh, last error
+```
 
-Plugin publishing works the same way: set `TRMNL_PUSH=true` and the `TRMNL_API_KEY` secret.
-
-## Releases and rollback
-
-- Every master build is tagged with its commit SHA; `git tag vX.Y.Z && git push --tags`
-  also publishes `X.Y.Z` and `X.Y`.
-- Roll back by setting `PINBALL_IMAGE_TAG=<sha or version>` in the server's `.env` and
-  `docker compose up -d`.
-
-## Monitoring
-
-- Point an uptime checker (Uptime Kuma, Healthchecks, UptimeRobot...) at
-  `https://pinball-showcase.trmnlplugins.com/readyz`.
-- Alert if `/api/v1/dataset` shows `last_error` for more than a day or `fetched_at` older
-  than ~30 hours: the plugin keeps working on yesterday's data, but it should be looked at.
-
-## Open items (to settle together)
-
-- [ ] Which server/host runs it, and whether it reuses the proxy in front of grafana.trmnlplugins.com.
-- [ ] Cloudflare in front (caching + rate limiting) or direct.
-- [ ] SSH deploy job vs. pull-based (Watchtower/timer) updates.
-- [ ] Uptime monitoring target and alert channel.
-- [ ] Publish as a public TRMNL recipe once it has run privately for a while.
+Point an uptime checker at `https://pinball-showcase.trmnlplugins.com/readyz`. If
+`/api/v1/dataset` shows a `last_error` for more than a day, the daily OPDB download is
+failing; the plugin keeps serving the last good export meanwhile.

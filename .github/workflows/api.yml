@@ -4,10 +4,20 @@ on:
   push:
     branches: [master]
     tags: ["v*"]
-    paths: ["api/**", ".github/workflows/api.yml"]
+    paths: ["api/**", "deploy/docker-compose.yml", ".github/workflows/api.yml"]
   pull_request:
     paths: ["api/**", ".github/workflows/api.yml"]
   workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Existing image tag to (re)deploy without rebuilding, e.g. a1b2c3d or latest
+        required: false
+        type: string
+
+# One deploy at a time; let a running deploy finish rather than cancel it halfway.
+concurrency:
+  group: api-${{ github.ref }}
+  cancel-in-progress: false
 
 env:
   REGISTRY: ghcr.io
@@ -31,6 +41,7 @@ jobs:
 
   image:
     needs: test
+    if: inputs.image_tag == ''
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -67,29 +78,109 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Production deploy over SSH. Off until the repository variable DEPLOY_ENABLED is "true"
-  # and the secrets in deploy/DEPLOYMENT.md exist.
+  # Production deploy. Everything about the target (host, user, port, path, key, app
+  # env) comes from repository secrets, loaded with scripts/load-secrets.sh, so the
+  # server never appears in this file or (masked) in the logs. The server is
+  # pre-built: this only syncs the compose file + .env and restarts the container.
+  # Pause deploys by setting the repository variable DEPLOY_PROD=false.
   deploy:
-    needs: image
-    if: github.ref == 'refs/heads/master' && vars.DEPLOY_ENABLED == 'true'
+    needs: [test, image]
+    if: >-
+      always() && vars.DEPLOY_PROD != 'false' && needs.test.result == 'success' &&
+      (needs.image.result == 'success' || (needs.image.result == 'skipped' && inputs.image_tag != '')) &&
+      (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      contents: read
+      packages: read
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
     steps:
-      - uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_PORT || 22 }}
-          script: |
-            set -euo pipefail
-            cd "${{ secrets.DEPLOY_PATH }}"
-            docker compose pull api
-            docker compose up -d api
-            for i in $(seq 1 30); do
-              curl -fsS http://127.0.0.1:8080/readyz >/dev/null && exit 0
-              sleep 2
-            done
-            echo "API did not become ready" >&2
-            docker compose logs --tail 100 api
+      - uses: actions/checkout@v7
+
+      - name: Check secrets
+        env:
+          S_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          S_ENV: ${{ secrets.ENV_PRODUCTION }}
+        run: |
+          missing=()
+          for v in DEPLOY_HOST DEPLOY_USER DEPLOY_PATH S_KEY S_ENV; do
+            [ -n "${!v}" ] || missing+=("$v")
+          done
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Missing deploy secrets: ${missing[*]} (run scripts/load-secrets.sh)"
             exit 1
+          fi
+
+      - name: Prepare SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          umask 077
+          printenv DEPLOY_SSH_KEY > "$RUNNER_TEMP/deploy_key"
+          chmod 600 "$RUNNER_TEMP/deploy_key"
+          echo "SSH_OPTS=-i $RUNNER_TEMP/deploy_key -p ${DEPLOY_PORT:-22} -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=15 -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=$RUNNER_TEMP/known_hosts -o LogLevel=ERROR" >> "$GITHUB_ENV"
+          echo "IMAGE_TAG=${{ inputs.image_tag || '' }}" >> "$GITHUB_ENV"
+
+      - name: Resolve image tag
+        run: |
+          # metadata-action tags every build with the 7-character commit SHA.
+          [ -n "$IMAGE_TAG" ] || echo "IMAGE_TAG=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
+      - name: Sync compose and .env
+        env:
+          ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
+        run: |
+          ssh $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$DEPLOY_PATH'"
+          ssh $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" "cat > '$DEPLOY_PATH/docker-compose.yml'" < deploy/docker-compose.yml
+          # printenv, not echo: the env is multi-line and must not reach the process list.
+          { printenv ENV_PRODUCTION; echo; echo "IMAGE_TAG=$IMAGE_TAG"; } \
+            | ssh $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" "cat > '$DEPLOY_PATH/.env' && chmod 600 '$DEPLOY_PATH/.env'"
+
+      - name: Pull and restart
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$GH_TOKEN" | ssh $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" \
+            "docker login ghcr.io -u '${{ github.actor }}' --password-stdin >/dev/null"
+          ssh $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" "bash -s" <<EOF
+            set -e
+            cd '$DEPLOY_PATH'
+            docker compose pull --quiet
+            docker compose up -d --remove-orphans
+            docker image prune -f >/dev/null
+            docker compose ps --format '{{.Name}} {{.Image}} {{.Status}}'
+          EOF
+
+      - name: Health check
+        run: |
+          # From inside the server: proves the container is up and has loaded the
+          # OPDB export, independent of DNS / Cloudflare.
+          for i in $(seq 1 12); do
+            if ssh $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" \
+                "cd '$DEPLOY_PATH' && port=\$(grep -E '^PINBALL_HOST_PORT=' .env | cut -d= -f2) && curl -fsS http://127.0.0.1:\${port:-8082}/readyz" >/dev/null; then
+              echo "Ready after $((i * 10))s"; exit 0
+            fi
+            sleep 10
+          done
+          ssh $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" "cd '$DEPLOY_PATH' && docker compose logs --tail 60" || true
+          echo "::error::API did not become ready within 2 minutes"; exit 1
+
+      - name: Public check
+        continue-on-error: true
+        env:
+          ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
+        run: |
+          url=$(printenv ENV_PRODUCTION | grep -E '^PINBALL_PUBLIC_URL=' | cut -d= -f2-)
+          [ -n "$url" ] || exit 0
+          curl -fsS -o /dev/null "$url/healthz" && curl -fsS -o /dev/null "$url/" \
+            && echo "Public site and API answering" \
+            || echo "::warning::Public URL check failed (DNS / Cloudflare / nginx?)"
+
+      - name: Remove SSH key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/deploy_key" "$RUNNER_TEMP/known_hosts"

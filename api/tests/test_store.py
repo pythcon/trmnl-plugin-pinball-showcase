@@ -70,11 +70,30 @@ async def test_start_uses_fresh_cache_without_network(settings, mock_export) -> 
         await store.stop()
 
 
-def test_next_refresh_is_after_now(settings) -> None:
+def test_next_refresh_is_midnight_new_york_across_dst(settings) -> None:
     from datetime import UTC, datetime
 
-    store = DatasetStore(settings)
-    before = store.next_refresh(datetime(2026, 10, 5, 6, 0, tzinfo=UTC))
-    after = store.next_refresh(datetime(2026, 10, 5, 8, 0, tzinfo=UTC))
-    assert before == datetime(2026, 10, 5, 7, 0, tzinfo=UTC)
-    assert after == datetime(2026, 10, 6, 7, 0, tzinfo=UTC)
+    store = DatasetStore(settings)  # defaults: 00:00 America/New_York
+    # October (EDT, UTC-4): midnight NY is 04:00 UTC.
+    assert store.next_refresh(datetime(2026, 10, 6, 1, 0, tzinfo=UTC)) == datetime(
+        2026, 10, 6, 4, 0, tzinfo=UTC
+    )
+    assert store.next_refresh(datetime(2026, 10, 6, 5, 0, tzinfo=UTC)) == datetime(
+        2026, 10, 7, 4, 0, tzinfo=UTC
+    )
+    # December (EST, UTC-5): midnight NY is 05:00 UTC.
+    assert store.next_refresh(datetime(2026, 12, 1, 12, 0, tzinfo=UTC)) == datetime(
+        2026, 12, 2, 5, 0, tzinfo=UTC
+    )
+
+
+def test_legacy_utc_setting_still_works(tmp_path, monkeypatch) -> None:
+    from datetime import UTC, datetime
+
+    from pinball_showcase.config import Settings
+
+    monkeypatch.setenv("PINBALL_REFRESH_TIME_UTC", "07:00")
+    s = Settings(data_dir=tmp_path, refresh_timezone="UTC")
+    assert DatasetStore(s).next_refresh(datetime(2026, 10, 6, 6, 0, tzinfo=UTC)) == datetime(
+        2026, 10, 6, 7, 0, tzinfo=UTC
+    )

@@ -16,6 +16,7 @@ import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import httpx
 
@@ -179,11 +180,20 @@ class DatasetStore:
     # -- scheduling ----------------------------------------------------------------------
 
     def next_refresh(self, now: datetime | None = None) -> datetime:
+        """Next refresh_time in refresh_timezone, as a UTC datetime (DST-safe)."""
         now = now or datetime.now(UTC)
-        target = datetime.combine(now.date(), self.settings.refresh_time_utc, tzinfo=UTC)
-        if target <= now:
-            target += timedelta(days=1)
-        return target
+        try:
+            tz = ZoneInfo(self.settings.refresh_timezone)
+        except (ZoneInfoNotFoundError, ValueError):
+            tz = ZoneInfo("UTC")
+        local_today = now.astimezone(tz).date()
+        for day in (local_today, local_today + timedelta(days=1)):
+            target = datetime.combine(day, self.settings.refresh_time, tzinfo=tz)
+            if target > now:
+                return target.astimezone(UTC)
+        return datetime.combine(
+            local_today + timedelta(days=2), self.settings.refresh_time, tzinfo=tz
+        ).astimezone(UTC)
 
     async def _scheduler(self) -> None:
         retry = timedelta(minutes=self.settings.retry_minutes)
