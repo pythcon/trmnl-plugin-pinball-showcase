@@ -46,8 +46,10 @@ CONTENT_SECURITY_POLICY = "; ".join(
         "img-src 'self' data: https://img.opdb.org",
         "style-src 'self' https://fonts.googleapis.com",
         "font-src https://fonts.gstatic.com",
-        "script-src 'self'",
-        "connect-src 'self' https://img.opdb.org",  # the service worker caches OPDB photos
+        # Cloudflare Web Analytics injects its beacon when the site is proxied.
+        "script-src 'self' https://static.cloudflareinsights.com",
+        # The service worker caches OPDB photos; the analytics beacon reports here.
+        "connect-src 'self' https://img.opdb.org https://cloudflareinsights.com",
         "worker-src 'self'",
         "manifest-src 'self'",
         "frame-ancestors 'none'",
