@@ -77,7 +77,7 @@
       </div>
       {%- endif -%}
       {%- if show_fun_fact and fun_fact -%}
-      <div class="{{ accent_fill }} p--2 w--full {% if credits.size > 4 %}hidden lg:block{% endif %}"><span class="description description--large">{{ fun_fact }}</span></div>
+      <div class="{{ accent_fill }} p--2 w--full {% if credits.size > 4 %}hidden lg:block{% endif %}"><span class="w--full label label--large">{{ fun_fact }}</span></div>
       {%- endif -%}
     </div>
     <div class="col--span-4 flex flex--col flex--left gap">
@@ -156,7 +156,7 @@
       {%- endif -%}
       {%- if show_fun_fact and fun_fact -%}
       <div class="stretch-y"></div>
-      <div class="{{ accent_fill }} p--2 w--full {% unless fun_on_og %}hidden lg:block{% endunless %}"><span class="w--full description" data-clamp="2" data-clamp-lg="3">{{ fun_fact }}</span></div>
+      <div class="{{ accent_fill }} p--2 w--full {% unless fun_on_og %}hidden lg:block{% endunless %}"><span class="w--full label" data-clamp="2" data-clamp-lg="3">{{ fun_fact }}</span></div>
       {%- endif -%}
     </div>
 {%- endcapture -%}

@@ -30,6 +30,11 @@
 {%- assign show_qr = true -%}{%- if hidden contains 'qr' or qr == nil -%}{%- assign show_qr = false -%}{%- endif -%}
 
 {%- comment -%}
+  Text on a yellow callout uses the bold black `label` font, never the thin gray
+  `description`: on B/W/R/Y panels thin anti-aliased strokes on yellow are converted to
+  yellow and vanish.
+{%- endcomment -%}
+{%- comment -%}
   Device-aware styling. Gray text and accent colors become dot patterns on a 1-bit
   monochrome panel (TRMNL OG), so there they fall back to plain black on white.
   Color panels (TRMNL OG B/W/R/Y and friends) get real red and yellow; grayscale
