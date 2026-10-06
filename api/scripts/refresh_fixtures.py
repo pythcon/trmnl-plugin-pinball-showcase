@@ -28,7 +28,9 @@ FIXTURES = {
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    settings = Settings(data_dir=Path("data"), public_url="https://pinball-showcase.trmnlplugins.com")
+    settings = Settings(
+        data_dir=Path("data"), public_url="https://pinball-showcase.trmnlplugins.com"
+    )
     with TestClient(create_app(settings)) as client:
         for name, url in FIXTURES.items():
             payload = client.get(url).json()
