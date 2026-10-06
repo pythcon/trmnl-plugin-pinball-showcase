@@ -6,26 +6,26 @@
 
 {%- elsif mode == 'spec' or art_q_count == 0 -%}
 <div class="layout layout--col layout--center-y layout--left gap--small">
-  <span class="label label--small {{ accent_text }}">{{ featured.label }}</span>
-  <span class="title title--medium lg:title--large" data-clamp="2">{{ machine.name }}</span>
+  <span class="label {{ accent_text }}">{{ featured.label }}</span>
+  <span class="title title--large lg:title--xlarge" data-clamp="2">{{ machine.name }}</span>
   <div class="flex flex--row flex--left gap--small">
-    <span class="label label--small">{{ machine.manufacturer }}</span>
-    <span class="label label--small {{ accent_text }}">{{ machine.year }}</span>
+    <span class="label label--large">{{ machine.manufacturer }}</span>
+    <span class="label label--large {{ accent_text }}">{{ machine.year }}</span>
   </div>
-  <span class="w--full label label--small {{ muted }}" data-clamp="1">{{ machine.summary }}</span>
+  <span class="w--full label {{ muted }}" data-clamp="1">{{ machine.summary }}</span>
   {%- if show_credits and credits.size > 0 -%}
-  <span class="w--full label label--small {{ muted }}" data-clamp="1">{{ credits.first.role }}: {{ credits.first.names }}</span>
+  <span class="w--full label {{ muted }}" data-clamp="1">{{ credits.first.role }}: {{ credits.first.names }}</span>
   {%- endif -%}
 </div>
 
 {%- elsif mode == 'gallery' -%}
 <div class="layout layout--col gap--small">
-  <div class="w--full h--[78cqh]">
+  <div class="w--full h--[72cqh]">
     {% render "art_grid", images: images, types: art_q, count: art_q_count, fit: fit_class, medium: true, name: machine.name %}
   </div>
   <div class="flex flex--row flex--center gap--small w--full">
-    <span class="w--full label label--small" data-clamp="1">{{ machine.name }}</span>
-    <span class="label label--small {{ accent_text }}">{{ machine.year }}</span>
+    <span class="w--full label label--large" data-clamp="1">{{ machine.name }}</span>
+    <span class="label label--large {{ accent_text }}">{{ machine.year }}</span>
   </div>
 </div>
 
@@ -37,9 +37,9 @@
 {%- endcapture -%}
 {%- capture info_block -%}
     <div class="col--span-6 flex flex--col flex--left flex--center-y gap--small">
-      <span class="title title--small lg:title--medium" data-clamp="3">{{ machine.name }}</span>
-      <span class="label label--small">{{ machine.manufacturer }}</span>
-      <span class="label label--small {{ accent_text }}">{{ machine.year }}</span>
+      <span class="title title--medium lg:title--large" data-clamp="3">{{ machine.name }}</span>
+      <span class="label label--large">{{ machine.manufacturer }}</span>
+      <span class="label label--large {{ accent_text }}">{{ machine.year }}</span>
     </div>
 {%- endcapture -%}
 <div class="layout layout--row layout--left">
