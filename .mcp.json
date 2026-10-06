@@ -2,7 +2,11 @@
   "mcpServers": {
     "trmnl": {
       "type": "http",
-      "url": "https://trmnl.com/mcp"
+      "url": "https://trmnl.com/mcp",
+      "oauth": {
+        "clientId": "H3w_GvS6YT0fD7bkpKWAhddBd04KF6-DmjUnbZPzEB8",
+        "callbackPort": 53682
+      }
     }
   }
 }
