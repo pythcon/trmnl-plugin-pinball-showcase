@@ -65,7 +65,7 @@ App settings in `ENV_PRODUCTION`: `PINBALL_HOST_PORT` (localhost port nginx prox
 | Piece | Where |
 |---|---|
 | Stack | `$DEPLOY_PATH/docker-compose.yml` + `.env` (written by every deploy) |
-| Data | Docker volume `pinball-data` (cached OPDB export, ETag, pick memo) |
+| Data | Docker volume `pinball-data`: cached OPDB export + ETag, `picks.json` (machine per period) and `rotation.json` (no-repeat cursors). Deleting the last two restarts every rotation; nothing else depends on them. |
 | Container | `trmnl-plugin-pinball-showcase`, bound to `127.0.0.1:$PINBALL_HOST_PORT` only |
 | TLS + proxy | host nginx, `/etc/nginx/conf.d/pinball-showcase.conf` (copy in `deploy/nginx/`) |
 | Certificate | Let's Encrypt via certbot (webroot `/var/www/html`), renewed by `certbot.timer` |

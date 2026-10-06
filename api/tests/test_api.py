@@ -162,3 +162,25 @@ def test_search_endpoint(client) -> None:
     assert body["results"][0]["image"].startswith("https://img.opdb.org/")
     assert client.get("/api/v1/search", params={"q": ""}).status_code == 422
     assert client.get("/api/v1/search", params={"q": "x" * 81}).status_code == 422
+
+
+def test_previews_do_not_touch_the_rotation(client) -> None:
+    import json as _json
+
+    client.get("/api/v1/showcase", params={"date": "2030-01-01"})
+    data_dir = client.app.state.settings.data_dir
+    picks = data_dir / "picks.json"
+    assert not picks.exists() or "2030-01-01" not in picks.read_text()
+    assert (
+        not (data_dir / "rotation.json").exists()
+        or _json.loads((data_dir / "rotation.json").read_text()) == {}
+    )
+
+
+def test_favorite_edition_ids_show_that_edition(client) -> None:
+    body = client.get("/api/v1/showcase", params={"favorites": "GBBBB-M0001"}).json()
+    assert body["machine"]["id"] == "GBBBB-M0001"
+    assert body["machine"]["edition_label"] == "Premium/LE"
+    # A plain group id keeps the default edition.
+    body = client.get("/api/v1/showcase", params={"favorites": "GBBBB"}).json()
+    assert body["machine"]["id"] == "GBBBB-M0002"

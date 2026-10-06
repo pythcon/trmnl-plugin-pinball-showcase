@@ -161,3 +161,15 @@ def test_search_page_empty_and_no_match(client) -> None:
 def test_search_page_escapes_the_query(client) -> None:
     html = client.get("/search", params={"q": "<script>alert(1)</script>"}).text
     assert "<script>alert(1)</script>" not in html
+
+
+def test_security_headers(client) -> None:
+    r = client.get("/")
+    assert r.headers["x-content-type-options"] == "nosniff"
+    assert r.headers["x-frame-options"] == "DENY"
+    assert "max-age=" in r.headers["strict-transport-security"]
+    csp = r.headers["content-security-policy"]
+    assert "script-src 'self'" in csp and "https://img.opdb.org" in csp
+    # The API docs keep working (their CDN script isn't blocked).
+    assert "content-security-policy" not in client.get("/docs").headers
+    assert client.get("/api/v1/showcase").headers["x-content-type-options"] == "nosniff"

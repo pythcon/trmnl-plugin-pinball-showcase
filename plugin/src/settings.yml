@@ -53,7 +53,7 @@ custom_fields:
   - "Playfield": "playfield"
   - "Cabinet": "cabinet"
   - "None (text only)": "none"
-  description: Pick one, or several to show side by side (up to 3). Leave empty for the backglass. Photos a machine doesn't have are skipped.
+  description: Pick one, or several to show side by side (up to 3). Leave empty to choose automatically (the edition's own backglass or photo first). If an edition has no photo of a type, another edition's is used and labelled.
 - keyname: art_half_horizontal
   name: Photos - Half Horizontal
   field_type: select
@@ -64,7 +64,7 @@ custom_fields:
   - "Playfield": "playfield"
   - "Cabinet": "cabinet"
   - "None (text only)": "none"
-  description: Up to 2 side by side. Leave empty for the backglass.
+  description: Up to 2 side by side. Leave empty to choose automatically.
 - keyname: art_half_vertical
   name: Photos - Half Vertical
   field_type: select
@@ -75,7 +75,7 @@ custom_fields:
   - "Playfield": "playfield"
   - "Cabinet": "cabinet"
   - "None (text only)": "none"
-  description: Up to 2. Leave empty for the playfield, which fits the tall slot best.
+  description: Up to 2. Leave empty to choose automatically (playfield first, which fits the tall slot best).
 - keyname: art_quadrant
   name: Photos - Quadrant
   field_type: select
@@ -86,7 +86,7 @@ custom_fields:
   - "Playfield": "playfield"
   - "Cabinet": "cabinet"
   - "None (text only)": "none"
-  description: Shows the first one you pick. Leave empty for the backglass.
+  description: Shows the first one you pick. Leave empty to choose automatically.
 - keyname: art_fit
   name: Photo Style
   field_type: select
@@ -113,8 +113,7 @@ custom_fields:
   - "Credits (design, art, code, sound)": "credits"
   - "Fast facts": "facts"
   - "Fun fact": "fun_fact"
-  - "Edition and feature tags": "tags"
-  - "Other titles from the same year": "same_year"
+  - "Feature tags (widebody, cocktail...)": "tags"
   - "QR code to the machine page": "qr"
 - keyname: color_accents
   name: Color Accents
@@ -146,14 +145,14 @@ custom_fields:
   field_type: string
   optional: true
   placeholder: G5pe4
-  description: Always show this OPDB id instead of rotating. Find ids at opdb.org.
+  description: Always show this machine. Search pinball-showcase.trmnlplugins.com and copy the id from the page address; an edition's id (e.g. GWyBj-MdEbK-AOPdq) pins that exact edition.
 - keyname: favorites
   name: Favorites Only
   field_type: text
   rows: 2
   optional: true
   placeholder: G5pe4, GrqZX, GweeP
-  description: Comma-separated OPDB ids. When set, only these machines rotate (other filters still apply).
+  description: Comma-separated OPDB ids (find them with the search at pinball-showcase.trmnlplugins.com). When set, only these machines rotate; other filters still apply.
 
 # ---- Filters (all optional; pick any combination; empty = everything) -------------------
 - keyname: eras

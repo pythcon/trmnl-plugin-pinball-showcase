@@ -198,7 +198,79 @@ def test_memo_keeps_pick_when_pool_changes(dataset: Dataset, tmp_path) -> None:
 def test_memo_is_ignored_when_title_leaves_pool(dataset: Dataset, tmp_path) -> None:
     memo = PickMemo(tmp_path / "picks.json")
     now = datetime(2026, 10, 5, 9)
-    first, _ = choose(dataset, Filters(), now, Rotation.DAILY, memo)
+    choose(dataset, Filters(), now, Rotation.DAILY, memo)
     memo.put("daily:2026-10-05", Filters(), "GEEEE")  # not showcase-ready
     again, _ = choose(dataset, Filters(), now, Rotation.DAILY, memo)
-    assert again is first
+    assert again is not None and again.group_id != "GEEEE"
+    # ...and the replacement then holds for the rest of the period.
+    assert choose(dataset, Filters(), now, Rotation.DAILY, memo)[0] is again
+
+
+def _days(dataset: Dataset, memo: PickMemo, days: int, start: datetime) -> list[str]:
+    from datetime import timedelta
+
+    return [
+        choose(dataset, Filters(), start + timedelta(days=d), Rotation.DAILY, memo)[0].group_id
+        for d in range(days)
+    ]
+
+
+def _big_dataset(count: int) -> Dataset:
+    from pinball_showcase.dataset import build_dataset
+    from tests.conftest import group, machine
+
+    entries = []
+    for i in range(count):
+        gid = f"G{i:04d}"
+        entries += [group(gid, f"Title {i}"), machine(f"{gid}-M0001", f"Title {i}", year=1990)]
+    return build_dataset({"entries": entries})
+
+
+def test_rotation_shows_everything_once_per_cycle(tmp_path) -> None:
+    ds = _big_dataset(30)
+    shown = _days(ds, PickMemo(tmp_path / "picks.json"), 30, datetime(2026, 1, 1, 9))
+    assert sorted(shown) == sorted(t.group_id for t in ds.titles)
+
+
+def test_titles_added_mid_cycle_cause_no_repeats_or_skips(tmp_path) -> None:
+    """OPDB adds titles over time; the rotation must not repeat or skip because of it."""
+    memo = PickMemo(tmp_path / "picks.json")
+    small, big = _big_dataset(20), _big_dataset(25)  # five titles appear on day 9
+    shown = _days(small, memo, 8, datetime(2026, 1, 1, 9))
+    shown += _days(big, memo, 60, datetime(2026, 1, 9, 9))
+    # The first cycle runs until something repeats: nothing repeats before every original
+    # title has had its turn (new titles either joined it or wait for the next cycle).
+    end = next(i for i, gid in enumerate(shown) if gid in shown[:i])
+    assert len(set(shown[:end])) == end
+    assert {t.group_id for t in small.titles} <= set(shown[:end])
+    # From then on each cycle is the full pool of 25, new titles included.
+    assert sorted(shown[end : end + 25]) == sorted(t.group_id for t in big.titles)
+
+
+def test_no_back_to_back_repeat_across_cycles(tmp_path) -> None:
+    ds = _big_dataset(3)
+    shown = _days(ds, PickMemo(tmp_path / "picks.json"), 60, datetime(2026, 1, 1, 9))
+    assert all(a != b for a, b in pairwise(shown))
+    # Still a full cycle of three every three days.
+    for i in range(0, 60, 3):
+        assert len(set(shown[i : i + 3])) == 3
+
+
+def test_rotation_state_survives_a_restart(tmp_path) -> None:
+    ds = _big_dataset(12)
+    path = tmp_path / "picks.json"
+    before = _days(ds, PickMemo(path), 5, datetime(2026, 1, 1, 9))
+    after = _days(ds, PickMemo(path), 7, datetime(2026, 1, 6, 9))  # a fresh process
+    assert len(set(before + after)) == 12
+
+
+def test_cadences_and_filters_rotate_independently(tmp_path) -> None:
+    ds = _big_dataset(10)
+    memo = PickMemo(tmp_path / "picks.json")
+    day = datetime(2026, 1, 1, 9)
+    daily = choose(ds, Filters(), day, Rotation.DAILY, memo)[0]
+    hourly = [
+        choose(ds, Filters(), day.replace(hour=h), Rotation.EVERY_1H, memo)[0] for h in range(10)
+    ]
+    assert len({t.group_id for t in hourly}) == 10
+    assert choose(ds, Filters(), day, Rotation.DAILY, memo)[0] is daily

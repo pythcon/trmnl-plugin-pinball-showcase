@@ -33,6 +33,29 @@ from .web import build_router, mount_static
 log = logging.getLogger("pinball_showcase")
 
 
+SECURITY_HEADERS = {
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "X-Frame-Options": "DENY",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+}
+CONTENT_SECURITY_POLICY = "; ".join(
+    [
+        "default-src 'self'",
+        "img-src 'self' data: https://img.opdb.org",
+        "style-src 'self' https://fonts.googleapis.com",
+        "font-src https://fonts.gstatic.com",
+        "script-src 'self'",
+        "connect-src 'self'",
+        "frame-ancestors 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "object-src 'none'",
+    ]
+)
+
+
 def create_app(settings: Settings | None = None, store: DatasetStore | None = None) -> FastAPI:
     settings = settings or get_settings()
     logging.basicConfig(
@@ -59,6 +82,16 @@ def create_app(settings: Settings | None = None, store: DatasetStore | None = No
     )
     app.state.store = store
     app.state.settings = settings
+
+    @app.middleware("http")
+    async def security_headers(request: Request, call_next: Any) -> Any:
+        response = await call_next(request)
+        for name, value in SECURITY_HEADERS.items():
+            response.headers.setdefault(name, value)
+        # Swagger UI (/docs) loads from a CDN with inline script; everything else is ours.
+        if not request.url.path.startswith(("/docs", "/redoc")):
+            response.headers.setdefault("Content-Security-Policy", CONTENT_SECURITY_POLICY)
+        return response
 
     def require_dataset() -> Dataset:
         if store.dataset is None:
@@ -127,7 +160,8 @@ def create_app(settings: Settings | None = None, store: DatasetStore | None = No
                 filters,
                 local_now,
                 rotation,
-                memo,
+                # Previewing another date must not touch the live rotation.
+                None if params.date else memo,
                 interval=interval,
                 avoid=parse_ids(params.avoid),
             )
@@ -138,6 +172,15 @@ def create_app(settings: Settings | None = None, store: DatasetStore | None = No
                     ),
                     response,
                 )
+            # A favourite given as an edition id ("GWyBj-MdEbK-AOPdq") shows that edition.
+            edition = next(
+                (
+                    e
+                    for fav in filters.favorites
+                    if (e := dataset.lookup_edition(fav)) and e.group_id == title.group_id
+                ),
+                None,
+            )
 
         payload = build_showcase(
             dataset,

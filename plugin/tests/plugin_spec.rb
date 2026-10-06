@@ -120,7 +120,7 @@ RSpec.describe 'Pinball Showcase' do
   end
 
   it 'hides everything optional without breaking' do
-    hidden = %w[credits facts fun_fact tags same_year qr]
+    hidden = %w[credits facts fun_fact tags qr]
     expect(trmnl.render(device: 'og_png', mocks:, custom_fields: { 'hide_details' => hidden }))
       .to have_no_problems.and(have_no_leaked_text)
   end

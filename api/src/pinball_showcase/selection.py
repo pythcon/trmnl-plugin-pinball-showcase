@@ -16,6 +16,7 @@ import hashlib
 import json
 import os
 import secrets
+import threading
 from collections import OrderedDict
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -304,21 +305,40 @@ def pick(pool: list[Title], index: int, filters: Filters) -> Title | None:
 
 
 class PickMemo:
-    """Remembers which title was shown for (period, filters), persisted to disk.
+    """Rotation state, persisted to disk so it survives restarts and daily refreshes.
 
-    Keeps the on-screen machine stable for the whole period even if the dataset is
-    refreshed (and the pool changes) part-way through it.
+    Two things are kept:
+
+    - the title shown for each (period, filters), so the screen stays stable for the
+      whole period even if the dataset changes part-way through it;
+    - a cursor per rotation stream (cadence + filters): how far through the current
+      cycle's seeded shuffle it has got. Each new period shows the next-ranked title
+      after the cursor that is still in the pool, so titles OPDB adds or removes
+      mid-cycle never cause a repeat or a skip; new ones either come up later in the
+      cycle or start the next.
     """
 
     def __init__(self, path: Path | None, max_entries: int = 20_000) -> None:
         self.path = path
         self.max_entries = max_entries
+        self._lock = threading.RLock()
         self._entries: OrderedDict[str, str] = OrderedDict()
+        self._cursors: OrderedDict[str, dict[str, object]] = OrderedDict()
         if path and path.exists():
             try:
                 self._entries = OrderedDict(json.loads(path.read_text()))
             except (OSError, ValueError):
                 self._entries = OrderedDict()
+        cursor_path = self._cursor_path
+        if cursor_path and cursor_path.exists():
+            try:
+                self._cursors = OrderedDict(json.loads(cursor_path.read_text()))
+            except (OSError, ValueError):
+                self._cursors = OrderedDict()
+
+    @property
+    def _cursor_path(self) -> Path | None:
+        return self.path.with_name("rotation.json") if self.path else None
 
     @staticmethod
     def key(period: str, filters: Filters) -> str:
@@ -326,23 +346,85 @@ class PickMemo:
         return f"{period}|{digest}"
 
     def get(self, period: str, filters: Filters) -> str | None:
-        return self._entries.get(self.key(period, filters))
+        with self._lock:
+            return self._entries.get(self.key(period, filters))
 
     def put(self, period: str, filters: Filters, group_id: str) -> None:
-        key = self.key(period, filters)
-        if self._entries.get(key) == group_id:
-            return
-        self._entries[key] = group_id
-        while len(self._entries) > self.max_entries:
-            self._entries.popitem(last=False)
-        self._save()
+        with self._lock:
+            key = self.key(period, filters)
+            if self._entries.get(key) == group_id:
+                return
+            self._entries[key] = group_id
+            while len(self._entries) > self.max_entries:
+                self._entries.popitem(last=False)
+            self._write(self.path, self._entries)
 
-    def _save(self) -> None:
-        if not self.path:
+    def next_title(self, stream: str, pool: list[Title], filters: Filters) -> Title | None:
+        """Advance ``stream`` by one title (see the class docstring)."""
+        if not pool:
+            return None
+        with self._lock:
+            state = self._cursors.get(stream) or {}
+            cycle = int(state.get("cycle", 0))  # type: ignore[call-overload]
+            after = state.get("after")
+            last = state.get("last")
+            pending = state.get("pending")
+            in_pool = {t.group_id: t for t in pool}
+
+            if pending in in_pool:
+                # Shown second in a new cycle so the boundary didn't repeat (see below).
+                title = in_pool[pending]  # type: ignore[index]
+                self._save_cursor(stream, cycle, after, title.group_id)
+                return title
+
+            seed = f"{filters.signature}|cycle{cycle}"
+            ranked = sorted(pool, key=lambda t: _rank(seed, t.group_id))
+            remaining = [
+                t for t in ranked if after is None or _rank(seed, t.group_id).hex() > after
+            ]
+            if remaining:
+                title = remaining[0]
+                self._save_cursor(stream, cycle, _rank(seed, title.group_id).hex(), title.group_id)
+                return title
+
+            # Cycle finished: a fresh shuffle. If it would open with the title just shown,
+            # show the second first and the first right after it.
+            cycle += 1
+            seed = f"{filters.signature}|cycle{cycle}"
+            ranked = sorted(pool, key=lambda t: _rank(seed, t.group_id))
+            if ranked[0].group_id == last and len(ranked) > 1:
+                first, second = ranked[0], ranked[1]
+                self._save_cursor(
+                    stream,
+                    cycle,
+                    _rank(seed, second.group_id).hex(),
+                    second.group_id,
+                    pending=first.group_id,
+                )
+                return second
+            title = ranked[0]
+            self._save_cursor(stream, cycle, _rank(seed, title.group_id).hex(), title.group_id)
+            return title
+
+    def _save_cursor(
+        self, stream: str, cycle: int, after: object, last: str, pending: str | None = None
+    ) -> None:
+        state: dict[str, object] = {"cycle": cycle, "after": after, "last": last}
+        if pending:
+            state["pending"] = pending
+        self._cursors[stream] = state
+        self._cursors.move_to_end(stream)
+        while len(self._cursors) > self.max_entries:
+            self._cursors.popitem(last=False)
+        self._write(self._cursor_path, self._cursors)
+
+    @staticmethod
+    def _write(path: Path | None, data: object) -> None:
+        if not path:
             return
-        tmp = self.path.with_suffix(".tmp")
-        tmp.write_text(json.dumps(self._entries))
-        os.replace(tmp, self.path)
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(data))
+        os.replace(tmp, path)
 
 
 def choose(
@@ -360,14 +442,20 @@ def choose(
     if rotation == Rotation.SHUFFLE:
         return shuffle_pick(pool, avoid), len(pool)
 
+    if memo is None:
+        # Read-only (previews of another date, tests): a pure function of the period.
+        return pick(pool, period_index(local_now, rotation, interval), filters), len(pool)
+
     period = f"{rotation.value}:{period_key(local_now, rotation, interval)}"
-    if memo and (remembered := memo.get(period, filters)):
-        title = dataset.by_group.get(remembered)
-        if title is not None and any(t.group_id == remembered for t in pool):
-            return title, len(pool)
-    title = pick(pool, period_index(local_now, rotation, interval), filters)
-    if memo and title is not None:
-        memo.put(period, filters, title.group_id)
+    with memo._lock:  # one advance per period, even with concurrent polls
+        if remembered := memo.get(period, filters):
+            title = dataset.by_group.get(remembered)
+            if title is not None and any(t.group_id == remembered for t in pool):
+                return title, len(pool)
+        stream = f"{rotation.value}:{period_minutes(rotation, interval)}"
+        title = memo.next_title(f"{stream}|{memo.key('', filters)}", pool, filters)
+        if title is not None:
+            memo.put(period, filters, title.group_id)
     return title, len(pool)
 
 
