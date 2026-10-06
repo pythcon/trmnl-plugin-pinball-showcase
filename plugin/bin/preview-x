@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# Render every view as TRMNL X shows it (1872x1404, 16 grays) using the running
+# `make preview` server, and open the PNGs. trmnlp's browser viewer shows TRMNL X
+# cropped because it doesn't apply the device's 1.8x scale; these renders don't.
+#
+set -euo pipefail
+cd "$(dirname "$0")/.."
+VIEWER="${VIEWER:-http://localhost:4567}"
+OUT="_build/x"
+mkdir -p "$OUT"
+
+curl -fsS -o /dev/null "$VIEWER/full" || { echo "Viewer not running at $VIEWER. Start it with 'make preview'." >&2; exit 1; }
+
+QUERY="screen_classes=screen%20screen--4bit%20screen--v2%20screen--lg%20screen--density-2x"
+QUERY+="&model=v2&bit_depth=4&orientation=${ORIENTATION:-landscape}&color_depth=4"
+if [ "${ORIENTATION:-landscape}" = portrait ]; then
+  QUERY="${QUERY/screen--density-2x/screen--density-2x%20screen--portrait}&width=1404&height=1872"
+else
+  QUERY+="&width=1872&height=1404"
+fi
+
+for view in full half_horizontal half_vertical quadrant; do
+  curl -fsS -o "$OUT/$view.png" "$VIEWER/render/$view.png?$QUERY"
+  echo "$OUT/$view.png"
+done
+
+command -v open >/dev/null && open "$OUT"/*.png || true

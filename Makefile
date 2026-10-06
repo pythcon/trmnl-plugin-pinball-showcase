@@ -35,7 +35,7 @@ logs: ## Tail API logs
 	docker compose logs -f api
 
 # ---- Plugin ----------------------------------------------------------------------------
-.PHONY: fixtures preview plugin-lint plugin-test plugin-serve plugin-push
+.PHONY: fixtures preview preview-x plugin-lint plugin-test plugin-serve plugin-push
 fixtures: ## Regenerate plugin test fixtures from the live OPDB export
 	cd api && uv run python scripts/refresh_fixtures.py
 
@@ -51,6 +51,9 @@ preview: ## Local virtual TRMNL at http://localhost:4567, backed by the API on t
 	@until curl -fsS localhost:$${PINBALL_PORT:-8080}/readyz >/dev/null 2>&1; do sleep 1; done
 	@echo "Open http://localhost:4567  (Ctrl-C to stop the viewer; 'make down' stops the API)"
 	cd plugin && PINBALL_API_URL=http://host.docker.internal:$${PINBALL_PORT:-8080} bin/trmnlp serve
+
+preview-x: ## Render all views as TRMNL X shows them (needs 'make preview' running)
+	plugin/bin/preview-x
 
 plugin-serve: ## Live preview at http://localhost:4567 (polls the hosted API)
 	cd plugin && bin/trmnlp serve

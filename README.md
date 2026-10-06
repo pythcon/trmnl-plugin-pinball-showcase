@@ -133,8 +133,9 @@ make check           # what CI runs
 Plugin tests use real API responses saved in `plugin/tests/fixtures`, so they run offline.
 
 The local viewer is accurate for OG-size screens. For TRMNL X it shows a cropped corner:
-TRMNL lays X out at 1040x780 and renders it at 1.8x, which the viewer doesn't reproduce. Check
-X layouts with `make plugin-test` (see `plugin/report/index.html`) or TRMNL's own preview.
+TRMNL renders X at 1.8x scale, which the viewer's browser frame doesn't reproduce. With
+`make preview` running, `make preview-x` renders all four views at X's real resolution and
+opens them (`ORIENTATION=portrait make preview-x` for portrait).
 `trmnlp` renders grayscale only; check true color output on a B/W/R/Y device or with the
 TRMNL MCP screenshot tool (`device_models: ["og_bwry"]`).
 
