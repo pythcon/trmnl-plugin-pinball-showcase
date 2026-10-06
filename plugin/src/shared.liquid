@@ -140,7 +140,7 @@
 
 {%- comment -%}
   Borrowed art: when a photo on screen belongs to another edition (this one has none of
-  its own), say whose it is, e.g. "Art: Standard". One note per layout slot.
+  its own), say whose it is: "Art from Standard". One note per layout slot.
 {%- endcomment -%}
 {%- assign art_full_from = '' -%}{%- for t in art_full limit: art_full_count -%}{%- if images[t].borrowed and art_full_from == '' -%}{%- assign art_full_from = images[t].edition | default: 'another edition' -%}{%- endif -%}{%- endfor -%}
 {%- assign art_hh_from = '' -%}{%- for t in art_hh limit: art_hh_count -%}{%- if images[t].borrowed and art_hh_from == '' -%}{%- assign art_hh_from = images[t].edition | default: 'another edition' -%}{%- endif -%}{%- endfor -%}
