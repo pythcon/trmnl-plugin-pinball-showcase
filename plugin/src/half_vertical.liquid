@@ -8,7 +8,7 @@
 {%- elsif mode == 'spec' or art_hv_count == 0 -%}
 <div class="layout layout--col layout--top layout--left gap">
   <div class="flex flex--col flex--left w--full">
-    <span class="title title--xlarge lg:title--xxlarge" data-clamp="2">{{ machine.name }}</span>
+    <span class="title title--xlarge lg:title--xxlarge text--bold" data-clamp="2">{{ machine.name }}</span>
     <div class="flex flex--row flex--wrap flex--left gap--small w--full">
       <span class="label label--large">{{ machine.manufacturer }}</span>
       <span class="label label--large {{ accent_text }}">{{ machine.release_label | default: machine.year }}</span>
@@ -20,12 +20,15 @@
     {%- for tag in machine.tags limit: 3 -%}<span class="label label--outline">{{ tag }}</span>{%- endfor -%}
   </div>
   {%- endif -%}
+  {%- if show_editions -%}
+  <span class="label w--full"><span>Editions: {{ edition_line }}</span></span>
+  {%- endif -%}
   {%- if show_credits and credits.size > 0 -%}
   <div class="divider"></div>
   {%- for credit in credits limit: 6 -%}
   <div class="flex flex--col flex--left w--full {% if forloop.index > 4 %}hidden lg:flex{% endif %}">
     <span class="label {{ muted }}">{{ credit.role }}</span>
-    <span class="label label--large w--full" data-clamp="1">{{ credit.names_short | default: credit.names }}</span>
+    <span class="label label--large w--full" data-clamp="1">{{ credit.names }}</span>
   </div>
   {%- endfor -%}
   {%- endif -%}
@@ -43,7 +46,7 @@
 {%- endcapture -%}
 {%- capture info_block -%}
   <div class="flex flex--col flex--left w--full">
-    <span class="title title--large lg:title--xlarge" data-clamp="2">{{ machine.name }}</span>
+    <span class="title title--large lg:title--xlarge text--bold" data-clamp="2">{{ machine.name }}</span>
     <div class="flex flex--row flex--wrap flex--left gap--small w--full">
       <span class="label label--large">{{ machine.manufacturer }}</span>
       <span class="label label--large {{ accent_text }}">{{ machine.year }}</span>
@@ -51,7 +54,7 @@
     </div>
     {%- if mode != 'gallery' and show_credits and credits.size > 0 -%}
     {%- for credit in credits limit: 2 -%}
-    <span class="w--full label {{ muted }}" data-clamp="1">{{ credit.role }}: {{ credit.names_short | default: credit.names }}</span>
+    <span class="w--full label {{ muted }}" data-clamp="1">{{ credit.role }}: {{ credit.names }}</span>
     {%- endfor -%}
     {%- endif -%}
   </div>

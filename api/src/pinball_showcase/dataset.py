@@ -32,6 +32,12 @@ _EDITION_RANK = {
 _PAREN_SUFFIX = re.compile(r"\s*\(([^)]*)\)\s*$")
 
 
+def _edition_label(text: str) -> str:
+    """ "Remake Special Edition" -> "Remake Special"; "Edition" alone stays."""
+    trimmed = re.sub(r"\s+edition$", "", text.strip(), flags=re.IGNORECASE)
+    return trimmed or text.strip()
+
+
 @dataclass(frozen=True, slots=True)
 class Title:
     group_id: str
@@ -49,6 +55,31 @@ class Title:
     @property
     def manufacturer(self) -> str | None:
         return self.representative.manufacturer
+
+    def edition_list(self, shown: Machine) -> list[dict[str, Any]]:
+        """Every version of the title, OPDB editions first, then alias-only versions.
+
+        Labels come from the parenthesised suffix ("Pro", "Premium/LE"); an edition
+        without one is the "Standard" model.
+        """
+        entries: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        for machine in self.machines:
+            match = _PAREN_SUFFIX.search(machine.name)
+            label = _edition_label(match.group(1)) if match else "Standard"
+            if label in seen:
+                continue
+            seen.add(label)
+            entries.append(
+                {"label": label, "id": machine.opdb_id, "shown": machine.opdb_id == shown.opdb_id}
+            )
+        for alias in self.aliases:
+            match = _PAREN_SUFFIX.search(alias)
+            label = _edition_label(match.group(1)) if match else None
+            if label and label not in seen:
+                seen.add(label)
+                entries.append({"label": label, "id": None, "shown": False})
+        return entries
 
     @property
     def editions(self) -> list[str]:
@@ -86,6 +117,17 @@ class Dataset:
         if len(parts) >= 2 and "-".join(parts[:2]) in self.by_machine:
             return self.by_machine["-".join(parts[:2])]
         return self.by_group.get(parts[0])
+
+    def lookup_edition(self, opdb_id: str) -> Machine | None:
+        """The exact edition for a machine (or alias) id; None for a bare group id."""
+        parts = opdb_id.strip().split("-")
+        if len(parts) < 2:
+            return None
+        machine_id = "-".join(parts[:2])
+        title = self.by_machine.get(machine_id)
+        if title is None:
+            return None
+        return next((m for m in title.machines if m.opdb_id == machine_id), None)
 
     def manufacturer_position(self, title: Title) -> tuple[int, int] | None:
         """1-based position of a title in its manufacturer's catalogue, and the total."""

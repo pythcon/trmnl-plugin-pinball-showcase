@@ -45,16 +45,21 @@
       "orientation": "landscape"
     }
   },
+  "editions": [
+    {
+      "label": "Standard",
+      "id": "GrleW-MYeod",
+      "shown": true
+    }
+  ],
   "credits": [
     {
       "role": "Design",
-      "names": "Gary Gayton",
-      "names_short": "Gary Gayton"
+      "names": "Gary Gayton"
     },
     {
       "role": "Art",
-      "names": "Kevin O'Connor",
-      "names_short": "Kevin O'Connor"
+      "names": "Kevin O'Connor"
     }
   ],
   "facts": [
@@ -116,12 +121,12 @@
   },
   "featured": {
     "label": "Pinball of the Day",
-    "updated_label": "Oct 5, 2026 11:41 PM EDT",
+    "updated_label": "Oct 6, 2026 12:31 AM EDT",
     "timezone": "EDT",
-    "date": "2026-10-05",
-    "date_label": "Monday, October 5",
-    "date_short": "Oct 5",
-    "period": "2026-10-05",
+    "date": "2026-10-06",
+    "date_label": "Tuesday, October 6",
+    "date_short": "Oct 6",
+    "period": "2026-10-06",
     "rotation": "daily",
     "pool_size": 1,
     "filter_label": null

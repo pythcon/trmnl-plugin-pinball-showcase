@@ -32,7 +32,7 @@ def test_machine_page(client) -> None:
     html = r.text
     assert "<h1>Medieval Madness</h1>" in html
     assert "Brian Eddy" in html
-    assert "Music &amp; Sound" in html
+    assert "<dt>Music</dt>" in html and "<dt>Sound</dt>" in html
     assert "Editions" in html  # original + remake
     assert "https://opdb.org/search?q=GAAAA-M0001" in html
     assert "https://www.ipdb.org/machine.cgi?id=1" in html
@@ -102,3 +102,18 @@ def test_aliases_and_resources(settings, export) -> None:
     assert "https://pinballprimer.github.io/afm.html" in html
     # Raw GitHub links are turned into readable GitHub pages.
     assert "https://github.com/someone/notes/blob/main/machines/AFM.md" in html
+
+
+def test_edition_url_shows_that_edition(client) -> None:
+    html = client.get("/m/GBBBB-M0001").text
+    # The Premium/LE row is the one marked as shown, and the Pro row links to its page.
+    assert 'Godzilla (Premium/LE) <span class="badge">Shown</span>' in html
+    assert '<a href="/m/GBBBB-M0002">Godzilla (Pro)</a>' in html
+    # Edition flags live in the Editions table, not the Features panel.
+    assert '<p class="feature-group">Editions</p>' not in html
+
+
+def test_alias_only_versions_are_listed(client) -> None:
+    html = client.get("/m/GDDDD").text
+    assert "Attack from Mars (Special)" in html
+    assert "(name only in OPDB)" in html

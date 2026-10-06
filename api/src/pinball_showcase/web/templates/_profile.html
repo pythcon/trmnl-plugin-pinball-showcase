@@ -130,7 +130,7 @@
         <tbody>
           {% for e in m.editions %}
           <tr{% if e.current %} class="is-current"{% endif %}>
-            <td data-label="Machine">{{ e.name }}{% if e.current %} <span class="badge">Shown</span>{% endif %}</td>
+            <td data-label="Machine">{% if e.url and not e.current %}<a href="{{ e.url }}">{{ e.name }}</a>{% else %}{{ e.name }}{% endif %}{% if e.current %} <span class="badge">Shown</span>{% endif %}{% if e.alias %} <span class="muted">(name only in OPDB)</span>{% endif %}</td>
             <td data-label="Released">{{ e.released }}</td>
             <td data-label="Edition">{{ e.features }}</td>
             <td data-label="Display">{{ e.display }}</td>

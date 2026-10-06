@@ -17,9 +17,7 @@
     "era_label": "Modern LCD era",
     "headline": "Jersey Jack Pinball \u00b7 2019",
     "summary": "Solid state \u00b7 LCD \u00b7 4 players",
-    "tags": [
-      "LE"
-    ],
+    "tags": [],
     "ipdb_id": 6647,
     "anniversary": false
   },
@@ -41,26 +39,39 @@
       "orientation": "landscape"
     }
   },
+  "editions": [
+    {
+      "label": "LE",
+      "id": "GYWBZ-MW9B0",
+      "shown": false
+    },
+    {
+      "label": "Standard",
+      "id": "GYWBZ-MkPrr",
+      "shown": true
+    },
+    {
+      "label": "CE",
+      "id": null,
+      "shown": false
+    }
+  ],
   "credits": [
     {
       "role": "Design",
-      "names": "Pat Lawlor",
-      "names_short": "Pat Lawlor"
+      "names": "Pat Lawlor"
     },
     {
       "role": "Art",
-      "names": "John Youssi",
-      "names_short": "John Youssi"
+      "names": "John Youssi"
     },
     {
       "role": "Code",
-      "names": "Joe Katz, Ted Estes, JT Harkey, Keith P. Johnson, Bill Grupp, Duncan Brown",
-      "names_short": "Joe Katz +5"
+      "names": "Joe Katz, Ted Estes, JT Harkey, Keith P. Johnson, Bill Grupp, Duncan Brown"
     },
     {
       "role": "Animation",
-      "names": "Jean-Paul de Win",
-      "names_short": "Jean-Paul de Win"
+      "names": "Jean-Paul de Win"
     }
   ],
   "facts": [
@@ -122,7 +133,7 @@
   },
   "featured": {
     "label": "Pinball of the Day",
-    "updated_label": "Oct 5, 2026 3:41 AM UTC",
+    "updated_label": "Oct 5, 2026 4:31 AM UTC",
     "timezone": "UTC",
     "date": "2026-10-05",
     "date_label": "Monday, October 5",

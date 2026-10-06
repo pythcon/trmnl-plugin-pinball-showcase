@@ -3,15 +3,20 @@
   The name and maker sit in a full-width header so they never truncate; art and details
   share the space below. The title bar shows when the data was fetched (viewer's zone).
 {%- endcomment -%}
-{%- assign long_name = false -%}{%- if machine.name.size > 40 -%}{%- assign long_name = true -%}{%- endif -%}
+{%- assign long_name = false -%}{%- if machine.name.size > 38 -%}{%- assign long_name = true -%}{%- endif -%}
 {%- capture header -%}
-  <div class="flex flex--col flex--left w--full">
-    <span class="title title--xlarge lg:title--xxlarge w--full" data-clamp="2">{{ machine.name }}</span>
-    <div class="flex flex--row flex--wrap flex--left gap--small w--full">
-      <span class="label label--large">{{ machine.manufacturer_full | default: machine.manufacturer }}</span>
-      <span class="label label--large {{ muted }}">·</span>
-      <span class="label label--large {{ accent_text }}">{{ machine.release_label | default: machine.year }}</span>
+  <div class="flex flex--row flex--between flex--top gap w--full">
+    <div class="flex flex--col flex--left w--full">
+      <span class="title title--xlarge lg:title--xxlarge text--bold w--full" data-clamp="2">{{ machine.name }}</span>
+      <div class="flex flex--row flex--wrap flex--left gap--small w--full">
+        <span class="label label--large">{{ machine.manufacturer_full | default: machine.manufacturer }}</span>
+        <span class="label label--large {{ muted }}">·</span>
+        <span class="label label--large {{ accent_text }}">{{ machine.release_label | default: machine.year }}</span>
+      </div>
     </div>
+    {%- if show_qr -%}
+    <div class="w--[72px] h--[72px] lg:w--[120px] lg:h--[120px] no-shrink">{{ qr.url | qr_code }}</div>
+    {%- endif -%}
   </div>
 {%- endcapture -%}
 
@@ -29,12 +34,7 @@
   <div class="w--full {% if long_name %}h--[62cqh] lg:h--[68cqh]{% else %}h--[70cqh] lg:h--[76cqh]{% endif %}">
     {% render "art_grid", images: images, types: gallery_types, count: gallery_count, fit: fit_class, medium: false, name: machine.name %}
   </div>
-  <div class="flex flex--row flex--between flex--center-y w--full gap">
-    {{ header }}
-    {%- if show_qr -%}
-    <div class="w--[72px] h--[72px] lg:w--[112px] lg:h--[112px] no-shrink">{{ qr.url | qr_code }}</div>
-    {%- endif -%}
-  </div>
+  {{ header }}
 </div>
 
 {%- elsif mode == 'spec' or art_full_count == 0 -%}
@@ -52,19 +52,25 @@
         <div class="flex flex--col flex--left w--full"><span class="value value--small lg:value--medium" data-fit-value="true">{{ machine.display_label | default: '-' }}</span><span class="label {{ muted }}">Display</span></div>
         <div class="flex flex--col flex--left w--full"><span class="value value--small lg:value--medium">{{ machine.players | default: '-' }}</span><span class="label {{ muted }}">Players</span></div>
       </div>
+      {%- if show_editions -%}
+      <div class="flex flex--row flex--left flex--top gap--small w--full">
+        <span class="label {{ muted }} no-shrink">Editions</span>
+        <span class="label w--full"><span>{{ edition_line }}</span></span>
+      </div>
+      {%- endif -%}
       {%- if show_credits and credits.size > 0 -%}
       <div class="divider"></div>
       <div class="grid grid--cols-2 gap--small w--full">
         {%- for credit in credits limit: 8 -%}
         <div class="flex flex--col flex--left w--full {% if forloop.index > 4 %}hidden lg:flex{% endif %}">
           <span class="label {{ muted }}">{{ credit.role }}</span>
-          <span class="label label--large w--full">{{ credit.names_short | default: credit.names }}</span>
+          <span class="label label--large w--full">{{ credit.names }}</span>
         </div>
         {%- endfor -%}
       </div>
       {%- endif -%}
       {%- if show_fun_fact and fun_fact -%}
-      <div class="{{ accent_fill }} p--2 w--full"><span class="description description--large">{{ fun_fact }}</span></div>
+      <div class="{{ accent_fill }} p--2 w--full {% if credits.size > 4 %}hidden lg:block{% endif %}"><span class="description description--large">{{ fun_fact }}</span></div>
       {%- endif -%}
     </div>
     <div class="col--span-4 flex flex--col flex--left gap">
@@ -80,9 +86,6 @@
       </div>
       {%- endfor -%}
       {%- endif -%}
-      {%- if show_qr -%}
-      <div class="w--[80px] h--[80px] lg:w--[128px] lg:h--[128px] no-shrink">{{ qr.url | qr_code }}</div>
-      {%- endif -%}
     </div>
   </div>
 </div>
@@ -93,16 +96,18 @@
 {%- if long_name -%}{%- assign body_height = 'h--[64cqh] lg:h--[70cqh] portrait:h--[80cqh]' -%}
 {%- else -%}{%- assign body_height = 'h--[74cqh] lg:h--[78cqh] portrait:h--[84cqh]' -%}{%- endif -%}
 {%- comment -%}
-  Detail rows (credits + facts) that fit beside the art on OG: 5, one fewer with tags or a
-  two-line name. Credits come first (up to 4); facts fill the rest. TRMNL X shows 6 + 3.
+  OG has room for about 9 one-line detail rows beside the art (one fewer under a two-line
+  name). Credits come first and are never shortened: a role whose names run past ~26
+  characters wraps (one row per 26). The fun fact (2 rows) gives way to credits; facts
+  fill whatever is left. TRMNL X shows everything.
 {%- endcomment -%}
-{%- assign row_budget = 5 -%}
-{%- if show_tags and machine.tags.size > 0 -%}{%- assign row_budget = row_budget | minus: 1 -%}{%- endif -%}
+{%- assign row_budget = 9 -%}
 {%- if long_name -%}{%- assign row_budget = row_budget | minus: 1 -%}{%- endif -%}
-{%- assign credit_rows = 0 -%}{%- if show_credits -%}{%- assign credit_rows = credits.size -%}{%- endif -%}
-{%- if credit_rows > 4 -%}{%- assign credit_rows = 4 -%}{%- endif -%}
-{%- if credit_rows > row_budget -%}{%- assign credit_rows = row_budget -%}{%- endif -%}
-{%- assign fact_rows = row_budget | minus: credit_rows -%}
+{%- assign credit_cost = 0 -%}
+{%- if show_editions -%}{%- assign credit_cost = edition_rows -%}{%- endif -%}
+{%- if show_credits -%}{%- for credit in credits -%}{%- assign cost = credit.names.size | plus: 25 | divided_by: 26 -%}{%- assign credit_cost = credit_cost | plus: cost -%}{%- endfor -%}{%- endif -%}
+{%- assign fun_on_og = false -%}
+{%- if show_fun_fact and fun_fact -%}{%- assign with_fun = credit_cost | plus: 2 -%}{%- if with_fun <= row_budget -%}{%- assign fun_on_og = true -%}{%- assign row_budget = row_budget | minus: 2 -%}{%- endif -%}{%- endif -%}
 {%- capture art_block -%}
     <div class="{{ art_span }} h--full">
       {% render "art_grid", images: images, types: art_full, count: art_full_count, fit: fit_class, medium: false, name: machine.name %}
@@ -110,37 +115,42 @@
 {%- endcapture -%}
 {%- capture info_block -%}
     <div class="{{ info_span }} flex flex--col flex--left gap--small h--full">
-      <span class="label {{ muted }} w--full" data-clamp="1">{{ machine.summary }}</span>
-      {%- if show_tags and machine.tags.size > 0 -%}
-      <div class="flex flex--row flex--wrap flex--left gap--small w--full">
-        {%- for tag in machine.tags limit: 4 -%}<span class="label label--outline">{{ tag }}</span>{%- endfor -%}
+      <div class="flex flex--row flex--wrap flex--left flex--center-y gap--small w--full">
+        <span class="label {{ muted }}">{{ machine.summary }}</span>
+        {%- if show_tags -%}{%- for tag in machine.tags limit: 3 -%}<span class="label label--outline">{{ tag }}</span>{%- endfor -%}{%- endif -%}
+      </div>
+      <div class="divider"></div>
+      {%- assign used = 0 -%}
+      {%- if show_editions -%}
+      {%- assign used = edition_rows -%}
+      <div class="flex flex--row flex--left flex--top gap--small w--full">
+        <span class="label {{ muted }} w--[96px] lg:w--[128px] no-shrink">Editions</span>
+        <span class="label w--full"><span>{{ edition_line }}</span></span>
       </div>
       {%- endif -%}
-      <div class="divider"></div>
-      {%- if show_credits and credits.size > 0 -%}
-      {%- for credit in credits limit: 6 -%}
-      <div class="flex flex--row flex--left gap--small w--full {% if forloop.index > credit_rows %}hidden lg:flex{% endif %}">
+      {%- if show_credits -%}
+      {%- for credit in credits -%}
+      {%- assign cost = credit.names.size | plus: 25 | divided_by: 26 -%}
+      {%- assign used = used | plus: cost -%}
+      <div class="flex flex--row flex--left flex--top gap--small w--full {% if used > row_budget %}hidden lg:flex{% endif %}">
         <span class="label {{ muted }} w--[96px] lg:w--[128px] no-shrink">{{ credit.role }}</span>
-        <span class="label w--full">{{ credit.names_short | default: credit.names }}</span>
+        <span class="label w--full">{{ credit.names }}</span>
       </div>
       {%- endfor -%}
       {%- endif -%}
-      {%- if show_facts and facts.size > 0 -%}
+      {%- if show_facts -%}
       {%- for fact in facts limit: 3 -%}
-      <div class="flex flex--row flex--left gap--small w--full {% if forloop.index > fact_rows %}hidden lg:flex{% endif %}">
+      {%- assign used = used | plus: 1 -%}
+      <div class="flex flex--row flex--left gap--small w--full {% if used > row_budget %}hidden lg:flex{% endif %}">
         <span class="label {{ muted }} w--[96px] lg:w--[128px] no-shrink">{{ fact.label }}</span>
         <span class="label w--full">{{ fact.value }}</span>
       </div>
       {%- endfor -%}
       {%- endif -%}
-      <div class="flex flex--row flex--bottom gap w--full stretch-y">
-        {%- if show_fun_fact and fun_fact -%}
-        <div class="{{ accent_fill }} p--2 w--full"><span class="w--full description" data-clamp="2" data-clamp-lg="3">{{ fun_fact }}</span></div>
-        {%- endif -%}
-        {%- if show_qr -%}
-        <div class="w--[72px] h--[72px] lg:w--[120px] lg:h--[120px] no-shrink">{{ qr.url | qr_code }}</div>
-        {%- endif -%}
-      </div>
+      {%- if show_fun_fact and fun_fact -%}
+      <div class="stretch-y"></div>
+      <div class="{{ accent_fill }} p--2 w--full {% unless fun_on_og %}hidden lg:block{% endunless %}"><span class="w--full description" data-clamp="2" data-clamp-lg="3">{{ fun_fact }}</span></div>
+      {%- endif -%}
     </div>
 {%- endcapture -%}
 <div class="layout layout--col layout--top layout--left gap">

@@ -115,7 +115,17 @@
 {%- comment -%} Where the artwork sits: first (left / top) or second (right / bottom). {%- endcomment -%}
 {%- assign art_second = false -%}{%- if cfg.art_position == 'right' -%}{%- assign art_second = true -%}{%- endif -%}
 
-{%- assign instance_title = trmnl.plugin_settings.instance_name | default: featured.label | default: 'Pinball Showcase' -%}
+{%- comment -%}
+  Editions line, e.g. "Standard · CE · LE" with the edition on screen in bold. Shown only
+  when a title has more than one version. `edition_chars` estimates its width.
+{%- endcomment -%}
+{%- assign show_editions = false -%}{%- if editions.size > 1 -%}{%- assign show_editions = true -%}{%- endif -%}
+{%- comment -%} Inline content: wrap it in <span class="label"><span>...</span></span>, because .label is inline-flex. {%- endcomment -%}
+{%- capture edition_line -%}{%- for e in editions -%}{%- if e.shown -%}<span class="text--bold">{{ e.label }}</span>{%- else -%}{{ e.label }}{%- endif -%}{%- unless forloop.last %} · {% endunless -%}{%- endfor -%}{%- endcapture -%}
+{%- assign edition_chars = editions | map: 'label' | join: ' · ' | size -%}
+{%- assign edition_rows = edition_chars | plus: 25 | divided_by: 26 -%}
+
+{%- assign instance_title = trmnl.plugin_settings.instance_name | default: 'Pinball Showcase' -%}
 
 {%- comment -%}
   Photo grid: up to three photos side by side in a 12-column grid. The backglass, which

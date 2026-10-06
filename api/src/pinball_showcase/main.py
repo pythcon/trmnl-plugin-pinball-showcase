@@ -111,8 +111,10 @@ def create_app(settings: Settings | None = None, store: DatasetStore | None = No
             else period_key(local_now, rotation, interval)
         )
 
+        edition = None
         if pinned := blank_to_none(params.machine):
             title = dataset.lookup(pinned)
+            edition = dataset.lookup_edition(pinned)
             pool_size = 1
             if title is None:
                 return cached(
@@ -145,6 +147,7 @@ def create_app(settings: Settings | None = None, store: DatasetStore | None = No
             pool_size=pool_size,
             period=period,
             site_url=site_url(request),
+            edition=edition,
         )
         if rotation == Rotation.SHUFFLE:
             # Every request is a new draw; nothing in between may cache it.

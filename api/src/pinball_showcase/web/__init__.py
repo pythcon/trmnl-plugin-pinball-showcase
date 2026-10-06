@@ -18,6 +18,7 @@ from fastapi.templating import Jinja2Templates
 from .. import __version__
 from ..config import Settings
 from ..dataset import Dataset, Title
+from ..models import Machine
 from ..presenter import (
     DISPLAY_LABELS,
     build_showcase,
@@ -131,7 +132,9 @@ def build_router(
                 {"page_title": "Machine not found", "opdb_id": opdb_id},
                 status=404,
             )
-        view = machine_view(dataset, title, local_now(tz), base_url(request))
+        view = machine_view(
+            dataset, title, local_now(tz), base_url(request), dataset.lookup_edition(opdb_id)
+        )
         return render(
             request,
             "machine.html",
@@ -220,8 +223,18 @@ def _resources(title: Title) -> list[dict[str, str]]:
     return links
 
 
-def machine_view(dataset: Dataset, title: Title, now: datetime, site_url: str) -> dict[str, Any]:
-    """Everything OPDB knows about a title, organised for the profile page."""
+def machine_view(
+    dataset: Dataset,
+    title: Title,
+    now: datetime,
+    site_url: str,
+    edition: Machine | None = None,
+) -> dict[str, Any]:
+    """Everything OPDB knows about a title, organised for the profile page.
+
+    `edition` (from an edition id in the URL) is the version shown; otherwise the
+    title's best one.
+    """
     base = build_showcase(
         dataset,
         title,
@@ -231,9 +244,10 @@ def machine_view(dataset: Dataset, title: Title, now: datetime, site_url: str) -
         pool_size=1,
         period=now.date().isoformat(),
         site_url=site_url,
+        edition=edition,
     )
     m = base["machine"]
-    rep = title.representative
+    rep = edition or title.representative
     multi = len(title.machines) > 1
 
     # Every photo across every edition, representative first, primary photos first.
@@ -261,22 +275,31 @@ def machine_view(dataset: Dataset, title: Title, now: datetime, site_url: str) -
     features: dict[str, list[str]] = {}
     for machine in title.machines:
         for name, group in machine.features:
+            if group == "edition":  # covered by the Editions section
+                continue
             names = features.setdefault(FEATURE_GROUPS.get(group, "Other"), [])
             if name not in names:
                 names.append(name)
 
-    editions = [
-        {
-            "name": machine.name,
-            "released": _release(machine),
-            "display": DISPLAY_LABELS.get(machine.display or "", "—"),
-            "players": machine.players or "—",
-            "features": ", ".join(machine.edition_features) or "Standard",
-            "photos": len(machine.images),
-            "current": machine is rep,
-        }
-        for machine in title.machines
-    ]
+    # Same labels as the device ("Standard", "CE", "LE"), plus versions OPDB only lists
+    # as alternate names. OPDB's own edition flags are inconsistent, so they're not shown.
+    by_id = {machine.opdb_id: machine for machine in title.machines}
+    editions = []
+    for entry in title.edition_list(rep):
+        machine = by_id.get(entry["id"]) if entry["id"] else None
+        editions.append(
+            {
+                "name": machine.name if machine else f"{title.name} ({entry['label']})",
+                "url": f"/m/{machine.opdb_id}" if machine else None,
+                "released": _release(machine) if machine else "—",
+                "display": DISPLAY_LABELS.get(machine.display or "", "—") if machine else "—",
+                "players": (machine.players or "—") if machine else "—",
+                "features": entry["label"],
+                "photos": len(machine.images) if machine else "—",
+                "current": entry["shown"],
+                "alias": machine is None,
+            }
+        )
 
     position = dataset.manufacturer_position(title)
     glance = [

@@ -83,9 +83,10 @@ def _has_exact_date(machine: Machine) -> bool:
     return d is not None and d.day != 1
 
 
-def _credits(title: Title) -> list[dict[str, str]]:
-    # Fall back to a sibling edition when the representative has no people listed.
-    machine = next((m for m in [title.representative, *title.machines] if m.people), None)
+def _credits(title: Title, rep: Machine | None = None) -> list[dict[str, str]]:
+    # Fall back to a sibling edition when the shown one has no people listed.
+    shown = rep or title.representative
+    machine = next((m for m in [shown, title.representative, *title.machines] if m.people), None)
     if machine is None:
         return []
     by_role: dict[str, list[str]] = {}
@@ -94,19 +95,14 @@ def _credits(title: Title) -> list[dict[str, str]]:
         if person.name not in names:
             names.append(person.name)
     ordered = sorted(by_role, key=lambda r: ROLE_ORDER.index(r) if r in ROLE_ORDER else 99)
-    # Merge roles credited to the same people, e.g. "Music & Sound: Jerry Thompson".
-    credits: list[dict[str, str]] = []
-    for role in ordered:
-        label = ROLE_LABELS.get(role, role.replace("_", " ").capitalize())
-        names = ", ".join(by_role[role])
-        existing = next((c for c in credits if c["names"] == names), None)
-        if existing and label not in existing["role"]:
-            existing["role"] = f"{existing['role']} & {label}"
-        elif not existing:
-            people = by_role[role]
-            short = people[0] if len(people) == 1 else f"{people[0]} +{len(people) - 1}"
-            credits.append({"role": label, "names": names, "names_short": short})
-    return credits
+    # One row per role, every name listed; a person with several roles appears on each.
+    return [
+        {
+            "role": ROLE_LABELS.get(role, role.replace("_", " ").capitalize()),
+            "names": ", ".join(by_role[role]),
+        }
+        for role in ordered
+    ]
 
 
 def updated_label(local_now: datetime) -> str:
@@ -156,13 +152,16 @@ def build_showcase(
     pool_size: int,
     period: str,
     site_url: str,
+    edition: Machine | None = None,
 ) -> dict[str, Any]:
-    rep = title.representative
+    # A pinned edition id shows that exact edition; otherwise the title's best one.
+    rep = edition or title.representative
     page_url = machine_page_url(site_url, rep)
     today = local_now.date()
     era = title_era(title)
 
-    tags = [*title.editions]
+    # Edition names live in `editions`; tags are the shown machine's notable features.
+    tags: list[str] = []
     for name, _group in rep.features:
         if name in TAG_FEATURES and name not in tags:
             tags.append(name)
@@ -228,14 +227,13 @@ def build_showcase(
             "anniversary": anniversary,
         },
         "images": {
-            "backglass": _image_payload(rep.image("backglass")),
-            "playfield": _image_payload(_first_image(title, "playfield")),
-            "cabinet": _image_payload(_first_image(title, "cabinet")),
-            "any": _image_payload(
-                rep.image("backglass") or (rep.images[0] if rep.images else None)
-            ),
+            "backglass": _image_payload(_first_image(title, "backglass", rep)),
+            "playfield": _image_payload(_first_image(title, "playfield", rep)),
+            "cabinet": _image_payload(_first_image(title, "cabinet", rep)),
+            "any": _image_payload(_any_image(title, rep)),
         },
-        "credits": _credits(title),
+        "editions": title.edition_list(rep),
+        "credits": _credits(title, rep),
         "facts": facts,
         "fun_fact": fun_fact,
         "same_year": [
@@ -267,10 +265,18 @@ def build_showcase(
     }
 
 
-def _first_image(title: Title, kind: str) -> Image | None:
-    for machine in (title.representative, *title.machines):
+def _first_image(title: Title, kind: str, rep: Machine) -> Image | None:
+    """The shown edition's photo, else a sibling edition's (CE/LE often have none)."""
+    for machine in (rep, title.representative, *title.machines):
         if image := machine.image(kind):
             return image
+    return None
+
+
+def _any_image(title: Title, rep: Machine) -> Image | None:
+    for machine in (rep, title.representative, *title.machines):
+        if machine.images:
+            return machine.image("backglass") or machine.images[0]
     return None
 
 

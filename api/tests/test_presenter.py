@@ -35,12 +35,14 @@ def test_payload_shape(dataset: Dataset) -> None:
     assert {"label": "Released", "value": "29 years ago"} in p["facts"]
 
 
-def test_credits_merge_shared_roles(dataset: Dataset) -> None:
+def test_credits_one_row_per_role(dataset: Dataset) -> None:
+    # Dan Forden is credited for music and sound: he appears on both rows.
     credits = render(dataset, "GAAAA", datetime(2026, 10, 5))["credits"]
     assert credits == [
-        {"role": "Design", "names": "Brian Eddy", "names_short": "Brian Eddy"},
-        {"role": "Art", "names": "John Youssi", "names_short": "John Youssi"},
-        {"role": "Music & Sound", "names": "Dan Forden", "names_short": "Dan Forden"},
+        {"role": "Design", "names": "Brian Eddy"},
+        {"role": "Art", "names": "John Youssi"},
+        {"role": "Music", "names": "Dan Forden"},
+        {"role": "Sound", "names": "Dan Forden"},
     ]
 
 
@@ -77,5 +79,21 @@ def test_year_only_dates(dataset: Dataset) -> None:
 
 def test_edition_tags_and_same_year(dataset: Dataset) -> None:
     p = render(dataset, "GBBBB", datetime(2026, 10, 5))
-    assert set(p["machine"]["tags"]) == {"Pro", "Premium/LE"}
+    assert [(e["label"], e["shown"]) for e in p["editions"]] == [
+        ("Premium/LE", False),
+        ("Pro", True),
+    ]
     assert p["same_year_count"] == 0
+
+
+def test_editions_list_every_version_and_mark_the_shown_one(dataset: Dataset) -> None:
+    payload = render(dataset, "GAAAA", datetime(2026, 10, 5))
+    assert payload["editions"] == [
+        {"label": "Standard", "id": "GAAAA-M0001", "shown": True},
+        {"label": "Remake LE", "id": "GAAAA-M0002", "shown": False},
+    ]
+    # Alias-only versions are listed too.
+    labels = [e["label"] for e in render(dataset, "GDDDD", datetime(2026, 10, 5))["editions"]]
+    assert labels == ["Standard", "Special"]
+    # Edition names are no longer mixed into the feature tags.
+    assert "Remake LE" not in payload["machine"]["tags"]

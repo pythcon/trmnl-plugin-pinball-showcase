@@ -133,3 +133,14 @@ def test_refresh_rotation_accepts_interval(client) -> None:
     body = client.get("/api/v1/showcase", params={"rotation": "refresh", "interval": "15"}).json()
     assert body["featured"]["rotation"] == "refresh"
     assert body["featured"]["period"].startswith("15m-")
+
+
+def test_pinning_an_edition_shows_that_edition(client) -> None:
+    body = client.get("/api/v1/showcase", params={"machine": "GBBBB-M0001"}).json()
+    assert body["machine"]["id"] == "GBBBB-M0001"
+    assert [e["label"] for e in body["editions"] if e["shown"]] == ["Premium/LE"]
+    # That edition has no photos, so the art comes from its sibling.
+    assert body["images"]["any"] is not None
+    # A bare group id still picks the best edition.
+    group = client.get("/api/v1/showcase", params={"machine": "GBBBB"}).json()
+    assert group["machine"]["id"] == "GBBBB-M0002"

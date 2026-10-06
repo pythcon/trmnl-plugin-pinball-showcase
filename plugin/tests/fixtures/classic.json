@@ -17,13 +17,7 @@
     "era_label": "Dot matrix era",
     "headline": "Williams \u00b7 1997",
     "summary": "Solid state \u00b7 Dot matrix \u00b7 4 players",
-    "tags": [
-      "Remake Royal Edition",
-      "Remake LE",
-      "Remake Special Edition",
-      "Remake",
-      "Remake Merlin Edition"
-    ],
+    "tags": [],
     "ipdb_id": 4032,
     "anniversary": false
   },
@@ -51,36 +45,66 @@
       "orientation": "landscape"
     }
   },
+  "editions": [
+    {
+      "label": "Standard",
+      "id": "G5pe4-MePZv",
+      "shown": true
+    },
+    {
+      "label": "Remake Royal",
+      "id": "G5pe4-MkPRV",
+      "shown": false
+    },
+    {
+      "label": "Remake LE",
+      "id": "G5pe4-M61y6",
+      "shown": false
+    },
+    {
+      "label": "Remake Special",
+      "id": "G5pe4-MrR1B",
+      "shown": false
+    },
+    {
+      "label": "Remake",
+      "id": "G5pe4-MyNkp",
+      "shown": false
+    },
+    {
+      "label": "Remake Merlin",
+      "id": "G5pe4-MrRrv",
+      "shown": false
+    }
+  ],
   "credits": [
     {
       "role": "Design",
-      "names": "Brian Eddy",
-      "names_short": "Brian Eddy"
+      "names": "Brian Eddy"
     },
     {
       "role": "Art",
-      "names": "John Youssi, Greg Freres",
-      "names_short": "John Youssi +1"
+      "names": "John Youssi, Greg Freres"
     },
     {
       "role": "Code",
-      "names": "Lyman F. Sheats Jr.",
-      "names_short": "Lyman F. Sheats Jr."
+      "names": "Lyman F. Sheats Jr."
     },
     {
       "role": "Mechanics",
-      "names": "Robert C. Friesl",
-      "names_short": "Robert C. Friesl"
+      "names": "Robert C. Friesl"
     },
     {
       "role": "Animation",
-      "names": "Adam Rhine, Brian Morris",
-      "names_short": "Adam Rhine +1"
+      "names": "Adam Rhine, Brian Morris"
     },
     {
-      "role": "Music & Sound",
-      "names": "Dan Forden",
-      "names_short": "Dan Forden"
+      "role": "Music",
+      "names": "Dan Forden"
+    },
+    {
+      "role": "Sound",
+      "names": "Dan Forden"
     }
   ],
   "facts": [
@@ -142,12 +166,12 @@
   },
   "featured": {
     "label": "Pinball of the Day",
-    "updated_label": "Oct 5, 2026 11:41 PM EDT",
+    "updated_label": "Oct 6, 2026 12:31 AM EDT",
     "timezone": "EDT",
-    "date": "2026-10-05",
-    "date_label": "Monday, October 5",
-    "date_short": "Oct 5",
-    "period": "2026-10-05",
+    "date": "2026-10-06",
+    "date_label": "Tuesday, October 6",
+    "date_short": "Oct 6",
+    "period": "2026-10-06",
     "rotation": "daily",
     "pool_size": 1,
     "filter_label": null
