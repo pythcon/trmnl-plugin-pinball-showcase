@@ -6,15 +6,14 @@
 
 {%- elsif mode == 'spec' or art_q_count == 0 -%}
 <div class="layout layout--col layout--center-y layout--left gap--small">
-  <span class="label {{ accent_text }}">{{ featured.label }}</span>
   <span class="title title--large lg:title--xlarge" data-clamp="2">{{ machine.name }}</span>
-  <div class="flex flex--row flex--left gap--small">
+  <div class="flex flex--row flex--wrap flex--left gap--small w--full">
     <span class="label label--large">{{ machine.manufacturer }}</span>
     <span class="label label--large {{ accent_text }}">{{ machine.year }}</span>
   </div>
   <span class="w--full label {{ muted }}" data-clamp="1">{{ machine.summary }}</span>
   {%- if show_credits and credits.size > 0 -%}
-  <span class="w--full label {{ muted }}" data-clamp="1">{{ credits.first.role }}: {{ credits.first.names }}</span>
+  <span class="w--full label {{ muted }}" data-clamp="1">{{ credits.first.role }}: {{ credits.first.names_short | default: credits.first.names }}</span>
   {%- endif -%}
 </div>
 
@@ -52,4 +51,5 @@
 <div class="title_bar">
   <img class="image image-stroke" src="data:image/svg+xml;base64,{{ pinball_icon | base64_encode }}">
   <span class="title">{{ instance_title }}</span>
+  <span class="instance">{{ featured.updated_label }}</span>
 </div>

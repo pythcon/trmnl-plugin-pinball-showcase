@@ -10,7 +10,7 @@
   <div class="flex flex--row flex--between w--full gap">
     <div class="flex flex--col flex--left w--full">
       <span class="title title--large lg:title--xlarge" data-clamp="1">{{ machine.name }}</span>
-      <div class="flex flex--row flex--left gap--small">
+      <div class="flex flex--row flex--wrap flex--left gap--small w--full">
         <span class="label label--large">{{ machine.manufacturer }}</span>
         <span class="label label--large {{ accent_text }}">{{ machine.release_label | default: machine.year }}</span>
         <span class="w--full label {{ muted }}" data-clamp="1">{{ machine.summary }}</span>
@@ -25,7 +25,7 @@
     {%- for credit in credits limit: 6 -%}
     <div class="flex flex--col flex--left w--full {% if forloop.index > 3 %}hidden lg:flex{% endif %}">
       <span class="label {{ muted }}">{{ credit.role }}</span>
-      <span class="label w--full" data-clamp="1">{{ credit.names }}</span>
+      <span class="label w--full" data-clamp="1">{{ credit.names_short | default: credit.names }}</span>
     </div>
     {%- endfor -%}
   </div>
@@ -47,16 +47,15 @@
 {%- endcapture -%}
 {%- capture info_block -%}
     <div class="{{ info_span }} flex flex--col flex--left gap--small">
-      <span class="label {{ accent_text }}">{{ featured.label }}</span>
       <span class="title title--large lg:title--xlarge" data-clamp="2">{{ machine.name }}</span>
-      <div class="flex flex--row flex--left gap--small">
+      <div class="flex flex--row flex--wrap flex--left gap--small w--full">
         <span class="label label--large">{{ machine.manufacturer }}</span>
         <span class="label label--large {{ accent_text }}">{{ machine.year }}</span>
         {%- if machine.display_label and mode != 'gallery' -%}<span class="label label--large {{ muted }}">{{ machine.display_label }}</span>{%- endif -%}
       </div>
       {%- if mode != 'gallery' -%}
       {%- if show_credits and credits.size > 0 -%}
-      <span class="w--full label {{ muted }}" data-clamp="1">{% for credit in credits limit: 2 %}{{ credit.role }}: {{ credit.names }}{% unless forloop.last %} · {% endunless %}{% endfor %}</span>
+      <span class="w--full label {{ muted }}" data-clamp="1">{% for credit in credits limit: 2 %}{{ credit.role }}: {{ credit.names_short | default: credit.names }}{% unless forloop.last %} · {% endunless %}{% endfor %}</span>
       {%- endif -%}
       {%- if show_fun_fact and fun_fact -%}
       <span class="w--full description hidden lg:block" data-clamp="2">{{ fun_fact }}</span>
@@ -74,5 +73,5 @@
 <div class="title_bar">
   <img class="image image-stroke" src="data:image/svg+xml;base64,{{ pinball_icon | base64_encode }}">
   <span class="title">{{ instance_title }}</span>
-  <span class="instance">{{ instance_meta }}</span>
+  <span class="instance">{{ featured.updated_label }}</span>
 </div>

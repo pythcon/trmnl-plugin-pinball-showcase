@@ -54,27 +54,33 @@
   "credits": [
     {
       "role": "Design",
-      "names": "Brian Eddy"
+      "names": "Brian Eddy",
+      "names_short": "Brian Eddy"
     },
     {
       "role": "Art",
-      "names": "John Youssi, Greg Freres"
+      "names": "John Youssi, Greg Freres",
+      "names_short": "John Youssi +1"
     },
     {
       "role": "Code",
-      "names": "Lyman F. Sheats Jr."
+      "names": "Lyman F. Sheats Jr.",
+      "names_short": "Lyman F. Sheats Jr."
     },
     {
       "role": "Mechanics",
-      "names": "Robert C. Friesl"
+      "names": "Robert C. Friesl",
+      "names_short": "Robert C. Friesl"
     },
     {
       "role": "Animation",
-      "names": "Adam Rhine, Brian Morris"
+      "names": "Adam Rhine, Brian Morris",
+      "names_short": "Adam Rhine +1"
     },
     {
       "role": "Music & Sound",
-      "names": "Dan Forden"
+      "names": "Dan Forden",
+      "names_short": "Dan Forden"
     }
   ],
   "facts": [
@@ -136,6 +142,8 @@
   },
   "featured": {
     "label": "Pinball of the Day",
+    "updated_label": "Oct 5, 2026 11:41 PM EDT",
+    "timezone": "EDT",
     "date": "2026-10-05",
     "date_label": "Monday, October 5",
     "date_short": "Oct 5",

@@ -13,6 +13,7 @@ from pinball_showcase.selection import (
     period_index,
     period_key,
     pick,
+    shuffle_pick,
 )
 from tests.conftest import group, machine
 
@@ -122,12 +123,54 @@ def test_favorites_and_exclusions(dataset: Dataset) -> None:
 def test_period_keys_and_indices() -> None:
     now = datetime(2026, 10, 5, 17, 42)
     assert period_key(now, Rotation.DAILY) == "2026-10-05"
-    assert period_key(now, Rotation.TWICE_DAILY) == "2026-10-05T12"
-    assert period_key(now, Rotation.FOUR_TIMES_DAILY) == "2026-10-05T12"
-    assert period_key(now, Rotation.HOURLY) == "2026-10-05T17"
     tomorrow = datetime(2026, 10, 6, 0, 0)
     assert period_index(tomorrow, Rotation.DAILY) == period_index(now, Rotation.DAILY) + 1
-    assert period_index(tomorrow, Rotation.HOURLY) - period_index(now, Rotation.HOURLY) == 7
+    # Schedules line up with the clock: 6h periods start at 00, 06, 12, 18.
+    assert period_index(datetime(2026, 10, 5, 12, 0), Rotation.EVERY_6H) == period_index(
+        now, Rotation.EVERY_6H
+    )
+    assert (
+        period_index(datetime(2026, 10, 5, 18, 0), Rotation.EVERY_6H)
+        == period_index(now, Rotation.EVERY_6H) + 1
+    )
+    assert period_index(tomorrow, Rotation.EVERY_1H) - period_index(now, Rotation.EVERY_1H) == 7
+
+
+def test_refresh_rotation_follows_the_plugin_interval() -> None:
+    a = datetime(2026, 10, 5, 10, 0)
+    b = datetime(2026, 10, 5, 10, 14)
+    c = datetime(2026, 10, 5, 10, 15)
+    assert period_index(a, Rotation.REFRESH, 15) == period_index(b, Rotation.REFRESH, 15)
+    assert period_index(c, Rotation.REFRESH, 15) == period_index(a, Rotation.REFRESH, 15) + 1
+    # Missing or silly intervals are clamped (default 60 min, minimum 5).
+    assert period_key(a, Rotation.REFRESH, None).startswith("60m-")
+    assert period_key(a, Rotation.REFRESH, 1).startswith("5m-")
+
+
+def test_shuffle_never_repeats_the_previous_machine(dataset: Dataset) -> None:
+    pool = candidate_pool(dataset, Filters())
+    for _ in range(50):
+        last = shuffle_pick(pool).group_id
+        nxt = shuffle_pick(pool, avoid=(last,))
+        assert nxt.group_id != last
+    # A one-machine pool still returns that machine.
+    assert shuffle_pick(pool[:1], avoid=(pool[0].group_id,)) is pool[0]
+
+
+def test_shuffle_ignores_the_memo(dataset: Dataset, tmp_path) -> None:
+    memo = PickMemo(tmp_path / "picks.json")
+    now = datetime(2026, 10, 5, 9)
+    seen = {choose(dataset, Filters(), now, Rotation.SHUFFLE, memo)[0].group_id for _ in range(40)}
+    assert len(seen) > 1
+
+
+def test_rotation_aliases() -> None:
+    from pinball_showcase.params import parse_rotation
+
+    assert parse_rotation("hourly") is Rotation.EVERY_1H
+    assert parse_rotation("12h") is Rotation.EVERY_12H
+    assert parse_rotation("REFRESH") is Rotation.REFRESH
+    assert parse_rotation("nonsense") is Rotation.DAILY
 
 
 def test_filter_signature() -> None:

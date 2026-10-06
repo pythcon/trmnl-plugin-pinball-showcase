@@ -16,7 +16,14 @@ from . import __version__
 from .config import Settings, get_settings
 from .dataset import Dataset
 from .options import filter_options
-from .params import ShowcaseParams, blank_to_none, parse_rotation, to_filters
+from .params import (
+    ShowcaseParams,
+    blank_to_none,
+    parse_ids,
+    parse_interval,
+    parse_rotation,
+    to_filters,
+)
 from .presenter import build_error, build_showcase
 from .selection import Filters, PickMemo, Rotation, choose, period_key
 from .store import DatasetStore
@@ -96,8 +103,13 @@ def create_app(settings: Settings | None = None, store: DatasetStore | None = No
         dataset = require_dataset()
         local_now = _local_now(params.tz or settings.default_timezone, params.date)
         rotation = parse_rotation(params.rotation)
+        interval = parse_interval(params.interval)
         filters = to_filters(params)
-        period = period_key(local_now, rotation)
+        period = (
+            local_now.isoformat(timespec="seconds")
+            if rotation == Rotation.SHUFFLE
+            else period_key(local_now, rotation, interval)
+        )
 
         if pinned := blank_to_none(params.machine):
             title = dataset.lookup(pinned)
@@ -107,7 +119,15 @@ def create_app(settings: Settings | None = None, store: DatasetStore | None = No
                     build_error("Machine not found", f"No OPDB machine with id {pinned}."), response
                 )
         else:
-            title, pool_size = choose(dataset, filters, local_now, rotation, memo)
+            title, pool_size = choose(
+                dataset,
+                filters,
+                local_now,
+                rotation,
+                memo,
+                interval=interval,
+                avoid=parse_ids(params.avoid),
+            )
             if title is None:
                 return cached(
                     build_error(
@@ -126,6 +146,10 @@ def create_app(settings: Settings | None = None, store: DatasetStore | None = No
             period=period,
             site_url=site_url(request),
         )
+        if rotation == Rotation.SHUFFLE:
+            # Every request is a new draw; nothing in between may cache it.
+            response.headers["Cache-Control"] = "no-store"
+            return payload
         return cached(payload, response)
 
     @app.get("/api/v1/options", tags=["showcase"])

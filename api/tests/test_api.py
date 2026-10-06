@@ -112,3 +112,24 @@ def test_not_ready(settings) -> None:
     with TestClient(create_app(settings, store)) as c:
         assert c.get("/readyz").status_code == 503
         assert c.get("/api/v1/showcase").status_code == 503
+
+
+def test_showcase_reports_updated_time_in_viewer_zone(client) -> None:
+    body = client.get("/api/v1/showcase", params={"tz": "America/New_York"}).json()
+    assert body["featured"]["timezone"] in {"EDT", "EST"}
+    assert body["featured"]["updated_label"].endswith(body["featured"]["timezone"])
+
+
+def test_shuffle_avoids_the_previous_machine(client) -> None:
+    first = client.get("/api/v1/showcase", params={"rotation": "shuffle"}).json()
+    for _ in range(20):
+        nxt = client.get(
+            "/api/v1/showcase", params={"rotation": "shuffle", "avoid": first["machine"]["id"]}
+        ).json()
+        assert nxt["machine"]["group_id"] != first["machine"]["group_id"]
+
+
+def test_refresh_rotation_accepts_interval(client) -> None:
+    body = client.get("/api/v1/showcase", params={"rotation": "refresh", "interval": "15"}).json()
+    assert body["featured"]["rotation"] == "refresh"
+    assert body["featured"]["period"].startswith("15m-")

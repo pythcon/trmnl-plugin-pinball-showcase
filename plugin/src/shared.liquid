@@ -116,7 +116,6 @@
 {%- assign art_second = false -%}{%- if cfg.art_position == 'right' -%}{%- assign art_second = true -%}{%- endif -%}
 
 {%- assign instance_title = trmnl.plugin_settings.instance_name | default: featured.label | default: 'Pinball Showcase' -%}
-{%- capture instance_meta -%}{% if featured.date_short %}{{ featured.date_short }} · {% endif %}{% if featured.filter_label %}{{ featured.filter_label }} · {% endif %}OPDB{%- endcapture -%}
 
 {%- comment -%}
   Photo grid: up to three photos side by side in a 12-column grid. The backglass, which

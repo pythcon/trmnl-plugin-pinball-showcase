@@ -44,19 +44,23 @@
   "credits": [
     {
       "role": "Design",
-      "names": "Pat Lawlor"
+      "names": "Pat Lawlor",
+      "names_short": "Pat Lawlor"
     },
     {
       "role": "Art",
-      "names": "John Youssi"
+      "names": "John Youssi",
+      "names_short": "John Youssi"
     },
     {
       "role": "Code",
-      "names": "Joe Katz, Ted Estes, JT Harkey, Keith P. Johnson, Bill Grupp, Duncan Brown"
+      "names": "Joe Katz, Ted Estes, JT Harkey, Keith P. Johnson, Bill Grupp, Duncan Brown",
+      "names_short": "Joe Katz +5"
     },
     {
       "role": "Animation",
-      "names": "Jean-Paul de Win"
+      "names": "Jean-Paul de Win",
+      "names_short": "Jean-Paul de Win"
     }
   ],
   "facts": [
@@ -118,6 +122,8 @@
   },
   "featured": {
     "label": "Pinball of the Day",
+    "updated_label": "Oct 5, 2026 3:41 AM UTC",
+    "timezone": "UTC",
     "date": "2026-10-05",
     "date_label": "Monday, October 5",
     "date_short": "Oct 5",

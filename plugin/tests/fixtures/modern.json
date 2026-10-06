@@ -57,27 +57,33 @@
   "credits": [
     {
       "role": "Design",
-      "names": "Keith Elwin"
+      "names": "Keith Elwin",
+      "names_short": "Keith Elwin"
     },
     {
       "role": "Art",
-      "names": "Jonathan Bergeron"
+      "names": "Jonathan Bergeron",
+      "names_short": "Jonathan Bergeron"
     },
     {
       "role": "Code",
-      "names": "Rick Naegele"
+      "names": "Rick Naegele",
+      "names_short": "Rick Naegele"
     },
     {
       "role": "Mechanics",
-      "names": "Harrison Drake"
+      "names": "Harrison Drake",
+      "names_short": "Harrison Drake"
     },
     {
       "role": "Animation",
-      "names": "Chuck Ernst"
+      "names": "Chuck Ernst",
+      "names_short": "Chuck Ernst"
     },
     {
       "role": "Music & Sound",
-      "names": "Jerry Thompson"
+      "names": "Jerry Thompson",
+      "names_short": "Jerry Thompson"
     }
   ],
   "facts": [
@@ -139,6 +145,8 @@
   },
   "featured": {
     "label": "Pinball of the Day",
+    "updated_label": "Oct 5, 2026 11:41 PM EDT",
+    "timezone": "EDT",
     "date": "2026-10-05",
     "date_label": "Monday, October 5",
     "date_short": "Oct 5",

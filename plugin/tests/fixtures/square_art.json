@@ -48,11 +48,13 @@
   "credits": [
     {
       "role": "Design",
-      "names": "Gary Gayton"
+      "names": "Gary Gayton",
+      "names_short": "Gary Gayton"
     },
     {
       "role": "Art",
-      "names": "Kevin O'Connor"
+      "names": "Kevin O'Connor",
+      "names_short": "Kevin O'Connor"
     }
   ],
   "facts": [
@@ -114,6 +116,8 @@
   },
   "featured": {
     "label": "Pinball of the Day",
+    "updated_label": "Oct 5, 2026 11:41 PM EDT",
+    "timezone": "EDT",
     "date": "2026-10-05",
     "date_label": "Monday, October 5",
     "date_short": "Oct 5",

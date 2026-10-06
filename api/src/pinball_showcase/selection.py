@@ -15,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import secrets
 from collections import OrderedDict
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -64,18 +65,40 @@ MULTI_EDITION = "multi_edition"
 
 
 class Rotation(StrEnum):
-    DAILY = "daily"
-    TWICE_DAILY = "12h"
-    FOUR_TIMES_DAILY = "6h"
-    HOURLY = "hourly"
+    DAILY = "daily"  # midnight in the viewer's time zone
+    EVERY_1H = "1h"  # on a schedule, aligned to the clock
+    EVERY_2H = "2h"
+    EVERY_3H = "3h"
+    EVERY_6H = "6h"
+    EVERY_12H = "12h"
+    REFRESH = "refresh"  # every TRMNL refresh: period = the plugin's refresh interval
+    SHUFFLE = "shuffle"  # random on every request, never the previous machine
 
 
-ROTATION_HOURS = {
-    Rotation.DAILY: 24,
-    Rotation.TWICE_DAILY: 12,
-    Rotation.FOUR_TIMES_DAILY: 6,
-    Rotation.HOURLY: 1,
+ROTATION_ALIASES = {
+    "hourly": Rotation.EVERY_1H,
+    "every": Rotation.REFRESH,
+    "random": Rotation.SHUFFLE,
 }
+ROTATION_MINUTES = {
+    Rotation.DAILY: 24 * 60,
+    Rotation.EVERY_1H: 60,
+    Rotation.EVERY_2H: 120,
+    Rotation.EVERY_3H: 180,
+    Rotation.EVERY_6H: 360,
+    Rotation.EVERY_12H: 720,
+}
+DEFAULT_REFRESH_MINUTES = 60
+MIN_REFRESH_MINUTES = 5
+
+
+def period_minutes(rotation: Rotation, interval: int | None = None) -> int:
+    """Length of one rotation period. REFRESH uses the plugin's refresh interval."""
+    if rotation == Rotation.REFRESH:
+        return max(MIN_REFRESH_MINUTES, min(24 * 60, interval or DEFAULT_REFRESH_MINUTES))
+    return ROTATION_MINUTES.get(rotation, 24 * 60)
+
+
 EPOCH = date(2024, 1, 1)
 
 
@@ -238,19 +261,18 @@ def candidate_pool(dataset: Dataset, filters: Filters) -> list[Title]:
     return [t for t in dataset.showcase_titles if matches(t, filters, known)]
 
 
-def period_index(local_now: datetime, rotation: Rotation) -> int:
-    """Number of whole rotation periods since the epoch (local time)."""
-    hours = ROTATION_HOURS[rotation]
-    days = (local_now.date() - EPOCH).days
-    return days * (24 // hours) + local_now.hour // hours
+def period_index(local_now: datetime, rotation: Rotation, interval: int | None = None) -> int:
+    """Number of whole rotation periods since the epoch, counted in local wall-clock time."""
+    minutes = (local_now.date() - EPOCH).days * 1440 + local_now.hour * 60 + local_now.minute
+    return minutes // period_minutes(rotation, interval)
 
 
-def period_key(local_now: datetime, rotation: Rotation) -> str:
-    day = local_now.date().isoformat()
-    hours = ROTATION_HOURS[rotation]
-    if hours == 24:
-        return day
-    return f"{day}T{local_now.hour // hours * hours:02d}"
+def period_key(local_now: datetime, rotation: Rotation, interval: int | None = None) -> str:
+    if rotation == Rotation.DAILY:
+        return local_now.date().isoformat()
+    minutes = period_minutes(rotation, interval)
+    index = period_index(local_now, rotation, interval)
+    return f"{minutes}m-{index}"
 
 
 def _rank(seed: str, group_id: str) -> bytes:
@@ -329,16 +351,30 @@ def choose(
     local_now: datetime,
     rotation: Rotation,
     memo: PickMemo | None = None,
+    *,
+    interval: int | None = None,
+    avoid: tuple[str, ...] = (),
 ) -> tuple[Title | None, int]:
-    """Featured title for the current period plus the pool size."""
+    """Featured title for the current period (or a shuffle pick) plus the pool size."""
     pool = candidate_pool(dataset, filters)
-    period = period_key(local_now, rotation)
-    period = f"{rotation.value}:{period}"
+    if rotation == Rotation.SHUFFLE:
+        return shuffle_pick(pool, avoid), len(pool)
+
+    period = f"{rotation.value}:{period_key(local_now, rotation, interval)}"
     if memo and (remembered := memo.get(period, filters)):
         title = dataset.by_group.get(remembered)
         if title is not None and any(t.group_id == remembered for t in pool):
             return title, len(pool)
-    title = pick(pool, period_index(local_now, rotation), filters)
+    title = pick(pool, period_index(local_now, rotation, interval), filters)
     if memo and title is not None:
         memo.put(period, filters, title.group_id)
     return title, len(pool)
+
+
+def shuffle_pick(pool: list[Title], avoid: tuple[str, ...] = ()) -> Title | None:
+    """Random title, skipping the ones just shown (by group or machine id) when possible."""
+    if not pool:
+        return None
+    avoid_groups = {a.split("-")[0] for a in avoid if a}
+    fresh = [t for t in pool if t.group_id not in avoid_groups] or pool
+    return secrets.choice(fresh)

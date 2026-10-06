@@ -11,7 +11,16 @@ from collections.abc import Iterable
 
 from pydantic import BaseModel, Field
 
-from .selection import DISPLAYS, ERA_ALIASES, FEATURES, MULTI_EDITION, Era, Filters, Rotation
+from .selection import (
+    DISPLAYS,
+    ERA_ALIASES,
+    FEATURES,
+    MULTI_EDITION,
+    ROTATION_ALIASES,
+    Era,
+    Filters,
+    Rotation,
+)
 
 Multi = list[str]
 
@@ -19,7 +28,13 @@ Multi = list[str]
 class ShowcaseParams(BaseModel):
     model_config = {"extra": "ignore"}
 
-    rotation: str | None = Field(None, description="daily | 12h | 6h | hourly")
+    rotation: str | None = Field(
+        None, description="daily | 1h | 2h | 3h | 6h | 12h | refresh | shuffle"
+    )
+    interval: str | None = Field(
+        None, max_length=5, description="Minutes per period for rotation=refresh"
+    )
+    avoid: Multi = Field(default_factory=list, description="OPDB ids not to repeat (shuffle)")
     tz: str | None = Field(None, max_length=64, description="IANA timezone, e.g. America/New_York")
     date: str | None = Field(None, description="Override the date (YYYY-MM-DD) for previews")
     machine: str | None = Field(None, max_length=40, description="Pin one OPDB id (no rotation)")
@@ -72,10 +87,18 @@ def parse_bool(value: str | None) -> bool:
 
 
 def parse_rotation(value: str | None) -> Rotation:
+    key = (blank_to_none(value) or "daily").lower()
+    if key in ROTATION_ALIASES:
+        return ROTATION_ALIASES[key]
     try:
-        return Rotation((blank_to_none(value) or "daily").lower())
+        return Rotation(key)
     except ValueError:
         return Rotation.DAILY
+
+
+def parse_interval(value: str | None) -> int | None:
+    value = blank_to_none(value)
+    return int(value) if value and value.isdigit() else None
 
 
 def _eras(values: Iterable[str]) -> frozenset[Era]:
@@ -104,7 +127,7 @@ def _decades(values: Iterable[str]) -> frozenset[int]:
     return frozenset(decades)
 
 
-def _ids(values: Iterable[str]) -> tuple[str, ...]:
+def parse_ids(values: Iterable[str]) -> tuple[str, ...]:
     # OPDB ids are case-sensitive; split without lowercasing.
     out: list[str] = []
     for value in values:
@@ -131,7 +154,7 @@ def to_filters(p: ShowcaseParams) -> Filters:
         keywords=tuple(split_values(p.keyword)),
         exclude_keywords=tuple(split_values(p.exclude_keyword)),
         people=tuple(split_values(p.person)),
-        favorites=_ids(p.favorites),
-        exclude_ids=_ids(p.exclude_id),
+        favorites=parse_ids(p.favorites),
+        exclude_ids=parse_ids(p.exclude_id),
         require_playfield=parse_bool(p.require_playfield),
     )

@@ -13,10 +13,10 @@ recipe_overview: |-
 
   Each screen shows the backglass or playfield artwork, dithered for e-ink, with the manufacturer, release date, machine type, score display, player count, editions, and the designers, artists, programmers and composers who made it. Fast facts put it in context: how old it is, where it sits in its maker's catalogue, and what else came out that year. A QR code opens the machine's full profile, with every photo, edition and link.
 
-  Narrow the rotation to the machines you love. Mix and match eras, decades, year ranges, manufacturers, title keywords for themes, designers and artists, score display types, player counts and features like widebody or remake, or build your own favorites list. Every machine in your selection appears once before any repeats. Choose daily, twice daily, four times a day or hourly changes, and pick the Showcase, Gallery or Spec Sheet layout. Works on TRMNL OG, TRMNL X and color B/W/R/Y screens, in every mashup size.
+  Narrow the rotation to the machines you love. Mix and match eras, decades, year ranges, manufacturers, title keywords for themes, designers and artists, score display types, player counts and features like widebody or remake, or build your own favorites list. Every machine in your selection appears once before any repeats. Choose a new machine once a day, on a schedule, on every refresh, or shuffled, and pick the Showcase, Gallery or Spec Sheet layout. Works on TRMNL OG, TRMNL X and color B/W/R/Y screens, in every mashup size.
 strategy: polling
 polling_verb: get
-polling_url: "{{ api_url | default: 'https://pinball-showcase.trmnlplugins.com' }}/api/v1/showcase?tz={{ trmnl.user.time_zone_iana | url_encode }}&rotation={{ rotation }}&machine={{ pinned_machine | url_encode }}&favorites={{ favorites | url_encode }}&era={{ eras | join: ',' }}&decade={{ decades | join: ',' }}&min_year={{ min_year }}&max_year={{ max_year }}&manufacturer={{ manufacturers | join: ',' | url_encode }},{{ other_manufacturers | url_encode }}&exclude_manufacturer={{ exclude_manufacturers | join: ',' | url_encode }}&display={{ displays | join: ',' }}&players={{ players | join: ',' }}&feature={{ features | join: ',' }}&exclude_feature={{ exclude_features | join: ',' }}&keyword={{ keywords | url_encode }}&exclude_keyword={{ exclude_keywords | url_encode }}&person={{ people | url_encode }}&exclude_id={{ exclude_ids | url_encode }}&require_playfield={{ require_playfield }}"
+polling_url: "{{ api_url | default: 'https://pinball-showcase.trmnlplugins.com' }}/api/v1/showcase?tz={{ trmnl.user.time_zone_iana | url_encode }}&rotation={{ rotation }}&interval={{ trmnl.plugin_settings.refresh_interval_minutes }}&avoid={{ trmnl.state.last_id }}&machine={{ pinned_machine | url_encode }}&favorites={{ favorites | url_encode }}&era={{ eras | join: ',' }}&decade={{ decades | join: ',' }}&min_year={{ min_year }}&max_year={{ max_year }}&manufacturer={{ manufacturers | join: ',' | url_encode }},{{ other_manufacturers | url_encode }}&exclude_manufacturer={{ exclude_manufacturers | join: ',' | url_encode }}&display={{ displays | join: ',' }}&players={{ players | join: ',' }}&feature={{ features | join: ',' }}&exclude_feature={{ exclude_features | join: ',' }}&keyword={{ keywords | url_encode }}&exclude_keyword={{ exclude_keywords | url_encode }}&person={{ people | url_encode }}&exclude_id={{ exclude_ids | url_encode }}&require_playfield={{ require_playfield }}"
 polling_headers: ''
 polling_body: ''
 refresh_interval: 60
@@ -127,16 +127,20 @@ custom_fields:
 
 # ---- Rotation ---------------------------------------------------------------------------
 - keyname: rotation
-  name: New Machine Every
+  name: New Machine
   field_type: select
   optional: true
   options:
-  - "Day": "daily"
-  - "12 hours": "12h"
-  - "6 hours": "6h"
-  - "Hour": "hourly"
+  - "Once a day (midnight, your time)": "daily"
+  - "Every hour": "1h"
+  - "Every 2 hours": "2h"
+  - "Every 3 hours": "3h"
+  - "Every 6 hours": "6h"
+  - "Every 12 hours": "12h"
+  - "Every refresh (follows this plugin's refresh rate)": "refresh"
+  - "Shuffle (new machine on every refresh, even a forced one)": "shuffle"
   default: daily
-  description: Every machine in your selection is shown once before any repeats.
+  description: Every option except Shuffle shows each machine in your selection once before any repeats. Shuffle never shows the same machine twice in a row.
 - keyname: pinned_machine
   name: Pin One Machine
   field_type: string

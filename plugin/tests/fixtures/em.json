@@ -48,11 +48,13 @@
   "credits": [
     {
       "role": "Design",
-      "names": "Wendell McAdams, Jerry Koci, Albin Peters"
+      "names": "Wendell McAdams, Jerry Koci, Albin Peters",
+      "names_short": "Wendell McAdams +2"
     },
     {
       "role": "Art",
-      "names": "Christian Marche"
+      "names": "Christian Marche",
+      "names_short": "Christian Marche"
     }
   ],
   "facts": [
@@ -114,6 +116,8 @@
   },
   "featured": {
     "label": "Pinball of the Day",
+    "updated_label": "Oct 5, 2026 3:41 AM UTC",
+    "timezone": "UTC",
     "date": "2026-10-05",
     "date_label": "Monday, October 5",
     "date_short": "Oct 5",

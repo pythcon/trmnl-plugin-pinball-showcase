@@ -47,10 +47,9 @@ ROLE_ORDER = [
 ]
 ROTATION_LABELS = {
     Rotation.DAILY: "Pinball of the Day",
-    Rotation.TWICE_DAILY: "Pinball Showcase",
-    Rotation.FOUR_TIMES_DAILY: "Pinball Showcase",
-    Rotation.HOURLY: "Pinball of the Hour",
+    Rotation.EVERY_1H: "Pinball of the Hour",
 }
+DEFAULT_LABEL = "Pinball Showcase"
 TAG_FEATURES = {"Widebody", "Cocktail table", "Add-a-ball", "Head-to-head play"}
 SAME_YEAR_LIMIT = 6
 
@@ -104,8 +103,26 @@ def _credits(title: Title) -> list[dict[str, str]]:
         if existing and label not in existing["role"]:
             existing["role"] = f"{existing['role']} & {label}"
         elif not existing:
-            credits.append({"role": label, "names": names})
+            people = by_role[role]
+            short = people[0] if len(people) == 1 else f"{people[0]} +{len(people) - 1}"
+            credits.append({"role": label, "names": names, "names_short": short})
     return credits
+
+
+def updated_label(local_now: datetime) -> str:
+    """ "Oct 5, 2026 11:42 PM EDT": zones without an abbreviation show their UTC offset."""
+    zone = local_now.tzname() or ""
+    if not zone or zone[0] in "+-":
+        offset = local_now.utcoffset()
+        hours = int(offset.total_seconds() // 3600) if offset else 0
+        minutes = int(abs(offset.total_seconds()) % 3600 // 60) if offset else 0
+        zone = (
+            "UTC"
+            if not hours and not minutes
+            else f"GMT{hours:+d}" + (f":{minutes:02d}" if minutes else "")
+        )
+    hour = local_now.hour % 12 or 12
+    return f"{local_now:%b} {local_now.day}, {local_now.year} {hour}:{local_now:%M %p} {zone}"
 
 
 def _plural(n: int, word: str) -> str:
@@ -229,7 +246,10 @@ def build_showcase(
         "qr": {"url": page_url},
         "links": {"page": page_url, "opdb": opdb_url(rep)},
         "featured": {
-            "label": ROTATION_LABELS[rotation],
+            "label": ROTATION_LABELS.get(rotation, DEFAULT_LABEL),
+            # Shown bottom-right in the title bar, in the viewer's own time zone.
+            "updated_label": updated_label(local_now),
+            "timezone": local_now.tzname(),
             "date": today.isoformat(),
             "date_label": f"{local_now:%A, %B} {today.day}",
             "date_short": f"{local_now:%b} {today.day}",

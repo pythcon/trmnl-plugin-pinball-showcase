@@ -38,10 +38,26 @@ def test_payload_shape(dataset: Dataset) -> None:
 def test_credits_merge_shared_roles(dataset: Dataset) -> None:
     credits = render(dataset, "GAAAA", datetime(2026, 10, 5))["credits"]
     assert credits == [
-        {"role": "Design", "names": "Brian Eddy"},
-        {"role": "Art", "names": "John Youssi"},
-        {"role": "Music & Sound", "names": "Dan Forden"},
+        {"role": "Design", "names": "Brian Eddy", "names_short": "Brian Eddy"},
+        {"role": "Art", "names": "John Youssi", "names_short": "John Youssi"},
+        {"role": "Music & Sound", "names": "Dan Forden", "names_short": "Dan Forden"},
     ]
+
+
+def test_updated_label_in_viewer_time_zone() -> None:
+    from zoneinfo import ZoneInfo
+
+    from pinball_showcase.presenter import updated_label
+
+    ny = datetime(2026, 10, 5, 23, 42, tzinfo=ZoneInfo("America/New_York"))
+    assert updated_label(ny) == "Oct 5, 2026 11:42 PM EDT"
+    la = datetime(2026, 12, 1, 9, 5, tzinfo=ZoneInfo("America/Los_Angeles"))
+    assert updated_label(la) == "Dec 1, 2026 9:05 AM PST"
+    # Zones without an abbreviation fall back to the UTC offset.
+    assert updated_label(datetime(2026, 10, 5, 12, 0, tzinfo=ZoneInfo("Asia/Dubai"))).endswith(
+        "12:00 PM GMT+4"
+    )
+    assert updated_label(datetime(2026, 10, 5, 0, 0, tzinfo=ZoneInfo("UTC"))).endswith("UTC")
 
 
 def test_anniversary(dataset: Dataset) -> None:
