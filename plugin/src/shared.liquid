@@ -130,7 +130,7 @@
   {%- when 3 -%}{%- assign spans = '6,3,3' | split: ',' -%}
   {%- else -%}{%- assign spans = '12' | split: ',' -%}
 {%- endcase -%}
-<div class="grid gap--small w--full h--full">
+<div class="grid grid--cols-12 gap--small w--full h--full">
   {%- for t in types limit: count -%}
   {%- assign img = images[t] -%}
   <div class="col--span-{{ spans[forloop.index0] }} flex flex--row flex--center h--full">

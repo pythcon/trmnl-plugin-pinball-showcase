@@ -19,6 +19,8 @@ FIXTURES = {
     "classic": "/api/v1/machines/G5pe4?tz=America/New_York&date=2026-10-05",
     # Electro-mechanical era.
     "em": "/api/v1/showcase?era=em&date=2026-10-05",
+    # Nearly square backglass (caught a grid blow-out on TRMNL X).
+    "square_art": "/api/v1/machines/GrleW-MYeod?tz=America/New_York&date=2026-10-05",
     # Very long title.
     "long_name": "/api/v1/showcase?keyword=wonka&date=2026-10-05",
 }

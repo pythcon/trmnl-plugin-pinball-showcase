@@ -158,7 +158,23 @@ def _id_matches(title: Title, ids: Iterable[str]) -> bool:
     return False
 
 
-def matches(title: Title, f: Filters) -> bool:
+def _maker_matches(names: set[str], wanted: Iterable[str], known: frozenset[str]) -> bool:
+    """A known manufacturer name ("stern") matches exactly, so picking Stern from the list
+    doesn't also pull in Stern Electronics. Anything else ("jersey") matches as a substring."""
+    joined = " ".join(names)
+    return any(w in names if w in known else w in joined for w in wanted)
+
+
+def known_manufacturers(dataset: Dataset) -> frozenset[str]:
+    names: set[str] = set()
+    for maker, titles in dataset.titles_by_manufacturer.items():
+        names.add(maker.lower())
+        if full := titles[0].representative.manufacturer_full:
+            names.add(full.lower())
+    return frozenset(names)
+
+
+def matches(title: Title, f: Filters, known_makers: frozenset[str] = frozenset()) -> bool:
     rep = title.representative
     year = title.year
 
@@ -176,10 +192,12 @@ def matches(title: Title, f: Filters) -> bool:
         return False
 
     if f.manufacturers or f.exclude_manufacturers:
-        maker = " ".join(filter(None, (rep.manufacturer, rep.manufacturer_full))).lower()
-        if f.manufacturers and not _contains_any(maker, f.manufacturers):
+        makers = {n.lower() for n in (rep.manufacturer, rep.manufacturer_full) if n}
+        if f.manufacturers and not _maker_matches(makers, f.manufacturers, known_makers):
             return False
-        if f.exclude_manufacturers and _contains_any(maker, f.exclude_manufacturers):
+        if f.exclude_manufacturers and _maker_matches(
+            makers, f.exclude_manufacturers, known_makers
+        ):
             return False
 
     if f.displays and rep.display not in f.displays:
@@ -212,7 +230,12 @@ def matches(title: Title, f: Filters) -> bool:
 
 
 def candidate_pool(dataset: Dataset, filters: Filters) -> list[Title]:
-    return [t for t in dataset.showcase_titles if matches(t, filters)]
+    known = (
+        known_manufacturers(dataset)
+        if filters.manufacturers or filters.exclude_manufacturers
+        else frozenset()
+    )
+    return [t for t in dataset.showcase_titles if matches(t, filters, known)]
 
 
 def period_index(local_now: datetime, rotation: Rotation) -> int:

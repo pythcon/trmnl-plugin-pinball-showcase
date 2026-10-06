@@ -30,7 +30,8 @@ four mashup sizes, landscape and portrait.
 are OR'd, different filters are AND'd)
 - Eras: electro-mechanical, early solid state, dot matrix, modern LCD
 - Decades and/or a from–to year range
-- Manufacturers to include and to exclude
+- Manufacturers to include and exclude: pick from the 39 biggest makers (exact match, so Stern
+  doesn't pull in Stern Electronics) and/or type any others
 - Title keywords to include and exclude (themes: "star wars, batman, monster")
 - Designers and artists (anyone credited)
 - Score display: reels, backbox lights, alphanumeric, DMD, LCD, CGA
@@ -130,6 +131,10 @@ make check           # what CI runs
 ```
 
 Plugin tests use real API responses saved in `plugin/tests/fixtures`, so they run offline.
+
+The local viewer is accurate for OG-size screens. For TRMNL X it shows a cropped corner:
+TRMNL lays X out at 1040x780 and renders it at 1.8x, which the viewer doesn't reproduce. Check
+X layouts with `make plugin-test` (see `plugin/report/index.html`) or TRMNL's own preview.
 `trmnlp` renders grayscale only; check true color output on a B/W/R/Y device or with the
 TRMNL MCP screenshot tool (`device_models: ["og_bwry"]`).
 

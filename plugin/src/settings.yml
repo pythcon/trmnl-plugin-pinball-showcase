@@ -15,7 +15,7 @@ recipe_overview: |-
   Narrow the rotation to the machines you love. Mix and match eras, decades, year ranges, manufacturers, title keywords for themes, designers and artists, score display types, player counts and features like widebody or remake, or build your own favorites list. Every machine in your selection appears once before any repeats. Choose daily, twice daily, four times a day or hourly changes, and pick the Showcase, Gallery or Spec Sheet layout. Works on TRMNL OG, TRMNL X and color B/W/R/Y screens, in every mashup size.
 strategy: polling
 polling_verb: get
-polling_url: "{{ api_url | default: 'https://pinball.trmnlplugins.com' }}/api/v1/showcase?tz={{ trmnl.user.time_zone_iana | url_encode }}&rotation={{ rotation }}&machine={{ pinned_machine | url_encode }}&favorites={{ favorites | url_encode }}&era={{ eras | join: ',' }}&decade={{ decades | join: ',' }}&min_year={{ min_year }}&max_year={{ max_year }}&manufacturer={{ manufacturers | url_encode }}&exclude_manufacturer={{ exclude_manufacturers | url_encode }}&display={{ displays | join: ',' }}&players={{ players | join: ',' }}&feature={{ features | join: ',' }}&exclude_feature={{ exclude_features | join: ',' }}&keyword={{ keywords | url_encode }}&exclude_keyword={{ exclude_keywords | url_encode }}&person={{ people | url_encode }}&exclude_id={{ exclude_ids | url_encode }}&require_playfield={{ require_playfield }}"
+polling_url: "{{ api_url | default: 'https://pinball.trmnlplugins.com' }}/api/v1/showcase?tz={{ trmnl.user.time_zone_iana | url_encode }}&rotation={{ rotation }}&machine={{ pinned_machine | url_encode }}&favorites={{ favorites | url_encode }}&era={{ eras | join: ',' }}&decade={{ decades | join: ',' }}&min_year={{ min_year }}&max_year={{ max_year }}&manufacturer={{ manufacturers | join: ',' | url_encode }},{{ other_manufacturers | url_encode }}&exclude_manufacturer={{ exclude_manufacturers | join: ',' | url_encode }}&display={{ displays | join: ',' }}&players={{ players | join: ',' }}&feature={{ features | join: ',' }}&exclude_feature={{ exclude_features | join: ',' }}&keyword={{ keywords | url_encode }}&exclude_keyword={{ exclude_keywords | url_encode }}&person={{ people | url_encode }}&exclude_id={{ exclude_ids | url_encode }}&require_playfield={{ require_playfield }}"
 polling_headers: ''
 polling_body: ''
 refresh_interval: 60
@@ -193,15 +193,101 @@ custom_fields:
   placeholder: 1999
 - keyname: manufacturers
   name: Manufacturers
+  field_type: select
+  multiple: true
+  optional: true
+  description: Show only machines from these makers. Leave empty for all.
+  options:
+  - "A.M.I.: a.m.i."
+  - "Allied Leisure: allied leisure"
+  - "Alvin G. & Co: alvin g. & co"
+  - "Atari: atari"
+  - "Bally: bally"
+  - "Bell Games: bell games"
+  - "C.E.A.: c.e.a."
+  - "Capcom: capcom"
+  - "Chicago Coin: chicago coin"
+  - "Data East: data east"
+  - "Exhibit: exhibit"
+  - "For Amusement Only Games: for amusement only games"
+  - "Game Plan: game plan"
+  - "Genco: genco"
+  - "Gottlieb: gottlieb"
+  - "Hankin: hankin"
+  - "Inder: inder"
+  - "Jersey Jack Pinball: jersey jack pinball"
+  - "Jeutel: jeutel"
+  - "Juegos Populares: juegos populares"
+  - "Keeney: keeney"
+  - "Midway: midway"
+  - "Multimorphic: multimorphic"
+  - "Nordamatic: nordamatic"
+  - "Playmatic: playmatic"
+  - "Rally: rally"
+  - "Recel: recel"
+  - "Sega: sega"
+  - "Sega Enterprises: sega enterprises"
+  - "Segasa: segasa"
+  - "Sonic: sonic"
+  - "Spooky Pinball: spooky pinball"
+  - "Stern: stern"
+  - "Stern Electronics: stern electronics"
+  - "Taito: taito"
+  - "Unidesa: unidesa"
+  - "United: united"
+  - "Williams: williams"
+  - "Zaccaria: zaccaria"
+- keyname: other_manufacturers
+  name: Other Manufacturers
   field_type: string
   optional: true
-  placeholder: Williams, Bally, Stern
-  description: Comma-separated. Partial names match ("stern" also matches Stern Electronics).
+  placeholder: Mr. Game, Premier
+  description: Makers not in the list above, comma-separated. Partial names match.
 - keyname: exclude_manufacturers
   name: Exclude Manufacturers
-  field_type: string
+  field_type: select
+  multiple: true
   optional: true
-  placeholder: Gottlieb
+  options:
+  - "A.M.I.: a.m.i."
+  - "Allied Leisure: allied leisure"
+  - "Alvin G. & Co: alvin g. & co"
+  - "Atari: atari"
+  - "Bally: bally"
+  - "Bell Games: bell games"
+  - "C.E.A.: c.e.a."
+  - "Capcom: capcom"
+  - "Chicago Coin: chicago coin"
+  - "Data East: data east"
+  - "Exhibit: exhibit"
+  - "For Amusement Only Games: for amusement only games"
+  - "Game Plan: game plan"
+  - "Genco: genco"
+  - "Gottlieb: gottlieb"
+  - "Hankin: hankin"
+  - "Inder: inder"
+  - "Jersey Jack Pinball: jersey jack pinball"
+  - "Jeutel: jeutel"
+  - "Juegos Populares: juegos populares"
+  - "Keeney: keeney"
+  - "Midway: midway"
+  - "Multimorphic: multimorphic"
+  - "Nordamatic: nordamatic"
+  - "Playmatic: playmatic"
+  - "Rally: rally"
+  - "Recel: recel"
+  - "Sega: sega"
+  - "Sega Enterprises: sega enterprises"
+  - "Segasa: segasa"
+  - "Sonic: sonic"
+  - "Spooky Pinball: spooky pinball"
+  - "Stern: stern"
+  - "Stern Electronics: stern electronics"
+  - "Taito: taito"
+  - "Unidesa: unidesa"
+  - "United: united"
+  - "Williams: williams"
+  - "Zaccaria: zaccaria"
 - keyname: keywords
   name: Title Keywords (Themes)
   field_type: string

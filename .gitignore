@@ -22,3 +22,4 @@ plugin/report/
 .idea/
 .vscode/
 .DS_Store
+plugin/report-*/

@@ -1,7 +1,7 @@
 from datetime import datetime
 from itertools import pairwise
 
-from pinball_showcase.dataset import Dataset
+from pinball_showcase.dataset import Dataset, build_dataset
 from pinball_showcase.selection import (
     Era,
     Filters,
@@ -14,6 +14,7 @@ from pinball_showcase.selection import (
     period_key,
     pick,
 )
+from tests.conftest import group, machine
 
 
 def ids(titles) -> set[str]:
@@ -55,6 +56,24 @@ def test_multi_value_era_filter(dataset: Dataset) -> None:
 def test_categories_are_anded(dataset: Dataset) -> None:
     f = Filters(manufacturers=("williams", "stern"), decades=frozenset({1990}))
     assert ids(candidate_pool(dataset, f)) == {"GAAAA"}
+
+
+def test_known_manufacturer_matches_exactly(export) -> None:
+    export["entries"] += [
+        group("GGGGG", "Flash"),
+        machine(
+            "GGGGG-M0001", "Flash", year=1979, maker="Stern Electronics", display="alphanumeric"
+        ),
+    ]
+    dataset = build_dataset(export)
+    stern = ids(candidate_pool(dataset, Filters(manufacturers=("stern",))))
+    assert stern == {"GBBBB"}  # not Stern Electronics
+    both = ids(candidate_pool(dataset, Filters(manufacturers=("stern", "stern electronics"))))
+    assert both == {"GBBBB", "GGGGG"}
+    # Free text that isn't a known name still matches as a substring.
+    assert ids(candidate_pool(dataset, Filters(manufacturers=("electron",)))) == {"GGGGG"}
+    no_stern = ids(candidate_pool(dataset, Filters(exclude_manufacturers=("stern",))))
+    assert "GGGGG" in no_stern and "GBBBB" not in no_stern
 
 
 def test_manufacturer_include_exclude(dataset: Dataset) -> None:

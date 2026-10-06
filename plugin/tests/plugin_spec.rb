@@ -23,7 +23,7 @@ RSpec.describe 'Pinball Showcase' do
 
   it_behaves_like 'a publishable recipe', screens: SCREENS
 
-  %w[classic em long_name no_matches].each do |name|
+  %w[classic em square_art long_name no_matches].each do |name|
     context "with the #{name} fixture" do
       VIEWS.each do |view|
         [{ device: 'og_png' }, { device: 'v2' }, { device: 'og_bwry' }].each do |screen|

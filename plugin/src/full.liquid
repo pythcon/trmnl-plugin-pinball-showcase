@@ -30,7 +30,7 @@
 
 {%- elsif mode == 'spec' or art_full_count == 0 -%}
 <div class="layout layout--col layout--top layout--left">
-  <div class="grid gap--large w--full">
+  <div class="grid grid--cols-12 gap--large w--full">
     <div class="col--span-8 flex flex--col flex--left gap">
       <div class="flex flex--col flex--left w--full">
         <span class="label label--small {{ accent_text }}">{{ featured.label }}</span>
@@ -68,7 +68,7 @@
     <div class="col--span-4 flex flex--col flex--left gap">
       {%- if art_full_count > 0 -%}
       {%- assign thumb = images[art_full.first] -%}
-      <img class="image image-dither {{ fit_class }} w--full h--[30cqh]" src="{{ thumb.url_medium | default: thumb.url }}" alt="{{ machine.name }} artwork">
+      <img class="image image-dither {{ fit_class }} w--full h--[30cqh] lg:h--[34cqh]" src="{{ thumb.url_medium | default: thumb.url }}" alt="{{ machine.name }} artwork">
       {%- endif -%}
       {%- if show_facts -%}
       {%- for fact in facts limit: 4 -%}
@@ -99,7 +99,7 @@
 {%- else -%}{%- assign art_span = 'col--span-7' -%}{%- assign info_span = 'col--span-5' -%}{%- endif -%}
 {%- capture art_block -%}
 {%- if art_full_count > 0 -%}
-    <div class="{{ art_span }} h--full portrait:h--[45cqh]">
+    <div class="{{ art_span }} h--[100cqh] portrait:h--[45cqh]">
       {% render "art_grid", images: images, types: art_full, count: art_full_count, fit: fit_class, medium: false, name: machine.name %}
     </div>
 {%- endif -%}
@@ -151,7 +151,7 @@
     </div>
 {%- endcapture -%}
 <div class="layout layout--col layout--top layout--left">
-  <div class="grid gap--large w--full h--full portrait:grid--cols-1">
+  <div class="grid grid--cols-12 gap--large w--full h--full portrait:grid--cols-1">
     {%- if art_second -%}{{ info_block }}{{ art_block }}{%- else -%}{{ art_block }}{{ info_block }}{%- endif -%}
   </div>
 </div>

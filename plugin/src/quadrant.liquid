@@ -20,7 +20,7 @@
 
 {%- elsif mode == 'gallery' -%}
 <div class="layout layout--col gap--small">
-  <div class="w--full stretch-y">
+  <div class="w--full h--[78cqh]">
     {% render "art_grid", images: images, types: art_q, count: art_q_count, fit: fit_class, medium: true, name: machine.name %}
   </div>
   <div class="flex flex--row flex--center gap--small w--full">
@@ -31,7 +31,7 @@
 
 {%- else -%}
 {%- capture art_block -%}
-    <div class="col--span-6 h--full">
+    <div class="col--span-6 h--[100cqh]">
       {% render "art_grid", images: images, types: art_q, count: art_q_count, fit: fit_class, medium: true, name: machine.name %}
     </div>
 {%- endcapture -%}
@@ -43,7 +43,7 @@
     </div>
 {%- endcapture -%}
 <div class="layout layout--row layout--left">
-  <div class="grid gap h--full w--full">
+  <div class="grid grid--cols-12 gap h--full w--full">
     {%- if art_second -%}{{ info_block }}{{ art_block }}{%- else -%}{{ art_block }}{{ info_block }}{%- endif -%}
   </div>
 </div>
