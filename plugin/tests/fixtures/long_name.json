@@ -1,0 +1,131 @@
+{
+  "machine": {
+    "id": "GYWBZ-MkPrr",
+    "group_id": "GYWBZ",
+    "name": "Willy Wonka & The Chocolate Factory",
+    "edition_name": "Willy Wonka & The Chocolate Factory",
+    "short_name": "WONKA",
+    "manufacturer": "Jersey Jack Pinball",
+    "manufacturer_full": "Jersey Jack Pinball",
+    "year": 2019,
+    "release_label": "April 12, 2019",
+    "type_label": "Solid state",
+    "display_label": "LCD",
+    "players": 4,
+    "players_label": "4 players",
+    "era": "modern",
+    "era_label": "Modern LCD era",
+    "headline": "Jersey Jack Pinball \u00b7 2019",
+    "summary": "Solid state \u00b7 LCD \u00b7 4 players",
+    "tags": [
+      "LE"
+    ],
+    "ipdb_id": 6647,
+    "anniversary": false
+  },
+  "images": {
+    "backglass": {
+      "url": "https://img.opdb.org/8e3dbe10-0dd9-4adb-a27e-c377a52d7880-large.jpg",
+      "url_medium": "https://img.opdb.org/8e3dbe10-0dd9-4adb-a27e-c377a52d7880-medium.jpg",
+      "width": 1000,
+      "height": 907,
+      "orientation": "landscape"
+    },
+    "playfield": null,
+    "cabinet": null,
+    "any": {
+      "url": "https://img.opdb.org/8e3dbe10-0dd9-4adb-a27e-c377a52d7880-large.jpg",
+      "url_medium": "https://img.opdb.org/8e3dbe10-0dd9-4adb-a27e-c377a52d7880-medium.jpg",
+      "width": 1000,
+      "height": 907,
+      "orientation": "landscape"
+    }
+  },
+  "credits": [
+    {
+      "role": "Design",
+      "names": "Pat Lawlor"
+    },
+    {
+      "role": "Art",
+      "names": "John Youssi"
+    },
+    {
+      "role": "Code",
+      "names": "Joe Katz, Ted Estes, JT Harkey, Keith P. Johnson, Bill Grupp, Duncan Brown"
+    },
+    {
+      "role": "Animation",
+      "names": "Jean-Paul de Win"
+    }
+  ],
+  "facts": [
+    {
+      "label": "Released",
+      "value": "7 years ago"
+    },
+    {
+      "label": "Era",
+      "value": "Modern LCD era"
+    },
+    {
+      "label": "Jersey Jack Pinball",
+      "value": "Title 5 of 6"
+    },
+    {
+      "label": "Class of 2019",
+      "value": "1 of 14 titles"
+    },
+    {
+      "label": "Editions",
+      "value": "2 variants"
+    }
+  ],
+  "fun_fact": "Players call it WONKA.",
+  "same_year": [
+    {
+      "name": "Super Panic Ball",
+      "manufacturer": "Bandai Namco"
+    },
+    {
+      "name": "The Flip Side",
+      "manufacturer": "American Girl"
+    },
+    {
+      "name": "The Munsters",
+      "manufacturer": "Stern"
+    },
+    {
+      "name": "Hoopin' It Up",
+      "manufacturer": "Multimorphic"
+    },
+    {
+      "name": "Black Knight: Sword of Rage",
+      "manufacturer": "Stern"
+    },
+    {
+      "name": "Cosmic Carnival",
+      "manufacturer": "Suncoast Pinball"
+    }
+  ],
+  "same_year_count": 13,
+  "qr": {
+    "url": "https://opdb.org/search?q=GYWBZ-MkPrr"
+  },
+  "featured": {
+    "label": "Pinball of the Day",
+    "date": "2026-10-05",
+    "date_label": "Monday, October 5",
+    "date_short": "Oct 5",
+    "period": "2026-10-05",
+    "rotation": "daily",
+    "pool_size": 1,
+    "filter_label": "Wonka"
+  },
+  "source": {
+    "name": "OPDB",
+    "url": "https://opdb.org",
+    "updated": "2026-10-05"
+  },
+  "error": null
+}

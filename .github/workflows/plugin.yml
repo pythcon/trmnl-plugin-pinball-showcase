@@ -1,0 +1,52 @@
+name: Plugin
+
+on:
+  push:
+    branches: [master]
+    paths: ["plugin/**", ".github/workflows/plugin.yml"]
+  pull_request:
+    paths: ["plugin/**", ".github/workflows/plugin.yml"]
+  workflow_dispatch:
+    inputs:
+      update_snapshots:
+        description: Rewrite tests/snapshots and upload them
+        type: boolean
+        default: false
+
+env:
+  # Pin a release (trmnl/trmnlp:vX.Y.Z) for fully repeatable runs.
+  TRMNLP_IMAGE: trmnl/trmnlp:latest
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker run --rm -v "$PWD/plugin":/plugin "$TRMNLP_IMAGE" lint
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: trmnlp test (every view on OG, OG 2-bit, X, portrait and B/W/R/Y)
+        run: >
+          docker run --rm -e CI=true -e GITHUB_STEP_SUMMARY=/summary.md
+          -v "$PWD/plugin":/plugin -v "$GITHUB_STEP_SUMMARY":/summary.md "$TRMNLP_IMAGE"
+          test --report report ${{ inputs.update_snapshots && '--update' || '' }}
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: trmnlp-report
+          path: plugin/report
+
+  # Publishes markup + settings to TRMNL. Off until the repository variable TRMNL_PUSH is
+  # "true", the TRMNL_API_KEY secret exists and plugin/src/settings.yml has its `id`.
+  push:
+    needs: [lint, test]
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push' && vars.TRMNL_PUSH == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker run --rm -e TRMNL_API_KEY -v "$PWD/plugin":/plugin "$TRMNLP_IMAGE" push --force
+        env:
+          TRMNL_API_KEY: ${{ secrets.TRMNL_API_KEY }}

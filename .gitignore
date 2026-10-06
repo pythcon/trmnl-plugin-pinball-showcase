@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# API runtime data (cached OPDB export, pick memo)
+api/data/
+data/
+
+# trmnlp
+plugin/_build/
+plugin/report/
+
+# Env / editor / OS
+.env
+.env.*
+!.env.example
+.idea/
+.vscode/
+.DS_Store

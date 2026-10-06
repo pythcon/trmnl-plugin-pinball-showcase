@@ -1,0 +1,152 @@
+{
+  "machine": {
+    "id": "GK17D-MdEqz",
+    "group_id": "GK17D",
+    "name": "Jurassic Park",
+    "edition_name": "Jurassic Park (Pro)",
+    "short_name": "JP",
+    "manufacturer": "Stern",
+    "manufacturer_full": "Stern Pinball, Inc.",
+    "year": 2019,
+    "release_label": "July 26, 2019",
+    "type_label": "Solid state",
+    "display_label": "LCD",
+    "players": 4,
+    "players_label": "4 players",
+    "era": "modern",
+    "era_label": "Modern LCD era",
+    "headline": "Stern \u00b7 2019",
+    "summary": "Solid state \u00b7 LCD \u00b7 4 players",
+    "tags": [
+      "Premium/LE",
+      "Pro"
+    ],
+    "ipdb_id": 6573,
+    "anniversary": false
+  },
+  "images": {
+    "backglass": {
+      "url": "https://img.opdb.org/e7197795-c83e-4278-8b7a-9b20480d0a3d-large.jpg",
+      "url_medium": "https://img.opdb.org/e7197795-c83e-4278-8b7a-9b20480d0a3d-medium.jpg",
+      "width": 763,
+      "height": 489,
+      "orientation": "landscape"
+    },
+    "playfield": {
+      "url": "https://img.opdb.org/670ee3de-8122-49b6-aa3b-34c54ad6a030-large.jpg",
+      "url_medium": "https://img.opdb.org/670ee3de-8122-49b6-aa3b-34c54ad6a030-medium.jpg",
+      "width": 936,
+      "height": 1209,
+      "orientation": "portrait"
+    },
+    "cabinet": {
+      "url": "https://img.opdb.org/e8ad1c6e-77ef-4144-b9bf-f605cb397d41-large.jpg",
+      "url_medium": "https://img.opdb.org/e8ad1c6e-77ef-4144-b9bf-f605cb397d41-medium.jpg",
+      "width": 1335,
+      "height": 1500,
+      "orientation": "portrait"
+    },
+    "any": {
+      "url": "https://img.opdb.org/e7197795-c83e-4278-8b7a-9b20480d0a3d-large.jpg",
+      "url_medium": "https://img.opdb.org/e7197795-c83e-4278-8b7a-9b20480d0a3d-medium.jpg",
+      "width": 763,
+      "height": 489,
+      "orientation": "landscape"
+    }
+  },
+  "credits": [
+    {
+      "role": "Design",
+      "names": "Keith Elwin"
+    },
+    {
+      "role": "Art",
+      "names": "Jonathan Bergeron"
+    },
+    {
+      "role": "Code",
+      "names": "Rick Naegele"
+    },
+    {
+      "role": "Mechanics",
+      "names": "Harrison Drake"
+    },
+    {
+      "role": "Animation",
+      "names": "Chuck Ernst"
+    },
+    {
+      "role": "Music & Sound",
+      "names": "Jerry Thompson"
+    }
+  ],
+  "facts": [
+    {
+      "label": "Released",
+      "value": "7 years ago"
+    },
+    {
+      "label": "Era",
+      "value": "Modern LCD era"
+    },
+    {
+      "label": "Stern",
+      "value": "Title 58 of 80"
+    },
+    {
+      "label": "Class of 2019",
+      "value": "1 of 14 titles"
+    },
+    {
+      "label": "Editions",
+      "value": "2 variants"
+    }
+  ],
+  "fun_fact": "Players call it JP.",
+  "same_year": [
+    {
+      "name": "Super Panic Ball",
+      "manufacturer": "Bandai Namco"
+    },
+    {
+      "name": "The Flip Side",
+      "manufacturer": "American Girl"
+    },
+    {
+      "name": "The Munsters",
+      "manufacturer": "Stern"
+    },
+    {
+      "name": "Hoopin' It Up",
+      "manufacturer": "Multimorphic"
+    },
+    {
+      "name": "Black Knight: Sword of Rage",
+      "manufacturer": "Stern"
+    },
+    {
+      "name": "Willy Wonka & The Chocolate Factory",
+      "manufacturer": "Jersey Jack Pinball"
+    }
+  ],
+  "same_year_count": 13,
+  "qr": {
+    "url": "https://opdb.org/search?q=GK17D-MdEqz"
+  },
+  "featured": {
+    "label": "Pinball of the Day",
+    "date": "2026-10-05",
+    "date_label": "Monday, October 5",
+    "date_short": "Oct 5",
+    "period": "2026-10-05",
+    "rotation": "daily",
+    "pool_size": 1,
+    "filter_label": null
+  },
+  "source": {
+    "name": "OPDB",
+    "url": "https://opdb.org",
+    "updated": "2026-10-05"
+  },
+  "error": null
+}

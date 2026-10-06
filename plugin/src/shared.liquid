@@ -1,0 +1,158 @@
+{%- comment -%}
+  Shared setup for every layout: title bar icon, user options and the artwork choice.
+  Merge variables come from the Pinball Showcase API (see api/README or /docs).
+{%- endcomment -%}
+
+{%- capture pinball_icon -%}
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="7.5" r="4.5"/><circle cx="10.5" cy="6" r="1" fill="#000" stroke="none"/><path d="M3 15.5 L10 19.5"/><path d="M21 15.5 L14 19.5"/></svg>
+{%- endcapture -%}
+
+{%- comment -%} Error / empty state: an API error payload, or no data at all (API unreachable). {%- endcomment -%}
+{%- assign show_error = false -%}
+{%- if error -%}
+  {%- assign show_error = true -%}
+  {%- assign error_title = error.title | default: 'Something went wrong' -%}
+  {%- assign error_message = error.message -%}
+{%- elsif machine == nil or machine.name == nil -%}
+  {%- assign show_error = true -%}
+  {%- assign error_title = 'Pinball data is warming up' -%}
+  {%- assign error_message = 'The machine of the day will appear on the next refresh.' -%}
+{%- endif -%}
+
+{%- assign cfg = trmnl.plugin_settings.custom_fields_values -%}
+{%- assign mode = cfg.display_mode | default: 'showcase' -%}
+{%- assign hidden = cfg.hide_details | default: '' -%}
+
+{%- assign show_credits = true -%}{%- if hidden contains 'credits' -%}{%- assign show_credits = false -%}{%- endif -%}
+{%- assign show_facts = true -%}{%- if hidden contains 'facts' -%}{%- assign show_facts = false -%}{%- endif -%}
+{%- assign show_fun_fact = true -%}{%- if hidden contains 'fun_fact' -%}{%- assign show_fun_fact = false -%}{%- endif -%}
+{%- assign show_tags = true -%}{%- if hidden contains 'tags' -%}{%- assign show_tags = false -%}{%- endif -%}
+{%- assign show_same_year = true -%}{%- if hidden contains 'same_year' -%}{%- assign show_same_year = false -%}{%- endif -%}
+{%- assign show_qr = true -%}{%- if hidden contains 'qr' or qr == nil -%}{%- assign show_qr = false -%}{%- endif -%}
+
+{%- comment -%}
+  Device-aware styling. Gray text and accent colors become dot patterns on a 1-bit
+  monochrome panel (TRMNL OG), so there they fall back to plain black on white.
+  Color panels (TRMNL OG B/W/R/Y and friends) get real red and yellow; grayscale
+  panels (OG 2-bit, TRMNL X) get the framework's gray mapping of those colors.
+{%- endcomment -%}
+{%- assign device_model = trmnl.device.model | default: '' -%}
+{%- assign device_bits = trmnl.device.bit_depth | default: 2 | append: '' -%}
+{%- assign color_models = 'og_bwry,waveshare_7_5_bwr,waveshare_7_5_bwry,inky_impression_7_3,inky_impression_13_3,seeed_e1002,seeed_e1004,inkplate_6_color,inkplate_13_spectra,kobo_libra_color,onxy_boox_nova_air_c,openframe,meta_portal,raspberry_pi_touch_2,generic_16_9' | split: ',' -%}
+{%- assign is_color = false -%}{%- if color_models contains device_model -%}{%- assign is_color = true -%}{%- endif -%}
+{%- assign is_mono = false -%}{%- if device_bits == '1' and is_color == false -%}{%- assign is_mono = true -%}{%- endif -%}
+
+{%- if is_mono -%}
+  {%- assign muted = '' -%}
+{%- else -%}
+  {%- assign muted = 'label--gray' -%}
+{%- endif -%}
+
+{%- if cfg.color_accents == 'off' or is_mono -%}
+  {%- assign accent_text = '' -%}
+  {%- if is_mono -%}{%- assign accent_fill = 'outline' -%}{%- else -%}{%- assign accent_fill = 'bg--gray-75' -%}{%- endif -%}
+{%- else -%}
+  {%- assign accent_text = 'text--red' -%}
+  {%- assign accent_fill = 'bg--yellow' -%}
+{%- endif -%}
+
+{%- comment -%}
+  Artwork per layout size. Each slot's setting is a multi-select of backglass, playfield
+  and cabinet: one photo, several side by side (up to 3 on full screen, 2 on the halves,
+  1 in a quadrant), "none" for text only, or empty for auto. Photos a machine doesn't
+  have are skipped; if none of the chosen ones exist the slot falls back to auto
+  (backglass, or playfield first in the tall half-vertical slot).
+  Produces `<slot>` (list of image keys), `<slot>_count` and `<slot>_spans` (grid spans).
+{%- endcomment -%}
+{%- assign wanted = cfg.art_full | default: 'auto' | join: ',' -%}
+{%- assign t = '' -%}
+{%- unless wanted contains 'none' -%}
+  {%- if wanted contains 'backglass' and images.backglass -%}{%- assign t = t | append: 'backglass,' -%}{%- endif -%}
+  {%- if wanted contains 'playfield' and images.playfield -%}{%- assign t = t | append: 'playfield,' -%}{%- endif -%}
+  {%- if wanted contains 'cabinet' and images.cabinet -%}{%- assign t = t | append: 'cabinet,' -%}{%- endif -%}
+  {%- if t == '' -%}{%- if images.backglass -%}{%- assign t = 'backglass' -%}{%- elsif images.any -%}{%- assign t = 'any' -%}{%- endif -%}{%- endif -%}
+{%- endunless -%}
+{%- assign art_full = t | split: ',' -%}
+{%- assign n = art_full.size -%}{%- if n > 3 -%}{%- assign n = 3 -%}{%- endif -%}
+{%- case n -%}
+  {%- when 1 -%}{%- assign art_full_spans = '12' | split: ',' -%}
+  {%- when 2 -%}{%- if art_full.first == 'backglass' -%}{%- assign art_full_spans = '9,3' | split: ',' -%}{%- else -%}{%- assign art_full_spans = '6,6' | split: ',' -%}{%- endif -%}
+  {%- when 3 -%}{%- assign art_full_spans = '6,3,3' | split: ',' -%}
+  {%- else -%}{%- assign art_full_spans = '' | split: ',' -%}
+{%- endcase -%}
+{%- assign art_full_count = n -%}
+{%- assign wanted = cfg.art_half_horizontal | default: 'auto' | join: ',' -%}
+{%- assign t = '' -%}
+{%- unless wanted contains 'none' -%}
+  {%- if wanted contains 'backglass' and images.backglass -%}{%- assign t = t | append: 'backglass,' -%}{%- endif -%}
+  {%- if wanted contains 'playfield' and images.playfield -%}{%- assign t = t | append: 'playfield,' -%}{%- endif -%}
+  {%- if wanted contains 'cabinet' and images.cabinet -%}{%- assign t = t | append: 'cabinet,' -%}{%- endif -%}
+  {%- if t == '' -%}{%- if images.backglass -%}{%- assign t = 'backglass' -%}{%- elsif images.any -%}{%- assign t = 'any' -%}{%- endif -%}{%- endif -%}
+{%- endunless -%}
+{%- assign art_hh = t | split: ',' -%}
+{%- assign n = art_hh.size -%}{%- if n > 2 -%}{%- assign n = 2 -%}{%- endif -%}
+{%- case n -%}
+  {%- when 1 -%}{%- assign art_hh_spans = '12' | split: ',' -%}
+  {%- when 2 -%}{%- if art_hh.first == 'backglass' -%}{%- assign art_hh_spans = '9,3' | split: ',' -%}{%- else -%}{%- assign art_hh_spans = '6,6' | split: ',' -%}{%- endif -%}
+  {%- when 3 -%}{%- assign art_hh_spans = '6,3,3' | split: ',' -%}
+  {%- else -%}{%- assign art_hh_spans = '' | split: ',' -%}
+{%- endcase -%}
+{%- assign art_hh_count = n -%}
+{%- assign wanted = cfg.art_half_vertical | default: 'auto' | join: ',' -%}
+{%- assign t = '' -%}
+{%- unless wanted contains 'none' -%}
+  {%- if wanted contains 'backglass' and images.backglass -%}{%- assign t = t | append: 'backglass,' -%}{%- endif -%}
+  {%- if wanted contains 'playfield' and images.playfield -%}{%- assign t = t | append: 'playfield,' -%}{%- endif -%}
+  {%- if wanted contains 'cabinet' and images.cabinet -%}{%- assign t = t | append: 'cabinet,' -%}{%- endif -%}
+  {%- if t == '' -%}{%- if images.playfield -%}{%- assign t = 'playfield' -%}{%- elsif images.backglass -%}{%- assign t = 'backglass' -%}{%- elsif images.any -%}{%- assign t = 'any' -%}{%- endif -%}{%- endif -%}
+{%- endunless -%}
+{%- assign art_hv = t | split: ',' -%}
+{%- assign n = art_hv.size -%}{%- if n > 2 -%}{%- assign n = 2 -%}{%- endif -%}
+{%- case n -%}
+  {%- when 1 -%}{%- assign art_hv_spans = '12' | split: ',' -%}
+  {%- when 2 -%}{%- if art_hv.first == 'backglass' -%}{%- assign art_hv_spans = '9,3' | split: ',' -%}{%- else -%}{%- assign art_hv_spans = '6,6' | split: ',' -%}{%- endif -%}
+  {%- when 3 -%}{%- assign art_hv_spans = '6,3,3' | split: ',' -%}
+  {%- else -%}{%- assign art_hv_spans = '' | split: ',' -%}
+{%- endcase -%}
+{%- assign art_hv_count = n -%}
+{%- assign wanted = cfg.art_quadrant | default: 'auto' | join: ',' -%}
+{%- assign t = '' -%}
+{%- unless wanted contains 'none' -%}
+  {%- if wanted contains 'backglass' and images.backglass -%}{%- assign t = t | append: 'backglass,' -%}{%- endif -%}
+  {%- if wanted contains 'playfield' and images.playfield -%}{%- assign t = t | append: 'playfield,' -%}{%- endif -%}
+  {%- if wanted contains 'cabinet' and images.cabinet -%}{%- assign t = t | append: 'cabinet,' -%}{%- endif -%}
+  {%- if t == '' -%}{%- if images.backglass -%}{%- assign t = 'backglass' -%}{%- elsif images.any -%}{%- assign t = 'any' -%}{%- endif -%}{%- endif -%}
+{%- endunless -%}
+{%- assign art_q = t | split: ',' -%}
+{%- assign n = art_q.size -%}{%- if n > 1 -%}{%- assign n = 1 -%}{%- endif -%}
+{%- case n -%}
+  {%- when 1 -%}{%- assign art_q_spans = '12' | split: ',' -%}
+  {%- when 2 -%}{%- if art_q.first == 'backglass' -%}{%- assign art_q_spans = '9,3' | split: ',' -%}{%- else -%}{%- assign art_q_spans = '6,6' | split: ',' -%}{%- endif -%}
+  {%- when 3 -%}{%- assign art_q_spans = '6,3,3' | split: ',' -%}
+  {%- else -%}{%- assign art_q_spans = '' | split: ',' -%}
+{%- endcase -%}
+{%- assign art_q_count = n -%}
+
+{%- comment -%} Fit shows the whole photo; fill crops it to use all the space. {%- endcomment -%}
+{%- if cfg.art_fit == 'fill' -%}{%- assign fit_class = 'image--cover' -%}{%- else -%}{%- assign fit_class = 'image--contain' -%}{%- endif -%}
+
+{%- comment -%} Where the artwork sits: first (left / top) or second (right / bottom). {%- endcomment -%}
+{%- assign art_second = false -%}{%- if cfg.art_position == 'right' -%}{%- assign art_second = true -%}{%- endif -%}
+
+{%- assign instance_title = trmnl.plugin_settings.instance_name | default: featured.label | default: 'Pinball Showcase' -%}
+{%- capture instance_meta -%}{% if featured.date_short %}{{ featured.date_short }} · {% endif %}{% if featured.filter_label %}{{ featured.filter_label }} · {% endif %}OPDB{%- endcapture -%}
+
+{%- comment -%}
+  Photo grid: one or more photos side by side in a 12-column grid.
+  Params: images, types (list of image keys), spans, count, fit, medium (true = smaller files), name.
+{%- endcomment -%}
+{% template art_grid %}
+<div class="grid gap--small w--full h--full">
+  {%- for t in types limit: count -%}
+  {%- assign img = images[t] -%}
+  <div class="col--span-{{ spans[forloop.index0] }} flex flex--row flex--center h--full">
+    <img class="image image-dither {{ fit }} w--full h--full" src="{% if medium %}{{ img.url_medium | default: img.url }}{% else %}{{ img.url }}{% endif %}" alt="{{ name }} {{ t }}">
+  </div>
+  {%- endfor -%}
+</div>
+{% endtemplate %}

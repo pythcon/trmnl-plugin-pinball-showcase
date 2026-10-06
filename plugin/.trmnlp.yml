@@ -1,0 +1,21 @@
+# trmnlp local dev config (not uploaded to TRMNL).
+# `bin/trmnlp serve` polls the hosted API from src/settings.yml. For offline work use
+# `make plugin-test` (renders tests/fixtures, which are real API responses).
+---
+watch:
+  - .trmnlp.yml
+  - src
+
+time_zone: America/New_York
+
+custom_fields:
+  display_mode: showcase
+  art_fit: fit
+  art_position: left
+  color_accents: "on"
+  rotation: daily
+
+variables:
+  trmnl:
+    plugin_settings:
+      instance_name: Pinball of the Day

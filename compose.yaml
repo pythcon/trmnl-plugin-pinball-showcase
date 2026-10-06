@@ -1,0 +1,20 @@
+# Self-host the Pinball Showcase API:  docker compose up -d
+# Then point your TRMNL plugin's polling URL at http(s)://<your-host>:8080/api/v1/showcase
+# (see README.md, "Self-hosting"). For the production deployment see deploy/.
+services:
+  api:
+    image: ghcr.io/pythcon/trmnl-plugin-pinball-showcase:latest
+    build: ./api
+    restart: unless-stopped
+    ports:
+      - "${PINBALL_PORT:-8080}:8080"
+    environment:
+      # All settings are optional; see api/README.md or .env.example.
+      PINBALL_REFRESH_TIME_UTC: ${PINBALL_REFRESH_TIME_UTC:-07:00}
+      PINBALL_DEFAULT_TIMEZONE: ${PINBALL_DEFAULT_TIMEZONE:-UTC}
+      PINBALL_LOG_LEVEL: ${PINBALL_LOG_LEVEL:-INFO}
+    volumes:
+      - pinball-data:/data
+
+volumes:
+  pinball-data:

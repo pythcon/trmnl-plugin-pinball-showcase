@@ -1,0 +1,78 @@
+{%- comment -%} Half horizontal: 800x240 banner. Everything sits side by side. {%- endcomment -%}
+{%- if show_error -%}
+<div class="layout layout--col layout--center gap--small">
+  <span class="title">{{ error_title }}</span>
+  <span class="description text--center">{{ error_message }}</span>
+</div>
+
+{%- elsif mode == 'spec' -%}
+<div class="layout layout--col layout--top layout--left gap--small">
+  <div class="flex flex--row flex--between w--full gap">
+    <div class="flex flex--col flex--left w--full">
+      <span class="title title--medium lg:title--large" data-clamp="1">{{ machine.name }}</span>
+      <div class="flex flex--row flex--left gap--small">
+        <span class="label label--small">{{ machine.manufacturer }}</span>
+        <span class="label label--small {{ accent_text }}">{{ machine.release_label | default: machine.year }}</span>
+        <span class="w--full label label--small {{ muted }}" data-clamp="1">{{ machine.summary }}</span>
+      </div>
+    </div>
+    {%- if show_qr -%}
+    <div class="w--[48px] h--[48px] lg:w--[96px] lg:h--[96px] no-shrink">{{ qr.url | qr_code }}</div>
+    {%- endif -%}
+  </div>
+  {%- if show_credits and credits.size > 0 -%}
+  <div class="grid grid--cols-3 gap--small w--full">
+    {%- for credit in credits limit: 6 -%}
+    <div class="flex flex--col flex--left w--full {% if forloop.index > 3 %}hidden lg:flex{% endif %}">
+      <span class="label label--small {{ muted }}">{{ credit.role }}</span>
+      <span class="label label--small w--full" data-clamp="1">{{ credit.names }}</span>
+    </div>
+    {%- endfor -%}
+  </div>
+  {%- elsif show_fun_fact and fun_fact -%}
+  <div class="{{ accent_fill }} p--1 w--full"><span class="w--full description" data-clamp="2">{{ fun_fact }}</span></div>
+  {%- endif -%}
+</div>
+
+{%- else -%}
+{%- if art_hh_count == 0 -%}{%- assign info_span = 'col--span-12' -%}
+{%- elsif mode == 'gallery' or art_hh_count > 1 -%}{%- assign art_span = 'col--span-8' -%}{%- assign info_span = 'col--span-4' -%}
+{%- else -%}{%- assign art_span = 'col--span-5' -%}{%- assign info_span = 'col--span-7' -%}{%- endif -%}
+{%- capture art_block -%}
+{%- if art_hh_count > 0 -%}
+    <div class="{{ art_span }} h--full">
+      {% render "art_grid", images: images, types: art_hh, spans: art_hh_spans, count: art_hh_count, fit: fit_class, medium: true, name: machine.name %}
+    </div>
+{%- endif -%}
+{%- endcapture -%}
+{%- capture info_block -%}
+    <div class="{{ info_span }} flex flex--col flex--left gap--small">
+      <span class="label label--small {{ accent_text }}">{{ featured.label }}</span>
+      <span class="title title--medium lg:title--large" data-clamp="2">{{ machine.name }}</span>
+      <div class="flex flex--row flex--left gap--small">
+        <span class="label label--small">{{ machine.manufacturer }}</span>
+        <span class="label label--small {{ accent_text }}">{{ machine.year }}</span>
+        {%- if machine.display_label and mode != 'gallery' -%}<span class="label label--small {{ muted }}">{{ machine.display_label }}</span>{%- endif -%}
+      </div>
+      {%- if mode != 'gallery' -%}
+      {%- if show_credits and credits.size > 0 -%}
+      <span class="w--full label label--small {{ muted }}" data-clamp="1">{% for credit in credits limit: 2 %}{{ credit.role }}: {{ credit.names }}{% unless forloop.last %} · {% endunless %}{% endfor %}</span>
+      {%- endif -%}
+      {%- if show_fun_fact and fun_fact -%}
+      <span class="w--full description description--small hidden lg:block" data-clamp="2">{{ fun_fact }}</span>
+      {%- endif -%}
+      {%- endif -%}
+    </div>
+{%- endcapture -%}
+<div class="layout layout--row layout--top layout--left">
+  <div class="grid gap h--full w--full">
+    {%- if art_second -%}{{ info_block }}{{ art_block }}{%- else -%}{{ art_block }}{{ info_block }}{%- endif -%}
+  </div>
+</div>
+{%- endif -%}
+
+<div class="title_bar">
+  <img class="image image-stroke" src="data:image/svg+xml;base64,{{ pinball_icon | base64_encode }}">
+  <span class="title">{{ instance_title }}</span>
+  <span class="instance">{{ instance_meta }}</span>
+</div>

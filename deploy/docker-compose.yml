@@ -1,0 +1,44 @@
+# Production stack for pinball.trmnlplugins.com. Lives on the server at $DEPLOY_PATH
+# alongside a .env file; see DEPLOYMENT.md. The API binds to localhost only, the
+# reverse proxy (Caddy below, or the one already running on the server) terminates TLS.
+services:
+  api:
+    image: ghcr.io/pythcon/trmnl-plugin-pinball-showcase:${PINBALL_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - pinball-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  # Optional: remove if the server already has a reverse proxy (nginx, Traefik, the one
+  # fronting grafana.trmnlplugins.com, ...). Point that proxy at 127.0.0.1:8080 instead.
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    profiles: [caddy]
+    network_mode: host
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  pinball-data:
+  caddy-data:
+  caddy-config:
