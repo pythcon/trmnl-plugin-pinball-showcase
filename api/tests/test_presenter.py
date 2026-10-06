@@ -14,6 +14,7 @@ def render(dataset: Dataset, group_id: str, now: datetime) -> dict:
         filters=Filters(),
         pool_size=4,
         period=now.date().isoformat(),
+        site_url="https://pinball-showcase.trmnlplugins.com",
     )
 
 
@@ -27,7 +28,8 @@ def test_payload_shape(dataset: Dataset) -> None:
     assert m["era_label"] == "Dot matrix era"
     assert p["images"]["backglass"]["orientation"] == "landscape"
     assert p["images"]["playfield"]["orientation"] == "portrait"
-    assert p["qr"]["url"].endswith("GAAAA-M0001")
+    assert p["qr"]["url"] == "https://pinball-showcase.trmnlplugins.com/m/GAAAA-M0001"
+    assert p["links"]["opdb"] == "https://opdb.org/search?q=GAAAA-M0001"
     assert p["featured"]["date_label"] == "Monday, October 5"
     assert p["error"] is None
     assert {"label": "Released", "value": "29 years ago"} in p["facts"]

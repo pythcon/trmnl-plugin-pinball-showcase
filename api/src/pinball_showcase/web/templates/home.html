@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% from "_macros.html" import machine_card, chips, credits_list %}
+
+{% block content %}
+<section class="hero">
+  <div class="wrap hero-grid">
+    <a class="hero-art" href="{{ today.page_url }}">
+      {% if today.hero %}<img src="{{ today.hero.url }}" alt="{{ today.name }} backglass" width="{{ today.hero.width }}" height="{{ today.hero.height }}">{% endif %}
+    </a>
+    <div class="hero-info">
+      <p class="eyebrow eyebrow--accent">Pinball of the Day · {{ date_label }}</p>
+      <h1>{{ today.name }}</h1>
+      <p class="lede">{{ today.manufacturer_full or today.manufacturer }}{% if today.release_label %} <span class="dot">·</span> <span class="accent">{{ today.release_label }}</span>{% endif %}</p>
+      {{ chips(today) }}
+      {% if today.fun_fact %}<p class="callout">{{ today.fun_fact }}</p>{% endif %}
+      {% if today.credits %}{{ credits_list(today.credits[:4]) }}{% endif %}
+      <div class="actions">
+        <a class="button" href="{{ today.page_url }}">Explore {{ today.name }} &rarr;</a>
+        <a class="button button--ghost" href="#plugin">Get it on your TRMNL</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if recent %}
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Recently featured</h2>
+      <p class="muted">Every machine in the rotation appears once before any repeats.</p>
+    </div>
+    <div class="card-grid">
+      {% for c in recent %}{{ machine_card(c) }}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section section--alt" id="plugin">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">TRMNL plugin</p>
+      <h2>A new machine on your desk every day</h2>
+      <p class="muted">Pinball Showcase puts a different machine from {{ "{:,}".format(catalog_size) }} real titles on your TRMNL e-ink display, from 1930s bagatelles to today's LCD games.</p>
+    </div>
+    <div class="features">
+      <div class="feature">
+        <h3>Art that suits e-ink</h3>
+        <p>Backglass, playfield and cabinet photos, chosen per layout and dithered for black-and-white, grayscale and B/W/R/Y color screens.</p>
+      </div>
+      <div class="feature">
+        <h3>Filter it your way</h3>
+        <p>Eras, decades, manufacturers, designers and artists, title themes, player counts and features. Combine as many as you like, or rotate through your favorites.</p>
+      </div>
+      <div class="feature">
+        <h3>Made for every TRMNL</h3>
+        <p>TRMNL OG, TRMNL X and B/W/R/Y panels in every mashup size and orientation. Scan the QR code on screen to land on the machine's page here.</p>
+      </div>
+    </div>
+    <ol class="steps">
+      <li><strong>Install</strong> Pinball Showcase from the TRMNL plugin directory.</li>
+      <li><strong>Choose</strong> a layout, photos and any filters. Every setting is optional.</li>
+      <li><strong>Enjoy</strong> a new machine every day, every 12 hours, every 6 hours or every hour.</li>
+    </ol>
+    <div class="actions">
+      <a class="button" href="https://trmnl.com/recipes">Find it on TRMNL</a>
+      <a class="button button--ghost" href="{{ github_url }}">Self-host or contribute</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

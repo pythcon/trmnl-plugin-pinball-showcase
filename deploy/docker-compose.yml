@@ -1,4 +1,4 @@
-# Production stack for pinball.trmnlplugins.com. Lives on the server at $DEPLOY_PATH
+# Production stack for pinball-showcase.trmnlplugins.com. Lives on the server at $DEPLOY_PATH
 # alongside a .env file; see DEPLOYMENT.md. The API binds to localhost only, the
 # reverse proxy (Caddy below, or the one already running on the server) terminates TLS.
 services:

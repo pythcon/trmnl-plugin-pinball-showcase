@@ -6,7 +6,7 @@
 require 'json'
 
 FIXTURES = File.join(__dir__, 'fixtures')
-API = 'https://pinball.trmnlplugins.com/*'
+API = 'https://pinball-showcase.trmnlplugins.com/*'
 
 def fixture(name) = JSON.parse(File.read(File.join(FIXTURES, "#{name}.json")))
 
@@ -71,6 +71,24 @@ RSpec.describe 'Pinball Showcase' do
             expect(rendered).to have_no_problems.and(have_no_leaked_text)
           end
         end
+      end
+    end
+  end
+
+  describe 'QR code' do
+    # Scans the rendered screen: the code must decode to the machine's page on the site.
+    page = 'https://pinball-showcase.trmnlplugins.com/m/GK17D-MdEqz'
+
+    %w[og_png og_bwry v2].each do |device|
+      it "links to the machine page on #{device}" do
+        expect(trmnl.render(device:, mocks:)).to have_qr_code(page)
+      end
+    end
+
+    %w[gallery spec].each do |mode|
+      it "links to the machine page in #{mode} mode" do
+        expect(trmnl.render(device: 'og_png', mocks:, custom_fields: { 'display_mode' => mode }))
+          .to have_qr_code(page)
       end
     end
   end

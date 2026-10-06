@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     # Exports with fewer entries than this are treated as corrupt and rejected.
     min_entries: int = 500
 
+    # Public address of this instance, used for machine-page links and the QR code.
+    # Empty means "the address the request came in on" (fine behind a proxy that sends
+    # X-Forwarded-Proto/Host). The hosted instance sets https://pinball-showcase.trmnlplugins.com.
+    public_url: str = ""
+
     # Timezone used when a request does not send one.
     default_timezone: str = "UTC"
     # Cache-Control max-age for showcase responses.

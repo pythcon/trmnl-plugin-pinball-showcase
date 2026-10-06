@@ -14,4 +14,4 @@ TRMNL plugin + self-hostable API showing a daily pinball machine from the OPDB e
   `accent_*`) from `trmnl.device.model`/`bit_depth`.
 - Custom field keynames must not collide with payload keys (`machine`, `images`, `credits`,
   `facts`, `qr`, `featured`, `error`...).
-- Deployment: `deploy/DEPLOYMENT.md`. Hosted at pinball.trmnlplugins.com; image on GHCR.
+- Deployment: `deploy/DEPLOYMENT.md`. Hosted at pinball-showcase.trmnlplugins.com; image on GHCR.

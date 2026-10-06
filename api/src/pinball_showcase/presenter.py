@@ -121,9 +121,12 @@ def _years_ago(year: int | None, today: date) -> str | None:
     return f"{_plural(diff, 'year')} ago"
 
 
-def _qr_payload(title: Title) -> dict[str, str]:
-    # Rendered on TRMNL with the built-in `qr_code` Liquid filter.
-    return {"url": f"https://opdb.org/search?q={quote_plus(title.representative.opdb_id)}"}
+def opdb_url(machine: Machine) -> str:
+    return f"https://opdb.org/search?q={quote_plus(machine.opdb_id)}"
+
+
+def machine_page_url(site_url: str, machine: Machine) -> str:
+    return f"{site_url.rstrip('/')}/m/{quote_plus(machine.opdb_id)}"
 
 
 def build_showcase(
@@ -135,8 +138,10 @@ def build_showcase(
     filters: Filters,
     pool_size: int,
     period: str,
+    site_url: str,
 ) -> dict[str, Any]:
     rep = title.representative
+    page_url = machine_page_url(site_url, rep)
     today = local_now.date()
     era = title_era(title)
 
@@ -220,7 +225,9 @@ def build_showcase(
             {"name": t.name, "manufacturer": t.manufacturer} for t in same_year[:SAME_YEAR_LIMIT]
         ],
         "same_year_count": len(same_year),
-        "qr": _qr_payload(title),
+        # Rendered on TRMNL with the built-in `qr_code` Liquid filter.
+        "qr": {"url": page_url},
+        "links": {"page": page_url, "opdb": opdb_url(rep)},
         "featured": {
             "label": ROTATION_LABELS[rotation],
             "date": today.isoformat(),

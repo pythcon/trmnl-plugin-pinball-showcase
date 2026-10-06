@@ -131,7 +131,11 @@
   ],
   "same_year_count": 13,
   "qr": {
-    "url": "https://opdb.org/search?q=GK17D-MdEqz"
+    "url": "https://pinball-showcase.trmnlplugins.com/m/GK17D-MdEqz"
+  },
+  "links": {
+    "page": "https://pinball-showcase.trmnlplugins.com/m/GK17D-MdEqz",
+    "opdb": "https://opdb.org/search?q=GK17D-MdEqz"
   },
   "featured": {
     "label": "Pinball of the Day",

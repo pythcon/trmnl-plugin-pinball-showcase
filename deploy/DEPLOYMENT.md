@@ -1,6 +1,6 @@
 # Deployment plan
 
-How the hosted API at **`https://pinball.trmnlplugins.com`** gets built, shipped and run.
+How the hosted API at **`https://pinball-showcase.trmnlplugins.com`** gets built, shipped and run.
 Self-hosters only need the root `compose.yaml` (see the main README).
 
 ## Pipeline
@@ -24,11 +24,12 @@ push to master ─▶ GitHub Actions "Plugin" ─▶ trmnlp lint + render tests 
 | Data refresh | In-process daily job at 07:00 UTC (after Match Play's ~06:30 rebuild), conditional GET, retries every 15 min on failure, keeps serving the last good export |
 | Health | `GET /healthz` (liveness), `GET /readyz` (dataset loaded; 503 otherwise), `GET /api/v1/dataset` (age, next refresh, last error) |
 | TLS / proxy | Caddy (`deploy/Caddyfile`, compose profile `caddy`) or the server's existing proxy → `127.0.0.1:8080` |
-| Caching | `Cache-Control: public, max-age=300` on showcase responses |
+| Caching | `Cache-Control: public, max-age=300` on showcase responses and pages |
+| Website | `/` and `/m/{opdb_id}` served by the same container; `PINBALL_PUBLIC_URL` sets the address used in QR codes |
 
 ## First-time setup
 
-1. **DNS**: `pinball.trmnlplugins.com` → the server (A/AAAA, or CNAME/Cloudflare proxy like the other plugins).
+1. **DNS**: `pinball-showcase.trmnlplugins.com` → the server (A/AAAA, or CNAME/Cloudflare proxy like the other plugins).
 2. **Server**:
    ```bash
    mkdir -p /opt/trmnl-pinball && cd /opt/trmnl-pinball
@@ -40,7 +41,7 @@ push to master ─▶ GitHub Actions "Plugin" ─▶ trmnlp lint + render tests 
 3. **GHCR**: after the first image push, make the package public (GitHub → Packages →
    trmnl-plugin-pinball-showcase → Package settings → Change visibility) so the server and
    self-hosters can pull without credentials.
-4. **Smoke test**: `curl -s https://pinball.trmnlplugins.com/api/v1/showcase | jq .machine.name`
+4. **Smoke test**: `curl -s https://pinball-showcase.trmnlplugins.com/api/v1/showcase | jq .machine.name`
 5. **TRMNL**: `cd plugin && bin/trmnlp login && bin/trmnlp push`, then add the `id:` it
    reports to `plugin/src/settings.yml` and commit, so later pushes update the same plugin.
 
@@ -72,7 +73,7 @@ Plugin publishing works the same way: set `TRMNL_PUSH=true` and the `TRMNL_API_K
 ## Monitoring
 
 - Point an uptime checker (Uptime Kuma, Healthchecks, UptimeRobot...) at
-  `https://pinball.trmnlplugins.com/readyz`.
+  `https://pinball-showcase.trmnlplugins.com/readyz`.
 - Alert if `/api/v1/dataset` shows `last_error` for more than a day or `fetched_at` older
   than ~30 hours: the plugin keeps working on yesterday's data, but it should be looked at.
 

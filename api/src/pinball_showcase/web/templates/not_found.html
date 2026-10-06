@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section">
+  <div class="wrap narrow">
+    <p class="eyebrow eyebrow--accent">Tilt</p>
+    <h1>We couldn't find that machine</h1>
+    <p class="lede">There's no machine with the id <code>{{ opdb_id }}</code> in the current OPDB export. It may have been merged or renamed.</p>
+    <div class="actions">
+      <a class="button" href="/">See today's machine</a>
+      <a class="button button--ghost" href="https://opdb.org/search?q={{ opdb_id | urlencode }}">Search OPDB</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

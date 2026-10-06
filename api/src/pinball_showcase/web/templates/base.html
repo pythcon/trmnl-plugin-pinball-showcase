@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ page_title }}{% endblock %} · Pinball Showcase</title>
+  <meta name="description" content="{{ page_description | default('A different pinball machine every day on your TRMNL e-ink display.') }}">
+  <meta property="og:site_name" content="Pinball Showcase">
+  <meta property="og:title" content="{{ page_title }}">
+  <meta property="og:description" content="{{ page_description | default('A different pinball machine every day on your TRMNL e-ink display.') }}">
+  {% if og_image %}<meta property="og:image" content="{{ og_image }}">
+  <meta name="twitter:card" content="summary_large_image">{% endif %}
+  <meta name="theme-color" content="#111111">
+  <link rel="icon" href="{{ url_for('static', path='favicon.svg') }}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', path='site.css') }}?v={{ version }}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="/">
+        <img src="{{ url_for('static', path='favicon.svg') }}" alt="" width="28" height="28">
+        <span>Pinball Showcase</span>
+      </a>
+      <nav class="nav">
+        <a href="/">Today</a>
+        <a href="/#plugin">Get the plugin</a>
+        <a href="{{ more_plugins_url }}" class="nav-cta">More TRMNL plugins</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <section class="more-plugins">
+    <div class="wrap more-inner">
+      <div>
+        <p class="eyebrow">From the makers of Pinball Showcase</p>
+        <h2>More plugins for your TRMNL</h2>
+        <p>Grafana panels, Servarr dashboards, sports trackers and more, free to install and open source.</p>
+      </div>
+      <a class="button button--light" href="{{ more_plugins_url }}">Browse trmnlplugins.com &rarr;</a>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <div class="credit">
+        <p>
+          Machine data and images from the
+          <a href="https://opdb.org">Open Pinball Database (OPDB)</a>,
+          via the daily export published by
+          <a href="https://docs.matchplay.events/data-exports">Match Play Events</a>.
+          Thank you to the OPDB contributors who catalogue every machine.
+        </p>
+        <p class="muted">Pinball Showcase is an independent project and is not affiliated with OPDB, Match Play or TRMNL. Trademarks and artwork belong to their respective owners.</p>
+      </div>
+      <nav class="footer-links">
+        <a href="{{ more_plugins_url }}">trmnlplugins.com</a>
+        <a href="{{ github_url }}">Source on GitHub</a>
+        <a href="/docs">API</a>
+        <a href="https://trmnl.com">TRMNL</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

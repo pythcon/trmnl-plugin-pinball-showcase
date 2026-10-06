@@ -20,6 +20,7 @@ from .params import ShowcaseParams, blank_to_none, parse_rotation, to_filters
 from .presenter import build_error, build_showcase
 from .selection import Filters, PickMemo, Rotation, choose, period_key
 from .store import DatasetStore
+from .web import build_router, mount_static
 
 log = logging.getLogger("pinball_showcase")
 
@@ -56,12 +57,15 @@ def create_app(settings: Settings | None = None, store: DatasetStore | None = No
             raise HTTPException(status_code=503, detail="OPDB dataset is not loaded yet")
         return store.dataset
 
+    def site_url(request: Request) -> str:
+        return public_base_url(settings, request)
+
     def cached(payload: dict[str, Any], response: Response) -> dict[str, Any]:
         response.headers["Cache-Control"] = f"public, max-age={settings.cache_max_age_seconds}"
         return payload
 
-    @app.get("/", include_in_schema=False)
-    def root() -> dict[str, str]:
+    @app.get("/api", include_in_schema=False)
+    def api_root() -> dict[str, str]:
         return {"service": "trmnl-pinball-showcase", "version": __version__, "docs": "/docs"}
 
     @app.get("/healthz", tags=["ops"])
@@ -81,7 +85,9 @@ def create_app(settings: Settings | None = None, store: DatasetStore | None = No
         return _dataset_info(store)
 
     @app.get("/api/v1/showcase", tags=["showcase"])
-    def showcase(response: Response, params: Annotated[ShowcaseParams, Query()]) -> dict[str, Any]:
+    def showcase(
+        request: Request, response: Response, params: Annotated[ShowcaseParams, Query()]
+    ) -> dict[str, Any]:
         """The featured machine for the current rotation period, as TRMNL merge variables.
 
         Multi-value filters accept repeated parameters or comma-separated lists. Values in
@@ -118,6 +124,7 @@ def create_app(settings: Settings | None = None, store: DatasetStore | None = No
             filters=filters,
             pool_size=pool_size,
             period=period,
+            site_url=site_url(request),
         )
         return cached(payload, response)
 
@@ -128,6 +135,7 @@ def create_app(settings: Settings | None = None, store: DatasetStore | None = No
 
     @app.get("/api/v1/machines/{opdb_id}", tags=["showcase"])
     def machine_detail(
+        request: Request,
         opdb_id: str,
         response: Response,
         tz: Annotated[str | None, Query(max_length=64)] = None,
@@ -146,8 +154,20 @@ def create_app(settings: Settings | None = None, store: DatasetStore | None = No
             filters=Filters(),
             pool_size=1,
             period=local_now.date().isoformat(),
+            site_url=site_url(request),
         )
         return cached(payload, response)
+
+    mount_static(app)
+    app.include_router(
+        build_router(
+            settings,
+            get_dataset=lambda: store.dataset,
+            get_memo=lambda: memo,
+            base_url=site_url,
+            local_now=lambda tz: _local_now(tz or settings.default_timezone, None),
+        )
+    )
 
     @app.exception_handler(Exception)
     async def unhandled(_: Request, exc: Exception) -> JSONResponse:
@@ -157,6 +177,13 @@ def create_app(settings: Settings | None = None, store: DatasetStore | None = No
         )
 
     return app
+
+
+def public_base_url(settings: Settings, request: Request) -> str:
+    """Configured public URL, or the scheme://host the request arrived on."""
+    if settings.public_url:
+        return settings.public_url.rstrip("/")
+    return str(request.base_url).rstrip("/")
 
 
 def _dataset_info(store: DatasetStore) -> dict[str, Any]:

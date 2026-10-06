@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% from "_macros.html" import machine_card, chips, credits_list %}
+
+{% block content %}
+<section class="machine-head">
+  <div class="wrap">
+    <a class="back" href="/">&larr; Today's machine</a>
+    <h1>{{ m.name }}</h1>
+    {% if m.edition_name != m.name %}<p class="muted">Shown: {{ m.edition_name }}</p>{% endif %}
+    <p class="lede">{{ m.manufacturer_full or m.manufacturer }}{% if m.release_label %} <span class="dot">·</span> <span class="accent">{{ m.release_label }}</span>{% endif %}</p>
+    {{ chips(m) }}
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap machine-grid">
+    <div class="machine-media">
+      {% if m.gallery %}
+      <figure class="feature-image">
+        <a href="{{ m.gallery[0].url }}" target="_blank" rel="noopener"><img src="{{ m.gallery[0].url }}" alt="{{ m.name }} {{ m.gallery[0].label }}"></a>
+        <figcaption>{{ m.gallery[0].label }}</figcaption>
+      </figure>
+      {% if m.gallery | length > 1 %}
+      <div class="thumbs">
+        {% for g in m.gallery[1:] %}
+        <a class="thumb" href="{{ g.url }}" target="_blank" rel="noopener">
+          <img src="{{ g.thumb or g.url }}" alt="{{ m.name }} {{ g.label }}" loading="lazy">
+          <span>{{ g.label }}</span>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endif %}
+    </div>
+
+    <aside class="machine-info">
+      {% if m.fun_fact %}<p class="callout">{{ m.fun_fact }}</p>{% endif %}
+
+      <h2 class="h3">Specs</h2>
+      <dl class="specs">
+        {% for k, v in m.specs %}<div><dt>{{ k }}</dt><dd>{{ v }}</dd></div>{% endfor %}
+      </dl>
+
+      {% if m.credits %}
+      <h2 class="h3">Credits</h2>
+      {{ credits_list(m.credits) }}
+      {% endif %}
+
+      {% if m.facts %}
+      <h2 class="h3">Fast facts</h2>
+      <dl class="specs">
+        {% for f in m.facts %}<div><dt>{{ f.label }}</dt><dd>{{ f.value }}</dd></div>{% endfor %}
+      </dl>
+      {% endif %}
+
+      <h2 class="h3">Learn more</h2>
+      <ul class="link-list">
+        {% for l in m.links %}
+        <li><a href="{{ l.url }}" rel="noopener">{{ l.label }} &nearr;</a><span class="muted">{{ l.note }}</span></li>
+        {% endfor %}
+      </ul>
+    </aside>
+  </div>
+</section>
+
+{% if m.editions | length > 1 %}
+<section class="section section--tight">
+  <div class="wrap">
+    <h2>Editions</h2>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Machine</th><th>Year</th><th>Edition</th></tr></thead>
+        <tbody>
+          {% for e in m.editions %}
+          <tr{% if e.current %} class="is-current"{% endif %}><td>{{ e.name }}</td><td>{{ e.date or "" }}</td><td>{{ e.features }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if m.same_year %}
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Also from {{ m.year }}</h2>
+      <p class="muted">{{ m.same_year_count }} other {{ "title" if m.same_year_count == 1 else "titles" }} released the same year.</p>
+    </div>
+    <div class="card-grid card-grid--small">
+      {% for c in m.same_year %}{{ machine_card(c) }}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section section--alt">
+  <div class="wrap cta">
+    <div>
+      <h2>Get a machine like this on your TRMNL every day</h2>
+      <p class="muted">Pinball Showcase is a free plugin for TRMNL e-ink displays.</p>
+    </div>
+    <a class="button" href="/#plugin">See how it works &rarr;</a>
+  </div>
+</section>
+{% endblock %}

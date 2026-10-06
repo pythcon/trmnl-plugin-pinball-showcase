@@ -1,6 +1,6 @@
 # TLS is automatic. Rate limiting is left to Cloudflare (if proxied) or the plugin's own
 # Cache-Control headers; TRMNL polls each plugin at most every few minutes.
-pinball.trmnlplugins.com {
+pinball-showcase.trmnlplugins.com {
 	encode zstd gzip
 	reverse_proxy 127.0.0.1:8080 {
 		health_uri /healthz

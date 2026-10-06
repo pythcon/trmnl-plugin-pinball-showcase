@@ -22,7 +22,7 @@ four mashup sizes, landscape and portrait.
 - Fast facts: age, era, place in its maker's catalogue, how many titles shipped that year
 - A fun fact, including a "happy birthday" on a machine's release anniversary
 - Other titles from the same year (Spec Sheet layout on TRMNL X)
-- QR code to the machine's OPDB page
+- QR code to the machine's page on the Pinball Showcase site (photos, credits, editions, links)
 - Three layouts: **Showcase** (art and details), **Gallery** (art first), **Spec Sheet** (details first)
 - Anything optional can be hidden; color accents can be turned off
 
@@ -48,6 +48,19 @@ are OR'd, different filters are AND'd)
 - `lg:` layouts use TRMNL X's extra room for more credits, facts and bigger type
 - Graceful states for "no matches" and "API unreachable"
 
+## Website
+
+The container also serves the public site at
+[pinball-showcase.trmnlplugins.com](https://pinball-showcase.trmnlplugins.com):
+
+- **`/`**: today's machine, the last six picks, and how to get the plugin
+- **`/m/{opdb_id}`**: a page for every machine with its photo gallery, specs, full credits,
+  fast facts, editions, other titles from the same year, and links to OPDB, IPDB, Pinball
+  Primer and rule sheets. The QR code on the TRMNL screen opens this page.
+
+Every page credits OPDB and links to the other plugins at [trmnlplugins.com](https://trmnlplugins.com).
+Self-hosters get the same site; set `PINBALL_PUBLIC_URL` so QR codes point at it.
+
 ## How it works
 
 ```
@@ -67,7 +80,7 @@ TRMNL ──polls──▶ GET /api/v1/showcase?filters… ──▶ JSON merge 
 
 Install **Pinball Showcase** from TRMNL (or import `plugin/` as a private plugin), pick
 your layout and filters, and you're done. It polls the hosted API at
-`https://pinball.trmnlplugins.com`. No keys or accounts needed.
+`https://pinball-showcase.trmnlplugins.com`. No keys or accounts needed.
 
 ## Self-hosting
 
@@ -90,6 +103,7 @@ Interactive docs at `/docs`.
 
 | Endpoint | Purpose |
 |---|---|
+| `GET /` , `GET /m/{opdb_id}` | Website (HTML) |
 | `GET /api/v1/showcase` | The featured machine for the current period (the TRMNL polling target) |
 | `GET /api/v1/machines/{opdb_id}` | Payload for any machine, group or alias id |
 | `GET /api/v1/options` | Every filter value with title counts (manufacturers, decades, features...) |

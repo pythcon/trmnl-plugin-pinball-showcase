@@ -1,0 +1,30 @@
+{% macro machine_card(c) -%}
+<a class="card" href="{{ c.url }}">
+  <div class="card-art">
+    {% if c.image %}<img src="{{ c.image }}" alt="{{ c.name }} backglass" loading="lazy">{% endif %}
+  </div>
+  <div class="card-body">
+    {% if c.shown_on %}<p class="card-date">{{ c.shown_on }}</p>{% endif %}
+    <h3>{{ c.name }}</h3>
+    <p class="muted">{{ c.maker }}{% if c.year %} · {{ c.year }}{% endif %}</p>
+  </div>
+</a>
+{%- endmacro %}
+
+{% macro chips(m) -%}
+<ul class="chips">
+  {% if m.type_label %}<li>{{ m.type_label }}</li>{% endif %}
+  {% if m.display_label %}<li>{{ m.display_label }}</li>{% endif %}
+  {% if m.players_label %}<li>{{ m.players_label }}</li>{% endif %}
+  {% if m.era_label %}<li>{{ m.era_label }}</li>{% endif %}
+  {% for tag in m.tags %}<li class="chip-outline">{{ tag }}</li>{% endfor %}
+</ul>
+{%- endmacro %}
+
+{% macro credits_list(credits) -%}
+<dl class="credits">
+  {% for c in credits %}
+  <div><dt>{{ c.role }}</dt><dd>{{ c.names }}</dd></div>
+  {% endfor %}
+</dl>
+{%- endmacro %}
