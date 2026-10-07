@@ -55,6 +55,11 @@
     return svg;
   }
 
+  // "Pro" -> "Pro edition"; "Standard Edition" stays as is.
+  function editionPhrase(label) {
+    return /edition$/i.test(label) ? label : label + " edition";
+  }
+
   function clamp(i) {
     return Math.max(0, Math.min(count - 1, i));
   }
@@ -79,7 +84,7 @@
       var borrowed = photo.other && shownEdition;
       noteOut.hidden = !borrowed;
       noteOut.textContent = borrowed
-        ? "Photo of the " + (photo.edition || "another") + " edition. OPDB has no photos of the " + shownEdition + " yet."
+        ? "Photo of the " + editionPhrase(photo.edition || "another") + ". OPDB has no photos of the " + shownEdition + " yet."
         : "";
     }
     if (prevButton) prevButton.disabled = index === 0;

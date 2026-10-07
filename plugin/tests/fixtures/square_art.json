@@ -4,7 +4,8 @@
     "group_id": "GrleW",
     "name": "Strikes and Spares",
     "edition_name": "Strikes and Spares",
-    "edition_label": "Standard",
+    "edition_label": "Standard Edition",
+    "edition_short": "Standard",
     "short_name": null,
     "manufacturer": "Bally",
     "manufacturer_full": "Bally Manufacturing Co.",
@@ -29,7 +30,8 @@
       "width": 1008,
       "height": 916,
       "orientation": "landscape",
-      "edition": "Standard",
+      "edition": "Standard Edition",
+      "edition_short": "Standard",
       "borrowed": false
     },
     "playfield": {
@@ -38,7 +40,8 @@
       "width": 1008,
       "height": 1432,
       "orientation": "portrait",
-      "edition": "Standard",
+      "edition": "Standard Edition",
+      "edition_short": "Standard",
       "borrowed": false
     },
     "cabinet": null,
@@ -48,7 +51,8 @@
       "width": 1008,
       "height": 916,
       "orientation": "landscape",
-      "edition": "Standard",
+      "edition": "Standard Edition",
+      "edition_short": "Standard",
       "borrowed": false
     },
     "tall": {
@@ -57,28 +61,33 @@
       "width": 1008,
       "height": 1432,
       "orientation": "portrait",
-      "edition": "Standard",
+      "edition": "Standard Edition",
+      "edition_short": "Standard",
       "borrowed": false
     }
   },
   "editions": [
     {
-      "label": "Standard",
+      "label": "Standard Edition",
+      "short": "Standard",
       "id": "GrleW-MYeod",
       "shown": true
     },
     {
       "label": "Wild Schutz",
+      "short": "Wild Schutz",
       "id": "GrleW-ME0op",
       "shown": false
     },
     {
       "label": "Challenger IV",
+      "short": "Challenger IV",
       "id": "GrleW-MYeod-AO3dY",
       "shown": false
     },
     {
       "label": "Bloody China",
+      "short": "Bloody China",
       "id": "GrleW-MQYkZ",
       "shown": false
     }
@@ -152,12 +161,12 @@
   },
   "featured": {
     "label": "Pinball of the Day",
-    "updated_label": "Oct 6, 2026 11:27 AM EDT",
+    "updated_label": "Oct 7, 2026 11:01 AM EDT",
     "timezone": "EDT",
-    "date": "2026-10-06",
-    "date_label": "Tuesday, October 6",
-    "date_short": "Oct 6",
-    "period": "2026-10-06",
+    "date": "2026-10-07",
+    "date_label": "Wednesday, October 7",
+    "date_short": "Oct 7",
+    "period": "2026-10-07",
     "rotation": "daily",
     "pool_size": 1,
     "filter_label": null
@@ -165,7 +174,7 @@
   "source": {
     "name": "OPDB",
     "url": "https://opdb.org",
-    "updated": "2026-10-05"
+    "updated": "2026-10-07"
   },
   "error": null
 }

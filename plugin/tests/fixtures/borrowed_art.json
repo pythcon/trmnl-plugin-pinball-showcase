@@ -4,7 +4,8 @@
     "group_id": "GRbPY",
     "name": "Pirates of the Caribbean",
     "edition_name": "Pirates of the Caribbean (CE)",
-    "edition_label": "CE",
+    "edition_label": "Collector's Edition",
+    "edition_short": "CE",
     "short_name": "POTC",
     "manufacturer": "Jersey Jack Pinball",
     "manufacturer_full": "Jersey Jack Pinball",
@@ -31,7 +32,8 @@
       "width": 1000,
       "height": 909,
       "orientation": "landscape",
-      "edition": "Standard",
+      "edition": "Standard Edition",
+      "edition_short": "Standard",
       "borrowed": true
     },
     "playfield": {
@@ -40,7 +42,8 @@
       "width": 1125,
       "height": 1500,
       "orientation": "portrait",
-      "edition": "LE",
+      "edition": "Limited Edition",
+      "edition_short": "LE",
       "borrowed": true
     },
     "cabinet": null,
@@ -50,7 +53,8 @@
       "width": 1000,
       "height": 909,
       "orientation": "landscape",
-      "edition": "Standard",
+      "edition": "Standard Edition",
+      "edition_short": "Standard",
       "borrowed": true
     },
     "tall": {
@@ -59,23 +63,27 @@
       "width": 1125,
       "height": 1500,
       "orientation": "portrait",
-      "edition": "LE",
+      "edition": "Limited Edition",
+      "edition_short": "LE",
       "borrowed": true
     }
   },
   "editions": [
     {
-      "label": "CE",
+      "label": "Collector's Edition",
+      "short": "CE",
       "id": "GRbPY-MBR24",
       "shown": true
     },
     {
-      "label": "Standard",
+      "label": "Standard Edition",
+      "short": "Standard",
       "id": "GRbPY-MePOP",
       "shown": false
     },
     {
-      "label": "LE",
+      "label": "Limited Edition",
+      "short": "LE",
       "id": "GRbPY-MePOP-A9pVl",
       "shown": false
     }
@@ -161,12 +169,12 @@
   },
   "featured": {
     "label": "Pinball of the Day",
-    "updated_label": "Oct 6, 2026 11:27 AM EDT",
+    "updated_label": "Oct 7, 2026 11:01 AM EDT",
     "timezone": "EDT",
-    "date": "2026-10-06",
-    "date_label": "Tuesday, October 6",
-    "date_short": "Oct 6",
-    "period": "2026-10-06",
+    "date": "2026-10-07",
+    "date_label": "Wednesday, October 7",
+    "date_short": "Oct 7",
+    "period": "2026-10-07",
     "rotation": "daily",
     "pool_size": 1,
     "filter_label": null
@@ -174,7 +182,7 @@
   "source": {
     "name": "OPDB",
     "url": "https://opdb.org",
-    "updated": "2026-10-05"
+    "updated": "2026-10-07"
   },
   "error": null
 }

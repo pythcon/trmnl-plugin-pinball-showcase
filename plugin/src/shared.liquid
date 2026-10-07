@@ -121,20 +121,26 @@
 {%- assign art_second = false -%}{%- if cfg.art_position == 'right' -%}{%- assign art_second = true -%}{%- endif -%}
 
 {%- comment -%}
-  Editions. `edition_badge` names the edition on screen ("CE", "Arcade", "Standard")
-  and only exists when the title has several. `edition_line` lists the others, e.g.
-  "Wizard · Arcade"; `edition_rows` estimates how many lines it needs beside the art.
+  Editions. `edition_badge` names the edition on screen ("Collector's Edition"); it
+  exists when the title has several editions or its only one is named (Home Edition).
+  `edition_line` lists the others ("Wizard · Arcade"). The `_short` versions ("CE") are
+  for the half and quadrant layouts. `edition_rows` estimates lines beside the art.
 {%- endcomment -%}
 {%- assign edition_badge = machine.edition_label -%}
+{%- assign edition_badge_short = machine.edition_short | default: machine.edition_label -%}
 {%- if is_color and cfg.color_accents != 'off' -%}
   {%- assign badge_class = 'label--outline bg--yellow' -%}
 {%- else -%}
   {%- assign badge_class = 'label--inverted' -%}
 {%- endif -%}
-{%- assign edition_line = '' -%}{%- assign edition_count = 0 -%}
+{%- assign edition_line = '' -%}{%- assign edition_line_short = '' -%}{%- assign edition_count = 0 -%}
 {%- for e in editions -%}{%- unless e.shown -%}
-  {%- if edition_count > 0 -%}{%- assign edition_line = edition_line | append: ' · ' -%}{%- endif -%}
-  {%- assign edition_line = edition_line | append: e.label -%}{%- assign edition_count = edition_count | plus: 1 -%}
+  {%- if edition_count > 0 -%}
+    {%- assign edition_line = edition_line | append: ' · ' -%}{%- assign edition_line_short = edition_line_short | append: ' · ' -%}
+  {%- endif -%}
+  {%- assign edition_line = edition_line | append: e.label -%}
+  {%- assign edition_line_short = edition_line_short | append: e.short | default: e.label -%}
+  {%- assign edition_count = edition_count | plus: 1 -%}
 {%- endunless -%}{%- endfor -%}
 {%- assign show_editions = false -%}{%- if edition_count > 0 -%}{%- assign show_editions = true -%}{%- endif -%}
 {%- if edition_badge -%}{%- assign editions_title = 'Other editions' -%}{%- else -%}{%- assign editions_title = 'Editions' -%}{%- endif -%}
@@ -147,9 +153,9 @@
   its own), say whose it is: "Art from Standard". One note per layout slot.
 {%- endcomment -%}
 {%- assign art_full_from = '' -%}{%- for t in art_full limit: art_full_count -%}{%- if images[t].borrowed and art_full_from == '' -%}{%- assign art_full_from = images[t].edition | default: 'another edition' -%}{%- endif -%}{%- endfor -%}
-{%- assign art_hh_from = '' -%}{%- for t in art_hh limit: art_hh_count -%}{%- if images[t].borrowed and art_hh_from == '' -%}{%- assign art_hh_from = images[t].edition | default: 'another edition' -%}{%- endif -%}{%- endfor -%}
-{%- assign art_hv_from = '' -%}{%- for t in art_hv limit: art_hv_count -%}{%- if images[t].borrowed and art_hv_from == '' -%}{%- assign art_hv_from = images[t].edition | default: 'another edition' -%}{%- endif -%}{%- endfor -%}
-{%- assign art_q_from = '' -%}{%- for t in art_q limit: art_q_count -%}{%- if images[t].borrowed and art_q_from == '' -%}{%- assign art_q_from = images[t].edition | default: 'another edition' -%}{%- endif -%}{%- endfor -%}
+{%- assign art_hh_from = '' -%}{%- for t in art_hh limit: art_hh_count -%}{%- if images[t].borrowed and art_hh_from == '' -%}{%- assign art_hh_from = images[t].edition_short | default: images[t].edition | default: 'another edition' -%}{%- endif -%}{%- endfor -%}
+{%- assign art_hv_from = '' -%}{%- for t in art_hv limit: art_hv_count -%}{%- if images[t].borrowed and art_hv_from == '' -%}{%- assign art_hv_from = images[t].edition_short | default: images[t].edition | default: 'another edition' -%}{%- endif -%}{%- endfor -%}
+{%- assign art_q_from = '' -%}{%- for t in art_q limit: art_q_count -%}{%- if images[t].borrowed and art_q_from == '' -%}{%- assign art_q_from = images[t].edition_short | default: images[t].edition | default: 'another edition' -%}{%- endif -%}{%- endfor -%}
 
 {%- assign instance_title = trmnl.plugin_settings.instance_name | default: 'Pinball Showcase' -%}
 

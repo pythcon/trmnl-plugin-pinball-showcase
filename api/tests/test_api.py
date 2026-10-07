@@ -138,7 +138,7 @@ def test_refresh_rotation_accepts_interval(client) -> None:
 def test_pinning_an_edition_shows_that_edition(client) -> None:
     body = client.get("/api/v1/showcase", params={"machine": "GBBBB-M0001"}).json()
     assert body["machine"]["id"] == "GBBBB-M0001"
-    assert [e["label"] for e in body["editions"] if e["shown"]] == ["Premium/LE"]
+    assert [e["label"] for e in body["editions"] if e["shown"]] == ["Premium / Limited Edition"]
     # That edition has no photos, so the art comes from its sibling.
     assert body["images"]["any"] is not None
     # A bare group id still picks the best edition.
@@ -152,7 +152,7 @@ def test_search_endpoint(client) -> None:
         "id": "GBBBB-M0001",
         "url": "/m/GBBBB-M0001",
         "name": "Godzilla",
-        "edition_label": "Premium/LE",
+        "edition_label": "Premium / Limited Edition",
         "edition_count": 2,
         "manufacturer": "Stern",
         "year": 2021,
@@ -180,7 +180,7 @@ def test_previews_do_not_touch_the_rotation(client) -> None:
 def test_favorite_edition_ids_show_that_edition(client) -> None:
     body = client.get("/api/v1/showcase", params={"favorites": "GBBBB-M0001"}).json()
     assert body["machine"]["id"] == "GBBBB-M0001"
-    assert body["machine"]["edition_label"] == "Premium/LE"
+    assert body["machine"]["edition_label"] == "Premium / Limited Edition"
     # A plain group id keeps the default edition.
     body = client.get("/api/v1/showcase", params={"favorites": "GBBBB"}).json()
     assert body["machine"]["id"] == "GBBBB-M0002"

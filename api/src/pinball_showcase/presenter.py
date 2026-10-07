@@ -59,7 +59,10 @@ PORTRAIT_FIRST = ("playfield", "backglass", "cabinet")
 
 
 def _image_payload(
-    picked: tuple[Image, Machine] | None, shown: Machine, labels: dict[str, str]
+    picked: tuple[Image, Machine] | None,
+    shown: Machine,
+    labels: dict[str, str],
+    short_labels: dict[str, str],
 ) -> dict[str, Any] | None:
     """A photo plus where it came from: `borrowed` when it belongs to another edition
     of the title, with that edition's label so screens can say "Art: Standard"."""
@@ -74,6 +77,7 @@ def _image_payload(
         "height": height,
         "orientation": "portrait" if height > width else "landscape",
         "edition": labels.get(source.opdb_id),
+        "edition_short": short_labels.get(source.opdb_id),
         "borrowed": source.opdb_id != shown.opdb_id,
     }
 
@@ -170,6 +174,8 @@ def build_showcase(
     editions = title.edition_list(rep)
     multi = len(title.versions) > 1
     labels = title.edition_labels() if multi else {}
+    short_labels = title.edition_labels(short=True) if multi else {}
+    badge = title.badge(rep)
     page_url = machine_page_url(site_url, rep)
     today = local_now.date()
     era = title_era(title)
@@ -223,9 +229,11 @@ def build_showcase(
             "group_id": title.group_id,
             "name": title.name,
             "edition_name": rep.name,
-            # Short OPDB label ("CE", "Arcade", "Standard") when the title has several
-            # editions; None for single-edition titles and umbrella entries.
-            "edition_label": labels.get(rep.opdb_id),
+            # The edition on screen, long ("Collector's Edition") and short ("CE"), when
+            # the title has several editions or its only one is named (a Home Edition);
+            # None for a plain single model and for umbrella entries.
+            "edition_label": badge[0] if badge else None,
+            "edition_short": badge[1] if badge else None,
             "short_name": title.short_name,
             "manufacturer": rep.manufacturer,
             "manufacturer_full": rep.manufacturer_full,
@@ -246,11 +254,21 @@ def build_showcase(
         # backglass/playfield/cabinet: that photo type, borrowed if this edition lacks it.
         # any/tall: automatic art, the edition's own photos first (landscape or tall slot).
         "images": {
-            "backglass": _image_payload(_photo_of_kind(title, "backglass", rep), rep, labels),
-            "playfield": _image_payload(_photo_of_kind(title, "playfield", rep), rep, labels),
-            "cabinet": _image_payload(_photo_of_kind(title, "cabinet", rep), rep, labels),
-            "any": _image_payload(_auto_photo(title, rep, LANDSCAPE_FIRST), rep, labels),
-            "tall": _image_payload(_auto_photo(title, rep, PORTRAIT_FIRST), rep, labels),
+            "backglass": _image_payload(
+                _photo_of_kind(title, "backglass", rep), rep, labels, short_labels
+            ),
+            "playfield": _image_payload(
+                _photo_of_kind(title, "playfield", rep), rep, labels, short_labels
+            ),
+            "cabinet": _image_payload(
+                _photo_of_kind(title, "cabinet", rep), rep, labels, short_labels
+            ),
+            "any": _image_payload(
+                _auto_photo(title, rep, LANDSCAPE_FIRST), rep, labels, short_labels
+            ),
+            "tall": _image_payload(
+                _auto_photo(title, rep, PORTRAIT_FIRST), rep, labels, short_labels
+            ),
         },
         "editions": editions,
         "credits": _credits(title, rep),

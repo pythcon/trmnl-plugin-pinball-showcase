@@ -31,7 +31,7 @@ def test_machine_page(client) -> None:
     r = client.get("/m/GAAAA-M0001")
     assert r.status_code == 200
     html = r.text
-    assert '<h1>Medieval Madness <span class="edition-badge">Standard</span></h1>' in html
+    assert '<h1>Medieval Madness <span class="edition-badge">Standard Edition</span></h1>' in html
     assert "Brian Eddy" in html
     assert "<dt>Music</dt>" in html and "<dt>Sound</dt>" in html
     assert "Editions" in html  # original + remake
@@ -127,9 +127,11 @@ def test_alias_editions_are_listed_and_linked(client) -> None:
 def test_edition_page_names_the_edition_and_captions_borrowed_photos(client) -> None:
     # Godzilla Premium/LE has no photos of its own: the hero is the Pro's, captioned.
     html = client.get("/m/GBBBB-M0001").text
-    assert '<span class="edition-badge">Premium/LE</span>' in html
-    assert "Photo of the Pro edition. OPDB has no photos of the Premium/LE yet." in html
-    assert "<title>Godzilla Premium/LE" in html
+    assert '<span class="edition-badge">Premium / Limited Edition</span>' in html
+    assert (
+        "Photo of the Pro edition. OPDB has no photos of the Premium / Limited Edition yet." in html
+    )
+    assert "<title>Godzilla Premium / Limited Edition" in html
 
 
 def test_own_photos_have_no_borrowed_caption(client) -> None:
@@ -151,7 +153,7 @@ def test_search_page_lists_results(client) -> None:
     html = r.text
     assert "1 match for &ldquo;godzilla prem&rdquo;" in html
     assert '<a class="card" href="/m/GBBBB-M0001">' in html
-    assert '<span class="edition-badge">Premium/LE</span>' in html
+    assert '<span class="edition-badge">Premium / Limited Edition</span>' in html
     # The box keeps what was typed.
     assert 'value="godzilla prem"' in html
 
@@ -211,14 +213,17 @@ def test_machine_page_seo_and_link_previews(client) -> None:
     # The preview image is the machine's art, with its size and alt text.
     assert re.search(r'<meta property="og:image" content="https://img\.opdb\.org/[^"]+">', head)
     assert '<meta property="og:image:width" content="1224">' in head
-    assert 'og:image:alt" content="Godzilla Premium/LE pinball artwork"' in head
+    assert 'og:image:alt" content="Godzilla Premium / Limited Edition pinball artwork"' in head
     data = json.loads(
         re.search(r'<script type="application/ld\+json">(.*?)</script>', head).group(1)
     )
     types = {block["@type"] for block in data["@graph"]}
     assert types == {"WebSite", "BreadcrumbList", "Product"}
     product = next(b for b in data["@graph"] if b["@type"] == "Product")
-    assert product["name"] == "Godzilla (Premium/LE)" and product["sku"] == "GBBBB-M0001"
+    assert (
+        product["name"] == "Godzilla (Premium / Limited Edition)"
+        and product["sku"] == "GBBBB-M0001"
+    )
     assert product["manufacturer"]["name"] == "Stern Inc."
 
 

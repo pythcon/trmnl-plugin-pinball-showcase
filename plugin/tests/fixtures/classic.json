@@ -4,7 +4,8 @@
     "group_id": "G5pe4",
     "name": "Medieval Madness",
     "edition_name": "Medieval Madness",
-    "edition_label": "Standard",
+    "edition_label": "Standard Edition",
+    "edition_short": "Standard",
     "short_name": "MM",
     "manufacturer": "Williams",
     "manufacturer_full": "Williams Electronic Games, Inc.",
@@ -29,7 +30,8 @@
       "width": 864,
       "height": 600,
       "orientation": "landscape",
-      "edition": "Standard",
+      "edition": "Standard Edition",
+      "edition_short": "Standard",
       "borrowed": false
     },
     "playfield": {
@@ -38,7 +40,8 @@
       "width": 792,
       "height": 932,
       "orientation": "portrait",
-      "edition": "Standard",
+      "edition": "Standard Edition",
+      "edition_short": "Standard",
       "borrowed": false
     },
     "cabinet": null,
@@ -48,7 +51,8 @@
       "width": 864,
       "height": 600,
       "orientation": "landscape",
-      "edition": "Standard",
+      "edition": "Standard Edition",
+      "edition_short": "Standard",
       "borrowed": false
     },
     "tall": {
@@ -57,38 +61,45 @@
       "width": 792,
       "height": 932,
       "orientation": "portrait",
-      "edition": "Standard",
+      "edition": "Standard Edition",
+      "edition_short": "Standard",
       "borrowed": false
     }
   },
   "editions": [
     {
-      "label": "Standard",
+      "label": "Standard Edition",
+      "short": "Standard",
       "id": "G5pe4-MePZv",
       "shown": true
     },
     {
-      "label": "Remake Royal",
+      "label": "Remake Royal Edition",
+      "short": "Remake Royal",
       "id": "G5pe4-MkPRV",
       "shown": false
     },
     {
-      "label": "Remake LE",
+      "label": "Remake Limited Edition",
+      "short": "Remake LE",
       "id": "G5pe4-M61y6",
       "shown": false
     },
     {
-      "label": "Remake Special",
+      "label": "Remake Special Edition",
+      "short": "Remake Special",
       "id": "G5pe4-MrR1B",
       "shown": false
     },
     {
       "label": "Remake",
+      "short": "Remake",
       "id": "G5pe4-MyNkp",
       "shown": false
     },
     {
-      "label": "Remake Merlin",
+      "label": "Remake Merlin Edition",
+      "short": "Remake Merlin",
       "id": "G5pe4-MrRrv",
       "shown": false
     }
@@ -182,12 +193,12 @@
   },
   "featured": {
     "label": "Pinball of the Day",
-    "updated_label": "Oct 6, 2026 11:27 AM EDT",
+    "updated_label": "Oct 7, 2026 11:01 AM EDT",
     "timezone": "EDT",
-    "date": "2026-10-06",
-    "date_label": "Tuesday, October 6",
-    "date_short": "Oct 6",
-    "period": "2026-10-06",
+    "date": "2026-10-07",
+    "date_label": "Wednesday, October 7",
+    "date_short": "Oct 7",
+    "period": "2026-10-07",
     "rotation": "daily",
     "pool_size": 1,
     "filter_label": null
@@ -195,7 +206,7 @@
   "source": {
     "name": "OPDB",
     "url": "https://opdb.org",
-    "updated": "2026-10-05"
+    "updated": "2026-10-07"
   },
   "error": null
 }

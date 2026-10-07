@@ -15,8 +15,8 @@ def test_normalize_folds_case_accents_and_punctuation() -> None:
 
 
 def test_every_word_must_prefix_match(dataset: Dataset) -> None:
-    assert names(dataset, "med mad") == [("Medieval Madness", "Standard")]
-    assert names(dataset, "madness medieval") == [("Medieval Madness", "Standard")]
+    assert names(dataset, "med mad") == [("Medieval Madness", "Standard Edition")]
+    assert names(dataset, "madness medieval") == [("Medieval Madness", "Standard Edition")]
     assert names(dataset, "medieval zebra") == []
     assert names(dataset, "") == []
 
@@ -28,7 +28,7 @@ def test_short_names_makers_and_years(dataset: Dataset) -> None:
 
 
 def test_naming_an_edition_returns_that_edition(dataset: Dataset) -> None:
-    assert names(dataset, "godzilla premium") == [("Godzilla", "Premium/LE")]
+    assert names(dataset, "godzilla premium") == [("Godzilla", "Premium / Limited Edition")]
     assert names(dataset, "godzilla") == [("Godzilla", "Pro")]
     result = SearchIndex(dataset).search("godzilla premium")[0]
     # The Premium/LE has no photos: the thumbnail is the Pro's, flagged as borrowed.

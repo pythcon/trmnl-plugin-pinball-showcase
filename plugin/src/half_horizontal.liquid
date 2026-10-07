@@ -11,7 +11,7 @@
     <div class="flex flex--col flex--left w--full">
       <div class="flex flex--row flex--left flex--center-y gap--small w--full">
         <span class="title title--large lg:title--xlarge text--bold" data-clamp="1">{{ machine.name }}</span>
-        {%- if edition_badge -%}<span class="label {{ badge_class }} no-shrink">{{ edition_badge }}</span>{%- endif -%}
+        {%- if edition_badge -%}<span class="label {{ badge_class }} no-shrink">{{ edition_badge_short }}</span>{%- endif -%}
       </div>
       <div class="flex flex--row flex--wrap flex--left gap--small w--full">
         <span class="label label--large">{{ machine.manufacturer }}</span>
@@ -53,7 +53,7 @@
     <div class="{{ info_span }} flex flex--col flex--left gap--small">
       <div class="flex flex--row flex--wrap flex--left flex--center-y gap--small w--full">
         <span class="title title--large lg:title--xlarge text--bold" data-clamp="2">{{ machine.name }}</span>
-        {%- if edition_badge -%}<span class="label {{ badge_class }} no-shrink">{{ edition_badge }}</span>{%- endif -%}
+        {%- if edition_badge -%}<span class="label {{ badge_class }} no-shrink">{{ edition_badge_short }}</span>{%- endif -%}
       </div>
       <div class="flex flex--row flex--wrap flex--left gap--small w--full">
         <span class="label label--large">{{ machine.manufacturer }}</span>

@@ -4,7 +4,8 @@
     "group_id": "GYWBZ",
     "name": "Willy Wonka & The Chocolate Factory",
     "edition_name": "Willy Wonka & The Chocolate Factory",
-    "edition_label": "Standard",
+    "edition_label": "Standard Edition",
+    "edition_short": "Standard",
     "short_name": "WONKA",
     "manufacturer": "Jersey Jack Pinball",
     "manufacturer_full": "Jersey Jack Pinball",
@@ -29,7 +30,8 @@
       "width": 1000,
       "height": 907,
       "orientation": "landscape",
-      "edition": "Standard",
+      "edition": "Standard Edition",
+      "edition_short": "Standard",
       "borrowed": false
     },
     "playfield": {
@@ -38,7 +40,8 @@
       "width": 914,
       "height": 1466,
       "orientation": "portrait",
-      "edition": "CE",
+      "edition": "Collector's Edition",
+      "edition_short": "CE",
       "borrowed": true
     },
     "cabinet": null,
@@ -48,7 +51,8 @@
       "width": 1000,
       "height": 907,
       "orientation": "landscape",
-      "edition": "Standard",
+      "edition": "Standard Edition",
+      "edition_short": "Standard",
       "borrowed": false
     },
     "tall": {
@@ -57,23 +61,27 @@
       "width": 1000,
       "height": 907,
       "orientation": "landscape",
-      "edition": "Standard",
+      "edition": "Standard Edition",
+      "edition_short": "Standard",
       "borrowed": false
     }
   },
   "editions": [
     {
-      "label": "LE",
+      "label": "Limited Edition",
+      "short": "LE",
       "id": "GYWBZ-MW9B0",
       "shown": false
     },
     {
-      "label": "Standard",
+      "label": "Standard Edition",
+      "short": "Standard",
       "id": "GYWBZ-MkPrr",
       "shown": true
     },
     {
-      "label": "CE",
+      "label": "Collector's Edition",
+      "short": "CE",
       "id": "GYWBZ-MW9B0-A9jqd",
       "shown": false
     }
@@ -155,7 +163,7 @@
   },
   "featured": {
     "label": "Pinball of the Day",
-    "updated_label": "Oct 5, 2026 3:27 PM UTC",
+    "updated_label": "Oct 5, 2026 3:01 PM UTC",
     "timezone": "UTC",
     "date": "2026-10-05",
     "date_label": "Monday, October 5",
@@ -168,7 +176,7 @@
   "source": {
     "name": "OPDB",
     "url": "https://opdb.org",
-    "updated": "2026-10-05"
+    "updated": "2026-10-07"
   },
   "error": null
 }

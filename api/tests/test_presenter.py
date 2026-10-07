@@ -80,7 +80,7 @@ def test_year_only_dates(dataset: Dataset) -> None:
 def test_edition_tags_and_same_year(dataset: Dataset) -> None:
     p = render(dataset, "GBBBB", datetime(2026, 10, 5))
     assert [(e["label"], e["shown"]) for e in p["editions"]] == [
-        ("Premium/LE", False),
+        ("Premium / Limited Edition", False),
         ("Pro", True),
     ]
     assert p["same_year_count"] == 0
@@ -89,12 +89,17 @@ def test_edition_tags_and_same_year(dataset: Dataset) -> None:
 def test_editions_list_every_version_and_mark_the_shown_one(dataset: Dataset) -> None:
     payload = render(dataset, "GAAAA", datetime(2026, 10, 5))
     assert payload["editions"] == [
-        {"label": "Standard", "id": "GAAAA-M0001", "shown": True},
-        {"label": "Remake LE", "id": "GAAAA-M0002", "shown": False},
+        {"label": "Standard Edition", "short": "Standard", "id": "GAAAA-M0001", "shown": True},
+        {
+            "label": "Remake Limited Edition",
+            "short": "Remake LE",
+            "id": "GAAAA-M0002",
+            "shown": False,
+        },
     ]
     # Alias-only versions are listed too.
     labels = [e["label"] for e in render(dataset, "GDDDD", datetime(2026, 10, 5))["editions"]]
-    assert labels == ["Standard", "Special"]
+    assert labels == ["Standard Edition", "Special"]
     # Edition names are no longer mixed into the feature tags.
     assert "Remake LE" not in payload["machine"]["tags"]
 
@@ -137,22 +142,23 @@ def _show(ds: Dataset, opdb_id: str) -> dict:
 
 def test_edition_without_photos_borrows_and_says_so() -> None:
     p = _show(_pirates(), "GPPPP-M0002")
-    assert p["machine"]["edition_label"] == "CE"
+    assert p["machine"]["edition_label"] == "Collector's Edition"
+    assert p["machine"]["edition_short"] == "CE"
     art = p["images"]["any"]
     assert art["url"] == "https://img.opdb.org/std-bg-large.jpg"
-    assert art["borrowed"] is True and art["edition"] == "Standard"
+    assert art["borrowed"] is True and art["edition"] == "Standard Edition"
 
 
 def test_auto_art_prefers_the_editions_own_photos() -> None:
     p = _show(_pirates(), "GPPPP-M0001-A0001")
-    assert p["machine"]["edition_label"] == "LE"
+    assert p["machine"]["edition_label"] == "Limited Edition"
     # Its own playfield beats the standard model's backglass...
     assert "le-pf" in p["images"]["any"]["url"]
     assert p["images"]["any"]["borrowed"] is False
     assert "le-pf" in p["images"]["tall"]["url"]
     # ...but an explicit backglass request still borrows, labelled.
     assert p["images"]["backglass"]["borrowed"] is True
-    assert p["images"]["backglass"]["edition"] == "Standard"
+    assert p["images"]["backglass"]["edition"] == "Standard Edition"
 
 
 def test_single_edition_titles_have_no_label(dataset: Dataset) -> None:
@@ -163,5 +169,5 @@ def test_single_edition_titles_have_no_label(dataset: Dataset) -> None:
 
 def test_default_edition_is_labelled_when_there_are_others(dataset: Dataset) -> None:
     p = render(dataset, "GAAAA", datetime(2026, 10, 6))
-    assert p["machine"]["edition_label"] == "Standard"
+    assert p["machine"]["edition_label"] == "Standard Edition"
     assert p["images"]["backglass"]["borrowed"] is False

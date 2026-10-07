@@ -70,9 +70,15 @@ class SearchIndex:
         for title in dataset.titles:
             if not title.representative.physical:
                 continue
-            labels = title.edition_labels() if len(title.versions) > 1 else {}
+            # Both forms are searchable: "potter ce" and "potter collector" both work.
+            labels = title.edition_labels()
+            short = title.edition_labels(short=True)
             editions = tuple(
-                _Edition(m, labels.get(m.opdb_id), _words(labels.get(m.opdb_id)))
+                _Edition(
+                    m,
+                    labels.get(m.opdb_id),
+                    _words(labels.get(m.opdb_id)) + _words(short.get(m.opdb_id)),
+                )
                 for m in title.versions
             )
             makers = {w for m in title.versions for w in _words(m.manufacturer)}
@@ -188,12 +194,12 @@ def _score(entry: _Entry, q: str, tokens: list[str]) -> tuple[float, _Edition | 
 
 def _result(title: Title, edition: _Edition | None) -> SearchResult:
     machine = edition.machine if edition else title.representative
-    labels = title.edition_labels() if len(title.versions) > 1 else {}
+    badge = title.badge(machine)
     image, borrowed = _thumbnail(title, machine)
     return SearchResult(
         title=title,
         machine=machine,
-        edition_label=labels.get(machine.opdb_id),
+        edition_label=badge[0] if badge else None,
         image=image,
         image_borrowed=borrowed,
     )

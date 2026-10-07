@@ -57,7 +57,7 @@
   <p class="gallery-caption" aria-live="polite">
     <span class="gallery-label" data-gallery-label>{{ photos[0].label }}</span>
     <span class="gallery-edition" data-gallery-edition{% if not photos[0].edition %} hidden{% endif %}>{{ photos[0].edition or "" }}</span>
-    <span class="gallery-note" data-gallery-note{% if not (photos[0].other_edition and m.edition_label) %} hidden{% endif %}>{% if photos[0].other_edition and m.edition_label %}Photo of the {{ photos[0].edition or "another" }} edition. OPDB has no photos of the {{ m.edition_label }} yet.{% endif %}</span>
+    <span class="gallery-note" data-gallery-note{% if not (photos[0].other_edition and m.edition_label) %} hidden{% endif %}>{% if photos[0].other_edition and m.edition_label %}Photo of the {{ (photos[0].edition or "another") | edition_phrase }}. OPDB has no photos of the {{ m.edition_label }} yet.{% endif %}</span>
   </p>
   {% if photos | length > 1 %}
   <div class="gallery-thumbs" role="list" aria-label="All {{ photos | length }} photos">

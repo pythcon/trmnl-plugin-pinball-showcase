@@ -96,12 +96,20 @@ RSpec.describe 'Pinball Showcase' do
   describe 'editions' do
     # Pirates CE has no photos: landscape slots borrow the standard backglass, the tall
     # half-vertical slot the LE's playfield.
-    { 'full' => 'Standard', 'half_horizontal' => 'Standard', 'half_vertical' => 'LE',
-      'quadrant' => 'Standard' }.each do |view, source|
+    # Full screen spells labels out; the small layouts abbreviate them.
+    { 'full' => ["Collector's Edition", 'Standard Edition'], 'half_horizontal' => %w[CE Standard],
+      'half_vertical' => %w[CE LE], 'quadrant' => %w[CE Standard] }.each do |view, (badge, source)|
       it "names the edition and whose art it borrows in #{view}" do
         rendered = trmnl.render(view:, device: 'og_bwry', mocks: { API => { json: fixture('borrowed_art') } })
-        expect(rendered).to have_text('CE').and(have_text("Art from #{source}"))
+        expect(rendered).to have_text(badge).and(have_text("Art from #{source}"))
       end
+    end
+
+    it 'spells the edition out on full screen and abbreviates it in small layouts' do
+      full = trmnl.render(view: 'full', device: 'og_png', mocks: { API => { json: fixture('borrowed_art') } })
+      expect(full).to have_text("Collector's Edition")
+      half = trmnl.render(view: 'half_horizontal', device: 'og_png', mocks: { API => { json: fixture('borrowed_art') } })
+      expect(half).to have_text('CE').and(have_no_text("Collector's Edition"))
     end
 
     it 'lists the other editions, not the one on screen' do

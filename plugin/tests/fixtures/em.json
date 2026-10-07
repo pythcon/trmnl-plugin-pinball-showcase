@@ -5,6 +5,7 @@
     "name": "Super Star / Olympics",
     "edition_name": "Olympics",
     "edition_label": "Olympics",
+    "edition_short": "Olympics",
     "short_name": null,
     "manufacturer": "Chicago Coin",
     "manufacturer_full": "Chicago Coin Machine Mfg. Co.",
@@ -30,6 +31,7 @@
       "height": 498,
       "orientation": "landscape",
       "edition": "Olympics",
+      "edition_short": "Olympics",
       "borrowed": false
     },
     "playfield": {
@@ -39,6 +41,7 @@
       "height": 1500,
       "orientation": "portrait",
       "edition": "Super Star",
+      "edition_short": "Super Star",
       "borrowed": true
     },
     "cabinet": null,
@@ -49,6 +52,7 @@
       "height": 498,
       "orientation": "landscape",
       "edition": "Olympics",
+      "edition_short": "Olympics",
       "borrowed": false
     },
     "tall": {
@@ -58,17 +62,20 @@
       "height": 498,
       "orientation": "landscape",
       "edition": "Olympics",
+      "edition_short": "Olympics",
       "borrowed": false
     }
   },
   "editions": [
     {
       "label": "Olympics",
+      "short": "Olympics",
       "id": "G5WKO-MJZRk",
       "shown": true
     },
     {
       "label": "Super Star",
+      "short": "Super Star",
       "id": "G5WKO-ML32x",
       "shown": false
     }
@@ -142,7 +149,7 @@
   },
   "featured": {
     "label": "Pinball of the Day",
-    "updated_label": "Oct 5, 2026 3:27 PM UTC",
+    "updated_label": "Oct 5, 2026 3:01 PM UTC",
     "timezone": "UTC",
     "date": "2026-10-05",
     "date_label": "Monday, October 5",
@@ -155,7 +162,7 @@
   "source": {
     "name": "OPDB",
     "url": "https://opdb.org",
-    "updated": "2026-10-05"
+    "updated": "2026-10-07"
   },
   "error": null
 }

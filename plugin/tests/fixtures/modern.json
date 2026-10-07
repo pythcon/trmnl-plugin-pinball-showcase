@@ -5,6 +5,7 @@
     "name": "Jurassic Park",
     "edition_name": "Jurassic Park (Pro)",
     "edition_label": "Pro",
+    "edition_short": "Pro",
     "short_name": "JP",
     "manufacturer": "Stern",
     "manufacturer_full": "Stern Pinball, Inc.",
@@ -30,6 +31,7 @@
       "height": 489,
       "orientation": "landscape",
       "edition": "Pro",
+      "edition_short": "Pro",
       "borrowed": false
     },
     "playfield": {
@@ -39,6 +41,7 @@
       "height": 1209,
       "orientation": "portrait",
       "edition": "Pro",
+      "edition_short": "Pro",
       "borrowed": false
     },
     "cabinet": {
@@ -48,6 +51,7 @@
       "height": 1500,
       "orientation": "portrait",
       "edition": "Pro",
+      "edition_short": "Pro",
       "borrowed": false
     },
     "any": {
@@ -57,6 +61,7 @@
       "height": 489,
       "orientation": "landscape",
       "edition": "Pro",
+      "edition_short": "Pro",
       "borrowed": false
     },
     "tall": {
@@ -66,27 +71,32 @@
       "height": 1209,
       "orientation": "portrait",
       "edition": "Pro",
+      "edition_short": "Pro",
       "borrowed": false
     }
   },
   "editions": [
     {
       "label": "Pro",
+      "short": "Pro",
       "id": "GK17D-MdEqz",
       "shown": true
     },
     {
-      "label": "LE",
+      "label": "Limited Edition",
+      "short": "LE",
       "id": "GK17D-MKNKd-AOyKv",
       "shown": false
     },
     {
       "label": "Premium",
+      "short": "Premium",
       "id": "GK17D-MKNKd-A15Yn",
       "shown": false
     },
     {
       "label": "30th Anniversary",
+      "short": "30th Anniversary",
       "id": "GK17D-MKNKd-AOxoz",
       "shown": false
     }
@@ -180,12 +190,12 @@
   },
   "featured": {
     "label": "Pinball of the Day",
-    "updated_label": "Oct 6, 2026 11:27 AM EDT",
+    "updated_label": "Oct 7, 2026 11:01 AM EDT",
     "timezone": "EDT",
-    "date": "2026-10-06",
-    "date_label": "Tuesday, October 6",
-    "date_short": "Oct 6",
-    "period": "2026-10-06",
+    "date": "2026-10-07",
+    "date_label": "Wednesday, October 7",
+    "date_short": "Oct 7",
+    "period": "2026-10-07",
     "rotation": "daily",
     "pool_size": 1,
     "filter_label": null
@@ -193,7 +203,7 @@
   "source": {
     "name": "OPDB",
     "url": "https://opdb.org",
-    "updated": "2026-10-05"
+    "updated": "2026-10-07"
   },
   "error": null
 }

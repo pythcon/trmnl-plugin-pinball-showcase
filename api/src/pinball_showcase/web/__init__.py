@@ -102,6 +102,9 @@ def _gallery(title: Title, shown: Machine, labels: dict[str, str]) -> list[dict[
 
 
 templates = Jinja2Templates(directory=HERE / "templates")
+templates.env.filters["edition_phrase"] = lambda label: (
+    label if label.lower().endswith("edition") else f"{label} edition"
+)
 templates.env.globals.update(
     more_plugins_url=MORE_PLUGINS_URL,
     github_url=GITHUB_URL,
