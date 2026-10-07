@@ -36,7 +36,7 @@ _PAREN_SUFFIX = re.compile(r"\s*\(([^)]*)\)\s*$")
 def _base_label(title_name: str, machine: Machine) -> tuple[str, str]:
     """(long, short) edition label from the machine's name; see editions.py."""
     if match := _PAREN_SUFFIX.search(machine.name):
-        return expand(match.group(1)), shorten(match.group(1))
+        return expand(match.group(1), machine.edition_features), shorten(match.group(1))
     name = machine.name.strip()
     # "Centaur" under "Centaur (Inder)": the game's own name, without its qualifier.
     core = _PAREN_SUFFIX.sub("", title_name).strip()
@@ -45,7 +45,7 @@ def _base_label(title_name: str, machine: Machine) -> tuple[str, str]:
     # "Fire! Champagne Edition" under "Fire!" -> "Champagne Edition" / "Champagne"
     if name.casefold().startswith(title_name.strip().casefold() + " "):
         rest = name[len(title_name.strip()) :].strip()
-        return expand(rest), shorten(rest)
+        return expand(rest, machine.edition_features), shorten(rest)
     return name, name
 
 

@@ -9,9 +9,13 @@ a game's own name ("The Texas Chainsaw Massacre (SE)"). Here they become:
 
 Abbreviations, as used across OPDB (checked against every suffix in the export):
 CE = Collector's Edition (JJP, Spooky, American, Pinball Brothers, Multimorphic),
-LE = Limited Edition, SE = Special Edition (Spooky, Chicago Gaming; nobody uses it for
-"Standard"), PE = Platinum Edition (JJP's Elton John), EM / SS = electro-mechanical /
+LE = Limited Edition, PE = Platinum Edition (JJP's Elton John), EM / SS = electro-mechanical /
 solid-state variants, AAB = add-a-ball, 1P/2P/4P = player-count variants.
+
+SE is ambiguous: Spooky's SE is its entry model (Standard Edition; OPDB flags every one
+"Pro edition"), while Chicago Gaming's Pulp Fiction SE is its upgraded model (Special
+Edition; flagged "Premium edition"). Real special editions are otherwise spelled out
+("Sonic the Hedgehog (Special)"). Callers pass the machine's flags to decide.
 """
 
 from __future__ import annotations
@@ -24,7 +28,6 @@ STANDARD_SHORT = "Standard"
 _ABBREVIATIONS = [
     (re.compile(r"\bCE\b"), "Collector's Edition"),
     (re.compile(r"\bLE\b"), "Limited Edition"),
-    (re.compile(r"\bSE\b"), "Special Edition"),
     (re.compile(r"\bPE\b"), "Platinum Edition"),
     (re.compile(r"\bEM\b"), "Electro-mechanical"),
     (re.compile(r"\bSS\b"), "Solid State"),
@@ -40,9 +43,14 @@ _EDITION_WORDS = re.compile(
 )
 
 
-def expand(text: str) -> str:
-    """Long form: "Premium/LE" -> "Premium / Limited Edition", "CE" -> "Collector's Edition"."""
+def expand(text: str, flags: tuple[str, ...] = ()) -> str:
+    """Long form: "Premium/LE" -> "Premium / Limited Edition", "CE" -> "Collector's Edition".
+
+    ``flags`` are the machine's OPDB edition flags, used to read "SE" (see above).
+    """
     out = text.strip()
+    se = "Special Edition" if "Premium edition" in flags else STANDARD_LONG
+    out = re.sub(r"\bSE\b", se, out)
     for pattern, replacement in _ABBREVIATIONS:
         out = pattern.sub(replacement, out)
     return re.sub(r"\s*/\s*", " / ", out)

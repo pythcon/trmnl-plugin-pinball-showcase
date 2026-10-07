@@ -117,7 +117,11 @@ def test_edition_names_are_expanded() -> None:
     from pinball_showcase.editions import expand, is_edition_suffix, shorten
 
     assert expand("CE") == "Collector's Edition"
-    assert expand("SE") == "Special Edition"
+    # SE: Spooky's entry model (flagged Pro) is Standard; a Premium-flagged SE is Special.
+    assert expand("SE", ("Pro edition",)) == "Standard Edition"
+    assert expand("SE") == "Standard Edition"
+    assert expand("SE", ("Premium edition",)) == "Special Edition"
+    assert expand("Special") == "Special"  # spelled-out special editions stay
     assert expand("PE") == "Platinum Edition"
     assert expand("Premium/LE") == "Premium / Limited Edition"
     assert expand("Super LE") == "Super Limited Edition"
@@ -153,7 +157,7 @@ def test_editions_baked_into_game_names_are_removed_and_badged() -> None:
     )
     tcm = ds.by_group["GTTTT"]
     assert tcm.name == "The Texas Chainsaw Massacre"
-    assert tcm.badge(tcm.machines[0]) == ("Special Edition", "SE")
+    assert tcm.badge(tcm.machines[0]) == ("Standard Edition", "SE")
     home = ds.by_group["GHOME"]
     assert home.name == "Star Wars"
     # A single edition that is a named one still gets its badge.
