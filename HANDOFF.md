@@ -25,53 +25,19 @@ Read `CLAUDE.md` first (project rules), then this file. Everything below is eith
 `TRMNL_API_KEY` secret + `TRMNL_PUSH=true` variable are set. The push job uses the `id`
 in `settings.yml`; the archive import keeps the instance's custom-field values.
 
-### 2. Self-maintaining dropdown options (owner: "I don't want to maintain any options, but
-want multi-select")
+### ~~2. Self-maintaining dropdown options~~ (done 2026-10-09)
 
-Agreed design: keep `field_type: select` + `multiple: true`, and have a **scheduled
-workflow** regenerate the data-driven option lists in `plugin/src/settings.yml` from the
-live API, commit only when something changed, and let the plugin workflow push it to TRMNL.
-
-- Source: `GET https://pinball-showcase.trmnlplugins.com/api/v1/options`. It returns,
-  per filter, `[{value, titles}]` counted over showcase-ready titles (currently
-  120 manufacturers; decades 1940-2020; displays; players 1/2/4/6; eras; features;
-  rotation). Values are what the API's filters accept.
-- **Sync these fields:** `manufacturers`, `exclude_manufacturers` (must be identical lists),
-  `decades`, `displays`, `players`, `eras`, `features`, `exclude_features` (identical).
-- **Rules:**
-  - Options use the mapping form `- "Label": "value"` with quoted values. TRMNL stores a
-    quoted `"Label: value"` string literally (see Gotchas); keep the quotes so values like
-    `on`/`1930` stay strings.
-  - Manufacturer value = lowercase OPDB name (the API matches known maker names exactly,
-    see `selection.py` `_maker_matches`); label = OPDB name as is. Alphabetical.
-  - Drop options with `titles == 0` (today the hand-made list offers **1930s, which
-    matches nothing**).
-  - **No counts in labels** ("Stern", not "Stern (81)"): counts change daily and would
-    cause a commit + TRMNL upload every day. The list should only change when a maker,
-    decade etc. appears or disappears.
-  - Labels for coded values come from a small map in the sync script (e.g. `dmd` → "Dot
-    matrix", `early_ss` → "Early solid state (alphanumeric, lights)", features keep their
-    current labels); unknown values get a readable fallback (title-case, `_` → space).
-    Better: have the API return a `label` per option and use it, so labels live in one place.
-- **Keep static** (plugin's own presentation): `display_mode`, `art_*`, `art_fit`,
-  `art_position`, `hide_details`, `color_accents`, `require_playfield`. `rotation` stays
-  hand-written (each option has an explanation) but add a test that fails if its values
-  differ from the API's `rotation` list.
-- Free-text fields stay free text: `other_manufacturers`, `keywords`, `exclude_keywords`,
-  `people`, `favorites`, `pinned_machine`, `exclude_ids`.
-- Implementation sketch: `plugin/bin/sync-options` (Python, stdlib only) that rewrites
-  only the `options:` blocks of the named fields, preserving everything else in
-  `settings.yml` byte for byte; `make sync-options`; workflow `.github/workflows/options.yml`
-  on `schedule` (daily, after the OPDB refresh at 04:00 UTC, e.g. `0 6 * * *`) +
-  `workflow_dispatch`, self-hosted, that runs it, then `make plugin-lint plugin-test`, and
-  commits + pushes only on a diff. The push triggers the plugin workflow, which uploads to TRMNL.
-  Also add a unit/CI check that the synced lists equal the API's.
-- Unknown: whether users who already installed the published recipe receive updated option
-  lists. Note it in the PR; the free-text "Other Manufacturers" field covers stale lists.
-- Alternative considered: `field_type: xhrSelect` (options fetched from a URL, docs in the
-  trmnl skill `references/template_guide.md` ~line 2658). Docs only describe single choice.
-  If you can verify (MCP `AccountPluginSettingsTool verifyCustomFields`) that it accepts
-  `multiple: true`, it would remove the sync job entirely; otherwise don't use it.
+`.github/workflows/options.yml` runs daily at 06:00 UTC (and on Run workflow):
+`plugin/bin/sync-options` (`make sync-options`) rewrites only the `options:` lists of
+`eras`, `decades`, `manufacturers`/`exclude_manufacturers`, `displays`, `players`,
+`features`/`exclude_features` from `/api/v1/options`, drops options with 0 titles, then
+lints/tests, commits as github-actions[bot] and dispatches `plugin.yml` to upload
+(GITHUB_TOKEN pushes don't trigger workflows; a dispatch does). Labels come from the API
+(`options.py`, every option has `label`, lists in a stable order, maker values
+lowercase); the script only overrides two wordings (`LABELS`). `rotation` stays
+hand-written; the script and `api/tests/test_sync_options.py` fail if it drifts from the
+API. First sync `b191363`: 120 makers, 1930s dropped. Open question: whether users of an
+already-installed recipe get updated option lists.
 
 ### 3. Make it obvious every setting is optional
 
