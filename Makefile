@@ -35,9 +35,12 @@ logs: ## Tail API logs
 	docker compose logs -f api
 
 # ---- Plugin ----------------------------------------------------------------------------
-.PHONY: fixtures preview preview-x plugin-lint plugin-test plugin-serve plugin-push
+.PHONY: fixtures sync-options preview preview-x plugin-lint plugin-test plugin-serve plugin-push
 fixtures: ## Regenerate plugin test fixtures from the live OPDB export
 	cd api && uv run python scripts/refresh_fixtures.py
+
+sync-options: ## Rebuild settings.yml dropdowns from the hosted API (/api/v1/options)
+	plugin/bin/sync-options $(if $(API),--api $(API))
 
 plugin-lint: ## trmnlp lint (TRMNL best practices)
 	$(TRMNLP) lint

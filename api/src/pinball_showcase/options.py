@@ -1,4 +1,7 @@
-"""Catalogue of filter values for the ``/api/v1/options`` endpoint and the README."""
+"""Catalogue of filter values for the ``/api/v1/options`` endpoint.
+
+``plugin/bin/sync-options`` builds the plugin's dropdowns from it, so keep each list in a
+stable order (not by count) and ``value`` exactly what the filters accept."""
 
 from __future__ import annotations
 
@@ -26,12 +29,19 @@ def filter_options(dataset: Dataset) -> dict[str, Any]:
             {"value": e.value, "label": ERA_LABELS[e], "titles": eras.get(e, 0)} for e in ERA_LABELS
         ],
         "decade": [{"value": d, "label": f"{d}s", "titles": n} for d, n in sorted(decades.items())],
-        "manufacturer": [{"value": m, "titles": n} for m, n in makers.most_common()],
-        "display": [
-            {"value": d, "label": DISPLAY_LABELS.get(d, d), "titles": n}
-            for d, n in displays.most_common()
+        "manufacturer": [
+            {"value": m.lower(), "label": m, "titles": makers[m]}
+            for m in sorted(makers, key=str.casefold)
         ],
-        "players": [{"value": p, "titles": n} for p, n in sorted(players.items())],
+        "display": [
+            {"value": d, "label": DISPLAY_LABELS.get(d, d), "titles": displays[d]}
+            for d in [*DISPLAY_LABELS, *sorted(displays.keys() - DISPLAY_LABELS.keys())]
+            if displays[d]
+        ],
+        "players": [
+            {"value": p, "label": f"{p} player{'s' if p != 1 else ''}", "titles": n}
+            for p, n in sorted(players.items())
+        ],
         "feature": [
             {"value": f, "label": feature_labels[f], "titles": features.get(f, 0)}
             for f in feature_labels

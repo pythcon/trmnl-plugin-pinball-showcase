@@ -1,0 +1,145 @@
+#!/usr/bin/env python3
+"""Rewrite the data-driven select options in plugin/src/settings.yml from the live API.
+
+Usage: sync-options [--check] [--api URL] [--from-json FILE] [--settings FILE]
+
+Only the `options:` list of each synced field is replaced; every other byte of
+settings.yml is kept. Options that match no showcase title are dropped. Labels carry no
+counts, so the file only changes when a maker, decade etc. appears or disappears.
+`rotation` is not synced (its labels explain each choice), but its values must equal the
+API's. --check exits 1 if anything would change. Stdlib only.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+import urllib.request
+from pathlib import Path
+
+DEFAULT_API = "https://pinball-showcase.trmnlplugins.com"
+SETTINGS = Path(__file__).resolve().parent.parent / "src" / "settings.yml"
+
+# settings.yml keyname -> /api/v1/options key. Include and exclude lists stay identical.
+FIELDS = {
+    "eras": "era",
+    "decades": "decade",
+    "manufacturers": "manufacturer",
+    "exclude_manufacturers": "manufacturer",
+    "displays": "display",
+    "players": "players",
+    "features": "feature",
+    "exclude_features": "feature",
+}
+
+# Wording the plugin form prefers over the API's label.
+LABELS = {
+    "era": {"early_ss": "Early solid state (alphanumeric, lights)"},
+    "feature": {"multi_edition": "Multiple editions"},
+}
+
+# Maker values are sorted by label; the rest keep the API's order.
+SORT_BY_LABEL = {"manufacturer"}
+
+
+def fetch(api: str) -> dict:
+    req = urllib.request.Request(
+        f"{api.rstrip('/')}/api/v1/options", headers={"User-Agent": "sync-options"}
+    )
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.load(r)
+
+
+def quote(s: str) -> str:
+    return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def option_lines(source: str, items: list[dict]) -> list[str]:
+    rows = []
+    for item in items:
+        if not item.get("titles"):
+            continue
+        value = str(item["value"])
+        if "," in value:
+            # The polling URL joins multi-select values with commas.
+            raise SystemExit(f"{source} value {value!r} contains a comma")
+        if "label" not in item:
+            raise SystemExit(f"the API's {source} options have no labels; deploy a newer API")
+        label = LABELS.get(source, {}).get(value) or item["label"]
+        rows.append((label, value))
+    if not rows:
+        raise SystemExit(f"API returned no {source} options with titles; refusing to empty it")
+    if source in SORT_BY_LABEL:
+        rows.sort(key=lambda r: r[0].casefold())
+    return [f"  - {quote(label)}: {quote(value)}\n" for label, value in rows]
+
+
+def field_span(lines: list[str], keyname: str) -> tuple[int, int]:
+    """[start, end) line range of the `- keyname: X` item in the custom_fields list."""
+    start = next(
+        (i for i, l in enumerate(lines) if l.rstrip("\n") == f"- keyname: {keyname}"), None
+    )
+    if start is None:
+        raise SystemExit(f"settings.yml has no field {keyname!r}")
+    end = start + 1
+    while end < len(lines) and lines[end].startswith((" ", "\n")):
+        end += 1
+    return start, end
+
+
+def options_span(lines: list[str], keyname: str) -> tuple[int, int]:
+    start, end = field_span(lines, keyname)
+    head = next((i for i in range(start, end) if lines[i] == "  options:\n"), None)
+    if head is None:
+        raise SystemExit(f"field {keyname!r} has no options list")
+    stop = head + 1
+    while stop < end and lines[stop].startswith("  - "):
+        stop += 1
+    return head + 1, stop
+
+
+def option_values(lines: list[str], keyname: str) -> list[str]:
+    a, b = options_span(lines, keyname)
+    return [re.sub(r'^.*:\s*"(.*)"\s*$', r"\1", l.rstrip("\n")) for l in lines[a:b]]
+
+
+def sync(text: str, options: dict) -> str:
+    lines = text.splitlines(keepends=True)
+    for keyname, source in FIELDS.items():
+        a, b = options_span(lines, keyname)
+        lines[a:b] = option_lines(source, options[source])
+    rotation = option_values(lines, "rotation")
+    if rotation != [str(r) for r in options["rotation"]]:
+        raise SystemExit(
+            f"rotation options {rotation} differ from the API's {options['rotation']}; "
+            "update the rotation field in settings.yml by hand"
+        )
+    return "".join(lines)
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("--check", action="store_true", help="exit 1 if settings.yml is stale")
+    ap.add_argument("--api", default=DEFAULT_API)
+    ap.add_argument("--from-json", type=Path, help="read options from a file, not the API")
+    ap.add_argument("--settings", type=Path, default=SETTINGS)
+    args = ap.parse_args()
+
+    options = json.loads(args.from_json.read_text()) if args.from_json else fetch(args.api)
+    old = args.settings.read_text()
+    new = sync(old, options)
+    if new == old:
+        print("settings.yml options are up to date")
+        return 0
+    if args.check:
+        print("settings.yml options are stale; run make sync-options", file=sys.stderr)
+        return 1
+    args.settings.write_text(new)
+    print("settings.yml options updated")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,50 @@
+name: Options
+
+# Keeps the plugin's data-driven dropdowns (manufacturers, decades, eras, displays, players,
+# features) in step with the live catalogue. Runs after the 04:00 UTC OPDB refresh; commits
+# only when an option appears or disappears, then starts the Plugin workflow to upload it
+# (pushes made with GITHUB_TOKEN don't trigger workflows, a workflow_dispatch does).
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: options
+  cancel-in-progress: false
+
+env:
+  TRMNLP_IMAGE: trmnl/trmnlp:latest
+
+jobs:
+  sync:
+    runs-on: self-hosted
+    permissions:
+      contents: write # commit settings.yml to master
+      actions: write # start the Plugin workflow
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: master
+      - name: Rebuild options from /api/v1/options
+        run: python3 plugin/bin/sync-options
+      - id: diff
+        run: git diff --quiet -- plugin/src/settings.yml || echo "changed=true" >> "$GITHUB_OUTPUT"
+      - if: steps.diff.outputs.changed == 'true'
+        name: trmnlp lint + test
+        run: |
+          docker run --rm -v "$PWD/plugin":/plugin "$TRMNLP_IMAGE" lint
+          docker run --rm -e CI=true -v "$PWD/plugin":/plugin "$TRMNLP_IMAGE" test
+      - if: steps.diff.outputs.changed == 'true'
+        name: Commit, push and upload to TRMNL
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Plugin: sync filter options with the catalogue" -- plugin/src/settings.yml
+          git push origin HEAD:master
+          gh workflow run plugin.yml --ref master
