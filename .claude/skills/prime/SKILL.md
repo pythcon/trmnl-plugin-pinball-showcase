@@ -57,8 +57,9 @@ curl -s "$B/api/v1/showcase?tz=America/New_York" | python3 -c 'import json,sys;d
 # Self-hosted runner online? (jobs queue forever without it)
 gh api repos/pythcon/trmnl-plugin-pinball-showcase/actions/runners -q '.runners[] | "\(.name) \(.status) busy=\(.busy)"'
 
-# CI upload to TRMNL switched on? (HANDOFF task 1)
+# CI upload to TRMNL still switched on? (TRMNL_PUSH=true + TRMNL_API_KEY); last push job
 gh variable list; gh secret list | cut -f1
+gh run list --workflow plugin.yml -L 1 --json headSha,conclusion -q '.[0] | "plugin run \(.headSha[0:7]) \(.conclusion)"'
 ```
 
 If the TRMNL MCP tools are connected, also check the plugin itself (skip quietly if they
@@ -66,7 +67,7 @@ answer "Tool not found"; the connector drops, so tell Todd to reconnect with `/m
 the task needs it):
 
 - `AccountPluginSettingsTool getPluginSettingDetails {id: 497284}`: health and the
-  instance's custom-field values (should be defaults: daily, no pin, no filters).
+  instance's custom-field values (Todd's own; report them, don't reset them).
 - `AccountPlaylistsTool listDevicePlaylist` for 56826 and 51325: the plugin is visible.
 
 ## Step 3: Report
@@ -103,8 +104,8 @@ deploy behind master, plugin behind the repo.
 5. **Commits:** push to `master` deploys production. Commit and push only when Todd asks or
    it's the agreed workflow for the task. End commit messages with the `Claude-Session`
    trailer the session provides.
-6. **Plugin uploads:** prefer CI (`plugin.yml` push job, once `TRMNL_PUSH`/`TRMNL_API_KEY`
-   exist). MCP `importPluginSettingFiles` needs every file inline, `settings.yml` included,
-   on every call.
+6. **Plugin uploads are CI's job:** pushing `plugin/**` to master runs lint → test →
+   `trmnlp push --force`; re-upload by hand with `gh workflow run plugin.yml --ref master`.
+   Don't upload via MCP `importPluginSettingFiles`.
 7. **Keep `HANDOFF.md` current:** tick off finished tasks and add new gotchas before ending
    a session that changed direction.

@@ -11,37 +11,26 @@ Read `CLAUDE.md` first (project rules), then this file. Everything below is eith
   render checks).
 - **TRMNL plugin:** private plugin id **497284** (`plugin/src/settings.yml` has the id).
   On the owner's devices TRMNLBWRY1 (id 56826) and TRMNLX1 (id 51325). Not yet published
-  as a recipe. Owner's instance is on defaults (daily rotation, no pin, no filters).
-- **The plugin on trmnl.com is behind the repo.** The last upload was `598f383`. Not yet
-  uploaded: the short edition labels in half/quadrant layouts (`e792d2a`) and the Spec
-  Sheet fix (`eb4e6dd`). Uploading is task 1.
+  as a recipe. The owner's instance currently has test values (shuffle, JJP + Spooky,
+  5 min refresh); that's their choice, don't reset it.
+- **Plugin uploads are automatic:** `plugin.yml` runs `trmnlp push --force` after lint +
+  test on every master push touching `plugin/**` (or Run workflow on master). Verified
+  2026-10-09 (`9ea9a8b`): same plugin id, every file matches the repo, instance custom-field
+  values kept. Don't upload via MCP any more.
 
 ## Tasks, in order
 
-### 1. Get plugin uploads off the chat connector (automatic push from CI)
+### ~~1. Automatic plugin push from CI~~ (done 2026-10-09)
 
-The TRMNL MCP connector in Claude Code keeps dropping ("Tool not found"), and uploads via
-MCP (`AccountPluginSettingsTool` → `importPluginSettingFiles`) need every file inline,
-`settings.yml` included, on every call. Replace that with CI:
-
-- `.github/workflows/plugin.yml` already has a `push` job (`trmnlp push --force`) gated on
-  the repo variable `TRMNL_PUSH == 'true'` and the secret `TRMNL_API_KEY`.
-- **Owner action:** add the TRMNL account API key (trmnl.com/account) with
-  `gh secret set TRMNL_API_KEY`. Then `gh variable set TRMNL_PUSH --body true`.
-- Verify with a no-op plugin commit (or `workflow_dispatch`): lint → test → push succeed,
-  and `AccountPluginSettingsTool getPluginSettingFiles` (if the connector works) or the
-  trmnl.com editor shows the repo's markup. Then refresh the plugin and check the BWRY
-  and X devices.
-- Confirm `trmnlp push --force` keeps the plugin **id 497284** and its custom-field values
-  (the owner's instance settings) intact. If it would create a new plugin or reset values,
-  stop and ask.
+`TRMNL_API_KEY` secret + `TRMNL_PUSH=true` variable are set. The push job uses the `id`
+in `settings.yml`; the archive import keeps the instance's custom-field values.
 
 ### 2. Self-maintaining dropdown options (owner: "I don't want to maintain any options, but
 want multi-select")
 
 Agreed design: keep `field_type: select` + `multiple: true`, and have a **scheduled
 workflow** regenerate the data-driven option lists in `plugin/src/settings.yml` from the
-live API, commit only when something changed, and let task 1's CI push it to TRMNL.
+live API, commit only when something changed, and let the plugin workflow push it to TRMNL.
 
 - Source: `GET https://pinball-showcase.trmnlplugins.com/api/v1/options`. It returns,
   per filter, `[{value, titles}]` counted over showcase-ready titles (currently
@@ -75,7 +64,7 @@ live API, commit only when something changed, and let task 1's CI push it to TRM
   `settings.yml` byte for byte; `make sync-options`; workflow `.github/workflows/options.yml`
   on `schedule` (daily, after the OPDB refresh at 04:00 UTC, e.g. `0 6 * * *`) +
   `workflow_dispatch`, self-hosted, that runs it, then `make plugin-lint plugin-test`, and
-  commits + pushes only on a diff. The push triggers the plugin workflow (task 1).
+  commits + pushes only on a diff. The push triggers the plugin workflow, which uploads to TRMNL.
   Also add a unit/CI check that the synced lists equal the API's.
 - Unknown: whether users who already installed the published recipe receive updated option
   lists. Note it in the PR; the free-text "Other Manufacturers" field covers stale lists.
