@@ -99,16 +99,22 @@ def _has_exact_date(machine: Machine) -> bool:
 
 
 def _credits(title: Title, rep: Machine | None = None) -> list[dict[str, str]]:
-    # Fall back to a sibling edition when the shown one has no people listed.
+    """The shown edition's credits, each role it doesn't list filled from the nearest
+    edition that does (see `Title.lineage`). Only editions by the same maker count, so a
+    remake filed under the original doesn't inherit the original team."""
     shown = rep or title.representative
-    machine = next((m for m in [shown, title.representative, *title.machines] if m.people), None)
-    if machine is None:
-        return []
     by_role: dict[str, list[str]] = {}
-    for person in machine.people:
-        names = by_role.setdefault(person.role, [])
-        if person.name not in names:
-            names.append(person.name)
+    for machine in title.lineage(shown):
+        if shown.manufacturer and machine.manufacturer != shown.manufacturer:
+            continue
+        found: dict[str, list[str]] = {}
+        for person in machine.people:
+            if person.role in by_role:
+                continue
+            names = found.setdefault(person.role, [])
+            if person.name not in names:
+                names.append(person.name)
+        by_role.update(found)
     ordered = sorted(by_role, key=lambda r: ROLE_ORDER.index(r) if r in ROLE_ORDER else 99)
     # One row per role, every name listed; a person with several roles appears on each.
     return [
@@ -248,7 +254,7 @@ def build_showcase(
             "headline": " · ".join(p for p in headline_parts if p),
             "summary": " · ".join(p for p in summary_parts if p),
             "tags": tags,
-            "ipdb_id": rep.ipdb_id,
+            "ipdb_id": title.fill(rep, "ipdb_id"),
             "anniversary": anniversary,
         },
         # backglass/playfield/cabinet: that photo type, borrowed if this edition lacks it.
@@ -304,14 +310,8 @@ def build_showcase(
 
 
 def _siblings(title: Title, shown: Machine) -> list[Machine]:
-    """Other editions to borrow photos from, the title's default edition first."""
-    seen = {shown.opdb_id}
-    siblings: list[Machine] = []
-    for machine in (title.representative, *title.machines):
-        if machine.opdb_id not in seen:
-            seen.add(machine.opdb_id)
-            siblings.append(machine)
-    return siblings
+    """Other editions to borrow photos from, nearest first (see `Title.lineage`)."""
+    return list(title.lineage(shown)[1:])
 
 
 def _photo_of_kind(title: Title, kind: str, shown: Machine) -> tuple[Image, Machine] | None:

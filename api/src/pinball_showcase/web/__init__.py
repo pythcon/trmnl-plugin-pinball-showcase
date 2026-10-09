@@ -332,15 +332,8 @@ def _github_page(url: str) -> str:
     return f"https://github.com/{owner}/{repo}/blob/{'/'.join(rest)}"
 
 
-def _first(title: Title, attr: str) -> str | None:
-    return next(
-        (getattr(m, attr) for m in (title.representative, *title.machines) if getattr(m, attr)),
-        None,
-    )
-
-
-def _resources(title: Title) -> list[dict[str, str]]:
-    rep = title.representative
+def _resources(title: Title, rep: Machine) -> list[dict[str, str]]:
+    ipdb_id = title.fill(rep, "ipdb_id")
     links = [
         {
             "label": "Open Pinball Database",
@@ -348,11 +341,11 @@ def _resources(title: Title) -> list[dict[str, str]]:
             "note": "The full OPDB record this page is built from",
         }
     ]
-    if rep.ipdb_id:
+    if ipdb_id:
         links.append(
             {
                 "label": "Internet Pinball Database",
-                "url": f"https://www.ipdb.org/machine.cgi?id={rep.ipdb_id}",
+                "url": f"https://www.ipdb.org/machine.cgi?id={ipdb_id}",
                 "note": "Production history, documents and more photos",
             }
         )
@@ -364,7 +357,7 @@ def _resources(title: Title) -> list[dict[str, str]]:
         ("competition_notes_url", "Tournament notes", "How it plays in competition", True),
         ("competition_setup_url", "Tournament setup", "Recommended competition settings", True),
     ]:
-        if url := _first(title, attr):
+        if url := title.fill(rep, attr):
             links.append(
                 {"label": label, "url": _github_page(url) if github else url, "note": note}
             )
@@ -457,14 +450,18 @@ def machine_view(
         summary += f", released {m['release_label']}"
     summary += "."
     if m["display_label"] and rep.players:
-        display = m["display_label"].lower()
-        article = "an" if display[0] in "aeiou" else "a"
+        # "an LCD", "a CGA monitor", "an alphanumeric": acronyms keep their case and
+        # take the article of their spoken first letter.
+        label = m["display_label"]
+        acronym = label.split()[0].isupper()
+        display = label if acronym else label.lower()
+        article = "an" if display[0] in ("AEFHILMNORSX" if acronym else "aeiou") else "a"
         summary += f" It has {article} {display} display and plays up to {m['players_label']}."
     return {
         **m,
         "summary_text": summary,
         "release_iso": seo.release_iso(rep.manufacture_date),
-        "description": _first(title, "description") or summary,
+        "description": title.fill(rep, "description") or summary,
         "hero": hero,
         "gallery": gallery,
         "credits": base["credits"],
@@ -474,7 +471,7 @@ def machine_view(
         "features": features,
         "editions": editions,
         "aliases": list(title.aliases),
-        "resources": _resources(title),
+        "resources": _resources(title, rep),
         "same_year": same_year,
         "same_year_count": base["same_year_count"],
         "page_url": base["links"]["page"],

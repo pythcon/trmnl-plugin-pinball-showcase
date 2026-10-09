@@ -92,6 +92,19 @@ class Title:
             and any(m.alias_of == machine.opdb_id and m.images for m in self.machines)
         )
 
+    def lineage(self, shown: Machine) -> tuple[Machine, ...]:
+        """Where to look when the shown edition lacks something, nearest first: the
+        edition itself, the machine it's an edition of (Addams Family SCE -> Gold), the
+        title's default edition, then every other edition."""
+        by_id = {m.opdb_id: m for m in self.machines}
+        base = by_id.get(shown.alias_of) if shown.alias_of else None
+        order = (shown, base, self.representative, *self.machines)
+        return tuple({m.opdb_id: m for m in order if m is not None}.values())
+
+    def fill(self, shown: Machine, attr: str) -> Any:
+        """The shown edition's value for `attr`, else the nearest one in its lineage."""
+        return next((v for m in self.lineage(shown) if (v := getattr(m, attr))), None)
+
     def label_for(self, machine: Machine) -> str | None:
         """Long, unique edition label; None for umbrella entries (not editions)."""
         return self.edition_labels().get(machine.opdb_id)

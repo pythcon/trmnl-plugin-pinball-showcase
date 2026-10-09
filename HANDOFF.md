@@ -92,6 +92,12 @@ doesn't make that obvious.
     in half/quadrant.
   - Seven OPDB group names contain an edition ("(SE)", "(Home Edition)"); those suffixes
     are stripped and badged. "Centaur (Inder)" is not an edition and stays.
+- **Missing edition data** is filled through `Title.lineage(shown)`: the edition, the
+  machine it's an alias of, the title's default edition, then the rest. Credits fill per
+  role and only from the same manufacturer (remakes filed under the original don't inherit
+  its team); photos, IPDB id, description and resource links from any edition. Some
+  titles have nothing to fill from: OPDB has no credits for 383 of 1612 titles (73 since
+  2010, e.g. Toy Story 4, every edition), so empty credits there are a data gap.
 - **Rotation** keeps a cursor per stream in `/data/rotation.json` (plus `picks.json`) so
   OPDB adding titles never causes repeats/skips. `?date=` previews are read-only. Everyone
   with the same filters sees the same machine per period; the owner chose this.

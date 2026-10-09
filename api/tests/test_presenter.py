@@ -171,3 +171,70 @@ def test_default_edition_is_labelled_when_there_are_others(dataset: Dataset) -> 
     p = render(dataset, "GAAAA", datetime(2026, 10, 6))
     assert p["machine"]["edition_label"] == "Standard Edition"
     assert p["images"]["backglass"]["borrowed"] is False
+
+
+def _addams() -> Dataset:
+    """A standard model, a Gold edition, a Special Collectors Edition filed as an alias of
+    the Gold (only a playfield photo and only a software credit) and another maker's remake
+    with no credits."""
+    from pinball_showcase.dataset import build_dataset
+    from tests.conftest import group, image, machine
+
+    sce = machine(
+        "GTTTT-M0002-A0001",
+        "The Addams Family (SCE)",
+        year=2021,
+        images=[image("playfield", "sce-pf")],
+        people=[("Sce Coder", "software")],
+    )
+    sce.update(entryType="alias", opdbMachine="GTTTT-M0002", ipdbId=None)
+    return build_dataset(
+        {
+            "entries": [
+                group("GTTTT", "The Addams Family"),
+                machine(
+                    "GTTTT-M0001",
+                    "The Addams Family",
+                    year=1992,
+                    images=[image("backglass", "std-bg")],
+                    people=[("Std Designer", "design"), ("Std Artist", "art")],
+                ),
+                machine(
+                    "GTTTT-M0002",
+                    "The Addams Family (Gold)",
+                    year=1994,
+                    images=[image("backglass", "gold-bg")],
+                    people=[("Gold Designer", "design"), ("Gold Artist", "art")],
+                ),
+                sce,
+                machine(
+                    "GTTTT-M0003",
+                    "The Addams Family (Remake)",
+                    year=2023,
+                    maker="Chicago Gaming",
+                    images=[image("cabinet", "remake-cab")],
+                ),
+            ]
+        }
+    )
+
+
+def test_edition_fills_missing_roles_from_its_base_machine() -> None:
+    p = _show(_addams(), "GTTTT-M0002-A0001")
+    credits = {c["role"]: c["names"] for c in p["credits"]}
+    # Its own software credit stays; design and art come from the Gold, not the standard.
+    assert credits == {"Design": "Gold Designer", "Art": "Gold Artist", "Code": "Sce Coder"}
+    assert p["machine"]["ipdb_id"] == 1
+
+
+def test_edition_borrows_photos_from_its_base_machine_first() -> None:
+    p = _show(_addams(), "GTTTT-M0002-A0001")
+    assert "gold-bg" in p["images"]["backglass"]["url"]
+    assert "sce-pf" in p["images"]["any"]["url"]
+
+
+def test_remake_by_another_maker_does_not_inherit_credits() -> None:
+    p = _show(_addams(), "GTTTT-M0003")
+    assert p["credits"] == []
+    # Photos still come from any edition, labelled as borrowed.
+    assert p["images"]["backglass"]["borrowed"] is True
