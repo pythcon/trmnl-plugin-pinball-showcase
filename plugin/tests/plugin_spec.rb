@@ -93,6 +93,18 @@ RSpec.describe 'Pinball Showcase' do
     end
   end
 
+  describe 'spec sheet' do
+    %w[modern classic em long_name borrowed_art alias_edition].each do |name|
+      %w[og_png og_bwry v2].each do |device|
+        it "fits the #{name} fixture on #{device}" do
+          rendered = trmnl.render(device:, mocks: { API => { json: fixture(name) } },
+                                  custom_fields: { 'display_mode' => 'spec' })
+          expect(rendered).to have_no_problems.and(have_no_leaked_text)
+        end
+      end
+    end
+  end
+
   describe 'editions' do
     # Pirates CE has no photos: landscape slots borrow the standard backglass, the tall
     # half-vertical slot the LE's playfield.

@@ -45,51 +45,76 @@
 </div>
 
 {%- elsif mode == 'spec' or art_full_count == 0 -%}
+{%- comment -%}
+  Spec Sheet: details in a wide left column, art and facts on the right. Like Showcase,
+  the left column runs on a row budget (OG fits about 11 rows under a one-line header),
+  so nothing is pushed off the screen: a long name or badge that wraps the header costs
+  rows, credits wrap at ~48 characters per line here, and the tip only shows if there's
+  room. TRMNL X shows everything.
+{%- endcomment -%}
+{%- assign spec_budget = 11 -%}
+{%- assign header_chars = machine.name.size -%}
+{%- if edition_badge -%}{%- assign header_chars = header_chars | plus: edition_badge.size | plus: 2 -%}{%- endif -%}
+{%- if header_chars > 34 -%}{%- assign spec_budget = spec_budget | minus: 1 -%}{%- endif -%}
+{%- if machine.name.size > 38 -%}{%- assign spec_budget = spec_budget | minus: 1 -%}{%- endif -%}
+{%- if art_full_from != '' -%}{%- assign spec_budget = spec_budget | minus: 1 -%}{%- endif -%}
+{%- assign spec_used = 3 -%}{%- comment -%} the Type / Display / Players row {%- endcomment -%}
+{%- if show_tags and machine.tags.size > 0 -%}{%- assign spec_used = spec_used | plus: 1 -%}{%- endif -%}
+{%- if show_editions -%}
+  {%- assign edition_cost = edition_line.size | plus: 47 | divided_by: 48 -%}{%- if edition_cost > 2 -%}{%- assign edition_cost = 2 -%}{%- endif -%}
+  {%- assign spec_used = spec_used | plus: edition_cost -%}
+{%- endif -%}
+{%- assign spec_credit_cost = 0 -%}
+{%- if show_credits -%}{%- for credit in credits -%}{%- assign cost = credit.names.size | plus: 47 | divided_by: 48 -%}{%- assign spec_credit_cost = spec_credit_cost | plus: cost -%}{%- endfor -%}{%- endif -%}
+{%- assign spec_fun = false -%}
+{%- if show_fun_fact and fun_fact -%}{%- assign with_fun = spec_used | plus: spec_credit_cost | plus: 2 -%}{%- if with_fun <= spec_budget -%}{%- assign spec_fun = true -%}{%- endif -%}{%- endif -%}
 <div class="layout layout--col layout--top layout--left gap">
   {{ header }}
   <div class="grid grid--cols-12 gap--large w--full">
-    <div class="col--span-8 flex flex--col flex--left gap">
-      {%- if show_tags and machine.tags.size > 0 -%}
-      <div class="flex flex--row flex--wrap flex--left gap--small w--full">
-        {%- for tag in machine.tags limit: 5 -%}<span class="label label--outline">{{ tag }}</span>{%- endfor -%}
-      </div>
-      {%- endif -%}
+    <div class="col--span-8 flex flex--col flex--left flex--top gap--small">
       <div class="grid grid--cols-3 gap w--full">
         <div class="flex flex--col flex--left w--full"><span class="value value--small lg:value--medium" data-fit-value="true">{{ machine.type_label | default: '-' }}</span><span class="label {{ muted }}">Type</span></div>
         <div class="flex flex--col flex--left w--full"><span class="value value--small lg:value--medium" data-fit-value="true">{{ machine.display_label | default: '-' }}</span><span class="label {{ muted }}">Display</span></div>
         <div class="flex flex--col flex--left w--full"><span class="value value--small lg:value--medium">{{ machine.players | default: '-' }}</span><span class="label {{ muted }}">Players</span></div>
       </div>
+      {%- if show_tags and machine.tags.size > 0 -%}
+      <div class="flex flex--row flex--wrap flex--left gap--small w--full">
+        {%- for tag in machine.tags limit: 5 -%}<span class="label label--outline">{{ tag }}</span>{%- endfor -%}
+      </div>
+      {%- endif -%}
+      <div class="divider"></div>
       {%- if show_editions -%}
       <div class="flex flex--row flex--left flex--top gap--small w--full">
-        <span class="label {{ muted }} no-shrink">{{ editions_title }}</span>
-        <span class="label w--full">{{ edition_line }}</span>
+        <span class="label {{ muted }} w--[112px] lg:w--[128px] no-shrink">{{ editions_title }}</span>
+        <span class="label w--full" data-clamp="2">{{ edition_line }}</span>
       </div>
       {%- endif -%}
-      {%- if show_credits and credits.size > 0 -%}
-      <div class="divider"></div>
-      <div class="grid grid--cols-2 gap--small w--full">
-        {%- for credit in credits limit: 8 -%}
-        <div class="flex flex--col flex--left w--full {% if forloop.index > 4 %}hidden lg:flex{% endif %}">
-          <span class="label {{ muted }}">{{ credit.role }}</span>
-          <span class="label label--large w--full">{{ credit.names }}</span>
-        </div>
-        {%- endfor -%}
+      {%- if show_credits -%}
+      {%- assign used = spec_used -%}
+      {%- for credit in credits -%}
+      {%- assign cost = credit.names.size | plus: 47 | divided_by: 48 -%}
+      {%- assign used = used | plus: cost -%}
+      <div class="flex flex--row flex--left flex--top gap--small w--full {% if used > spec_budget %}hidden lg:flex{% endif %}">
+        <span class="label {{ muted }} w--[112px] lg:w--[128px] no-shrink">{{ credit.role }}</span>
+        <span class="label w--full">{{ credit.names }}</span>
       </div>
+      {%- endfor -%}
       {%- endif -%}
       {%- if show_fun_fact and fun_fact -%}
-      <div class="{{ accent_fill }} p--2 w--full {% if credits.size > 4 %}hidden lg:block{% endif %}"><span class="w--full label label--large">{{ fun_fact }}</span></div>
+      <div class="{{ accent_fill }} p--2 w--full {% unless spec_fun %}hidden lg:block{% endunless %}"><span class="w--full label" data-clamp="2">{{ fun_fact }}</span></div>
       {%- endif -%}
     </div>
-    <div class="col--span-4 flex flex--col flex--left gap">
+    <div class="col--span-4 flex flex--col flex--left flex--top gap--small">
       {%- if art_full_count > 0 -%}
       {%- assign thumb = images[art_full.first] -%}
-      <img class="image image-dither {{ fit_class }} w--full h--[22cqh] lg:h--[30cqh]" src="{{ thumb.url_medium | default: thumb.url }}" alt="{{ machine.name }} artwork">
+      {%- if spec_budget < 11 -%}{%- assign thumb_height = 'h--[28cqh] lg:h--[36cqh]' -%}{%- else -%}{%- assign thumb_height = 'h--[34cqh] lg:h--[40cqh]' -%}{%- endif -%}
+      <img class="image image-dither {{ fit_class }} w--full {{ thumb_height }}" src="{{ thumb.url_medium | default: thumb.url }}" alt="{{ machine.name }} artwork">
       {%- endif -%}
       {%- if show_facts -%}
       {%- for fact in facts limit: 4 -%}
-      <div class="flex flex--row flex--left gap--small w--full {% if forloop.index > 2 %}hidden lg:flex{% endif %}">
-        <span class="label {{ muted }} w--[80px] lg:w--[112px] no-shrink">{{ fact.label }}</span>
-        <span class="label w--full">{{ fact.value }}</span>
+      <div class="flex flex--row flex--left flex--top gap--small w--full {% if forloop.index > 3 %}hidden lg:flex{% endif %}">
+        <span class="label {{ muted }} w--[96px] lg:w--[128px] no-shrink">{{ fact.label }}</span>
+        <span class="label w--full" data-clamp="1">{{ fact.value }}</span>
       </div>
       {%- endfor -%}
       {%- endif -%}
