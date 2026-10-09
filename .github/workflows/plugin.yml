@@ -41,11 +41,14 @@ jobs:
           name: trmnlp-report
           path: plugin/report
 
-  # Publishes markup + settings to TRMNL. Off until the repository variable TRMNL_PUSH is
-  # "true", the TRMNL_API_KEY secret exists and plugin/src/settings.yml has its `id`.
+  # Publishes markup + settings to TRMNL plugin `id` in plugin/src/settings.yml, on every
+  # push to master that touches the plugin, or by hand (Run workflow on master). Off unless
+  # the repository variable TRMNL_PUSH is "true" and the TRMNL_API_KEY secret exists.
   push:
     needs: [lint, test]
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push' && vars.TRMNL_PUSH == 'true'
+    if: >-
+      github.ref == 'refs/heads/master' && vars.TRMNL_PUSH == 'true' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v7
