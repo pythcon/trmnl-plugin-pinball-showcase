@@ -53,7 +53,8 @@ the plugin's Name.
 - `lg:value--medium` (invalid) → `lg:value--base`. `rotation` defaults to `refresh`
   (the API still treats a blank rotation as daily). `require_playfield` is a `boolean`.
 - TRMNL X layouts (approved mockup: https://claude.ai/artifact/7LS4rwwZmjdnbmNU9DnSE8):
-  stats band + "Also released in YEAR" (Showcase), backglass+playfield pair (Gallery,
+  equal outlined stat tiles pinned above the title bar, with "Also released in YEAR" in
+  the details column (Showcase; chosen 2026-10-15 over a strip and tiles-under-art), backglass+playfield pair (Gallery,
   automatic photos only), stats grid (Spec), all credits + stats (halves), summary +
   credits + fun fact (quadrant). All X-only (`hidden lg:…` / `lg:hidden`); OG unchanged.
 - New payload field `stats` (`[{value, label}]`, the facts as big numbers).
