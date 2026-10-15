@@ -1,4 +1,4 @@
-# Handoff: Pinball Showcase (as of 2026-10-09)
+# Handoff: Pinball Showcase (as of 2026-10-15)
 
 Read `CLAUDE.md` first (project rules), then this file. Everything below is either
 **pending work** (do it) or **context you'd otherwise rediscover the hard way**.
@@ -39,27 +39,25 @@ hand-written; the script and `api/tests/test_sync_options.py` fail if it drifts 
 API. First sync `b191363`: 120 makers, 1930s dropped. Open question: whether users of an
 already-installed recipe get updated option lists.
 
-### 3. Make it obvious every setting is optional
+### ~~3. Make it obvious every setting is optional~~ (done 2026-10-15)
 
-Owner: "make it very easy for users to see all the options are optional… descriptions
-should start with 'Optional'." Every field already has `optional: true`, but TRMNL's form
-doesn't make that obvious.
+Every description starts with "Optional." and says what empty means; `about` says every
+setting is optional. Not done (never answered): a line explaining that the bottom title is
+the plugin's Name.
 
-- Start every custom-field `description` with **"Optional."** and then say what happens
-  when it's left empty, e.g.:
-  - Eras: "Optional. Leave empty for every era."
-  - Manufacturers: "Optional. Show only these makers; leave empty for all."
-  - Photos - Full Screen: "Optional. Leave empty to choose automatically…"
-  - Pin One Machine: "Optional. Always show this machine instead of rotating…"
-  - Fields that currently have no description (`art_fit`, `art_position`, `color_accents`,
-    `eras`, `decades`, `min_year`, `max_year`, `exclude_manufacturers`, `exclude_keywords`,
-    `displays`, `players`, `exclude_features`, `require_playfield`) need one written.
-- Consider also stating it once in the `about` (author_bio) description: "Every setting is
-  optional; with none set you get a new machine from the whole catalogue each day."
-- Optional extra the owner was offered but didn't answer: one line in `about` explaining that
-  the title at the bottom of the screen is the plugin's **Name** (top of its settings), so
-  renaming the plugin changes it. Ask before adding.
-- The sync script (task 2) must preserve these descriptions.
+### ~~3b. TRMNL review round 1 (Mario, 2026-10-15)~~ (done, awaiting re-review)
+
+- Settings in `group:` accordions (Photos, What to Show, Pick Machines, Era and Year,
+  Manufacturer, Theme and People, Machine Type, Advanced); about, Layout Style and New
+  Machine stay ungrouped. Grouped fields must stay contiguous in `settings.yml`.
+- `lg:value--medium` (invalid) → `lg:value--base`. `rotation` defaults to `refresh`
+  (the API still treats a blank rotation as daily). `require_playfield` is a `boolean`.
+- TRMNL X layouts (approved mockup: https://claude.ai/artifact/7LS4rwwZmjdnbmNU9DnSE8):
+  stats band + "Also released in YEAR" (Showcase), backglass+playfield pair (Gallery,
+  automatic photos only), stats grid (Spec), all credits + stats (halves), summary +
+  credits + fun fact (quadrant). All X-only (`hidden lg:…` / `lg:hidden`); OG unchanged.
+- New payload field `stats` (`[{value, label}]`, the facts as big numbers).
+- Tell Mario it's ready for another review once it's pushed and uploaded.
 
 ### 4. Publish checklist (owner does these on trmnl.com)
 
@@ -72,6 +70,16 @@ doesn't make that obvious.
    `<div class="title_bar">` (framework v3); `shared.liquid` has neither by design.
 
 ## Gotchas (learned the hard way)
+
+- **TRMNL framework (`latest`) quirks on X**, found 2026-10-15:
+  - `data-clamp` on a title measures at the OG size, so on X short names were cut
+    ("Jurassic Pa…"). Full-screen titles clamp only when `long_name`.
+  - `hidden lg:grid grid--cols-2` doesn't apply the columns; wrap the grid in a
+    `hidden lg:block` div.
+  - Inline `<span>`s inside a `label` break its line layout (words run together or
+    stack); use separate `label` elements in a wrapping flex row.
+  - Stats use `value--large` (Showcase) / `value--base` (elsewhere); `value--xlarge` is
+    too big. `value--medium` isn't a valid responsive size.
 
 - **Select options** must be YAML mappings `- "Label": "value"`. A quoted `"Label: value"`
   is stored as the literal value and filters silently stop working.

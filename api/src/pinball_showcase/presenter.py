@@ -218,6 +218,21 @@ def build_showcase(
     if len(title.versions) > 1:
         facts.append({"label": "Editions", "value": _plural(len(title.versions), "variant")})
 
+    # The same facts as big numbers for roomy screens (TRMNL X): "29" over "years old".
+    stats: list[dict[str, str]] = []
+    if title.year:
+        age = today.year - title.year
+        if age > 0:
+            stats.append({"value": str(age), "label": f"{'year' if age == 1 else 'years'} old"})
+        else:
+            stats.append({"value": "New", "label": "this year"})
+    if position and rep.manufacturer:
+        stats.append({"value": str(position[0]), "label": f"of {position[1]} {rep.manufacturer}"})
+    if title.year:
+        stats.append({"value": f"1 of {len(same_year) + 1}", "label": f"from {title.year}"})
+    if len(title.versions) > 1:
+        stats.append({"value": str(len(title.versions)), "label": "editions"})
+
     anniversary = (
         _has_exact_date(rep)
         and rep.manufacture_date is not None
@@ -279,6 +294,7 @@ def build_showcase(
         "editions": editions,
         "credits": _credits(title, rep),
         "facts": facts,
+        "stats": stats,
         "fun_fact": fun_fact,
         "same_year": [
             {"name": t.name, "manufacturer": t.manufacturer} for t in same_year[:SAME_YEAR_LIMIT]

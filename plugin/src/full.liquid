@@ -3,12 +3,30 @@
   The name and maker sit in a full-width header so they never truncate; art and details
   share the space below. The title bar shows when the data was fetched (viewer's zone).
 {%- endcomment -%}
+{%- comment -%}
+  TRMNL X extras (hidden on OG): `stats` are the fast facts as big numbers ("29" over
+  "years old"); `x_same_year` lists other titles from the same year.
+{%- endcomment -%}
+{%- capture x_same_year -%}
+  {%- if show_facts and same_year.size > 0 -%}
+  <div class="hidden lg:flex flex--col flex--left gap--xsmall w--full">
+    <span class="label label--small {{ muted }}">Also released in {{ machine.year }}</span>
+    <div class="flex flex--row flex--wrap flex--left gap--small w--full">
+      {%- for t in same_year limit: 4 -%}
+      <span class="label">{{ t.name }}</span><span class="label {{ muted }}">{{ t.manufacturer }}{% unless forloop.last %} ·{% endunless %}</span>
+      {%- endfor -%}
+      {%- assign more = same_year_count | minus: 4 -%}{%- if more > 0 -%}<span class="label {{ muted }}">+{{ more }} more</span>{%- endif -%}
+    </div>
+  </div>
+  {%- endif -%}
+{%- endcapture -%}
 {%- assign long_name = false -%}{%- if machine.name.size > 38 -%}{%- assign long_name = true -%}{%- endif -%}
 {%- capture header -%}
   <div class="flex flex--row flex--between flex--top gap w--full">
     <div class="flex flex--col flex--left w--full">
       <div class="flex flex--row flex--wrap flex--left flex--center-y gap--small w--full">
-        <span class="title title--xlarge lg:title--xxlarge text--bold" data-clamp="2">{{ machine.name }}</span>
+        {%- comment -%} Clamp only long names: the clamp measures at OG size and cut short names on TRMNL X. {%- endcomment -%}
+        <span class="title title--xlarge lg:title--xxlarge text--bold"{% if long_name %} data-clamp="2"{% endif %}>{{ machine.name }}</span>
         {%- if edition_badge -%}<span class="label label--large {{ badge_class }} no-shrink">{{ edition_badge }}</span>{%- endif -%}
       </div>
       <div class="flex flex--row flex--wrap flex--left gap--small w--full">
@@ -37,11 +55,32 @@
 {%- comment -%} Gallery always shows art: "None (text only)" falls back to the automatic pick. {%- endcomment -%}
 {%- if art_full_count == 0 -%}{%- assign gallery_types = 'any' | split: ',' -%}{%- assign gallery_count = 1 -%}
 {%- else -%}{%- assign gallery_types = art_full -%}{%- assign gallery_count = art_full_count -%}{%- endif -%}
+{%- assign x_pair_types = 'backglass,playfield' | split: ',' -%}
+{%- capture x_gallery_line -%}
+  <div class="hidden lg:flex flex--row flex--wrap flex--left flex--center-y gap--large w--full">
+    {%- if show_credits -%}{%- for credit in credits limit: 2 -%}
+    <div class="flex flex--row gap--small"><span class="label label--large {{ muted }}">{{ credit.role }}</span><span class="label label--large">{{ credit.names }}</span></div>
+    {%- endfor -%}{%- endif -%}
+    {%- if has_stats -%}{%- for s in stats limit: 2 -%}
+    <div class="flex flex--row gap--small"><span class="label label--large">{{ s.value }}</span><span class="label label--large {{ muted }}">{{ s.label }}</span></div>
+    {%- endfor -%}{%- endif -%}
+    {%- if show_fun_fact and fun_fact -%}<div class="{{ accent_fill }} p--1"><span class="label label--large">{{ fun_fact }}</span></div>{%- endif -%}
+  </div>
+{%- endcapture -%}
+{%- comment -%} TRMNL X: with the photos left on automatic, show the playfield beside the backglass. {%- endcomment -%}
+{%- assign x_pair = false -%}
+{%- if cfg.art_full == blank and images.backglass and images.playfield -%}{%- assign x_pair = true -%}{%- endif -%}
 <div class="layout layout--col layout--top gap">
-  <div class="w--full {% if long_name %}h--[62cqh] lg:h--[68cqh]{% else %}h--[70cqh] lg:h--[76cqh]{% endif %}">
+  <div class="w--full {% if x_pair %}lg:hidden {% endif %}{% if long_name %}h--[62cqh] lg:h--[62cqh]{% else %}h--[70cqh] lg:h--[68cqh]{% endif %}">
     {% render "art_grid", images: images, types: gallery_types, count: gallery_count, fit: fit_class, medium: false, name: machine.name %}
   </div>
+  {%- if x_pair -%}
+  <div class="w--full hidden lg:block {% if long_name %}lg:h--[62cqh]{% else %}lg:h--[68cqh]{% endif %}">
+    {% render "art_grid", images: images, types: x_pair_types, count: 2, fit: fit_class, medium: false, name: machine.name, spans: '8,4' %}
+  </div>
+  {%- endif -%}
   {{ header }}
+  {{ x_gallery_line }}
 </div>
 
 {%- elsif mode == 'spec' or art_full_count == 0 -%}
@@ -73,9 +112,9 @@
   <div class="grid grid--cols-12 gap--large w--full">
     <div class="col--span-8 flex flex--col flex--left flex--top gap--small">
       <div class="grid grid--cols-3 gap w--full">
-        <div class="flex flex--col flex--left w--full"><span class="value value--small lg:value--medium" data-fit-value="true">{{ machine.type_label | default: '-' }}</span><span class="label {{ muted }}">Type</span></div>
-        <div class="flex flex--col flex--left w--full"><span class="value value--small lg:value--medium" data-fit-value="true">{{ machine.display_label | default: '-' }}</span><span class="label {{ muted }}">Display</span></div>
-        <div class="flex flex--col flex--left w--full"><span class="value value--small lg:value--medium">{{ machine.players | default: '-' }}</span><span class="label {{ muted }}">Players</span></div>
+        <div class="flex flex--col flex--left w--full"><span class="value value--small lg:value--base" data-fit-value="true">{{ machine.type_label | default: '-' }}</span><span class="label {{ muted }}">Type</span></div>
+        <div class="flex flex--col flex--left w--full"><span class="value value--small lg:value--base" data-fit-value="true">{{ machine.display_label | default: '-' }}</span><span class="label {{ muted }}">Display</span></div>
+        <div class="flex flex--col flex--left w--full"><span class="value value--small lg:value--base">{{ machine.players | default: '-' }}</span><span class="label {{ muted }}">Players</span></div>
       </div>
       {%- if show_tags and machine.tags.size > 0 -%}
       <div class="flex flex--row flex--wrap flex--left gap--small w--full">
@@ -111,13 +150,26 @@
       <img class="image image-dither {{ fit_class }} w--full {{ thumb_height }}" src="{{ thumb.url_medium | default: thumb.url }}" alt="{{ machine.name }} artwork">
       {%- endif -%}
       {%- if show_facts -%}
-      {%- for fact in facts limit: 4 -%}
-      <div class="flex flex--row flex--left flex--top gap--small w--full {% if forloop.index > 3 %}hidden lg:flex{% endif %}">
+      {%- for fact in facts limit: 3 -%}
+      <div class="flex flex--row flex--left flex--top gap--small w--full {% if has_stats %}lg:hidden{% endif %}">
         <span class="label {{ muted }} w--[96px] lg:w--[128px] no-shrink">{{ fact.label }}</span>
         <span class="label w--full" data-clamp="1">{{ fact.value }}</span>
       </div>
       {%- endfor -%}
+      {%- if has_stats -%}
+      <div class="hidden lg:block w--full">
+      <div class="grid grid--cols-2 gap w--full">
+        {%- for s in stats -%}
+        <div class="flex flex--col flex--left">
+          <span class="value value--base">{{ s.value }}</span>
+          <span class="label {{ muted }}" data-clamp="2">{{ s.label }}</span>
+        </div>
+        {%- endfor -%}
+      </div>
+      </div>
       {%- endif -%}
+      {%- endif -%}
+      {{ x_same_year }}
     </div>
   </div>
 </div>
@@ -125,8 +177,9 @@
 {%- else -%}
 {%- if art_full_count > 1 -%}{%- assign art_span = 'col--span-8' -%}{%- assign info_span = 'col--span-4' -%}
 {%- else -%}{%- assign art_span = 'col--span-7' -%}{%- assign info_span = 'col--span-5' -%}{%- endif -%}
-{%- if long_name -%}{%- assign body_height = 'h--[64cqh] lg:h--[70cqh] portrait:h--[80cqh]' -%}
-{%- else -%}{%- assign body_height = 'h--[74cqh] lg:h--[78cqh] portrait:h--[84cqh]' -%}{%- endif -%}
+{%- comment -%} On TRMNL X the body leaves room for the stats band underneath. {%- endcomment -%}
+{%- if long_name -%}{%- assign body_height = 'h--[64cqh] lg:h--[50cqh] portrait:h--[80cqh]' -%}
+{%- else -%}{%- assign body_height = 'h--[74cqh] lg:h--[56cqh] portrait:h--[84cqh]' -%}{%- endif -%}
 {%- comment -%}
   OG has room for about 9 one-line detail rows beside the art (one fewer under a two-line
   name). Credits come first and are never shortened: a role whose names run past ~26
@@ -173,14 +226,14 @@
       {%- if show_facts -%}
       {%- for fact in facts limit: 3 -%}
       {%- assign used = used | plus: 1 -%}
-      <div class="flex flex--row flex--left gap--small w--full {% if used > row_budget %}hidden lg:flex{% endif %}">
+      <div class="flex flex--row flex--left gap--small w--full {% if used > row_budget %}hidden {% if has_stats == false %}lg:flex{% endif %}{% elsif has_stats %}lg:hidden{% endif %}">
         <span class="label {{ muted }} w--[96px] lg:w--[128px] no-shrink">{{ fact.label }}</span>
         <span class="label w--full">{{ fact.value }}</span>
       </div>
       {%- endfor -%}
       {%- endif -%}
       {%- if show_fun_fact and fun_fact -%}
-      <div class="stretch-y"></div>
+      <div class="stretch-y lg:hidden"></div>
       <div class="{{ accent_fill }} p--2 w--full {% unless fun_on_og %}hidden lg:block{% endunless %}"><span class="w--full label" data-clamp="2" data-clamp-lg="3">{{ fun_fact }}</span></div>
       {%- endif -%}
     </div>
@@ -190,6 +243,23 @@
   <div class="grid grid--cols-12 gap--large w--full {{ body_height }} portrait:grid--cols-1">
     {%- if art_second -%}{{ info_block }}{{ art_block }}{%- else -%}{{ art_block }}{{ info_block }}{%- endif -%}
   </div>
+  {%- if has_stats and show_facts -%}
+  {%- capture stats_block -%}
+    <div class="{{ art_span }} flex flex--row flex--between flex--top gap--large">
+      {%- for s in stats -%}
+      <div class="flex flex--col flex--left">
+        <span class="value value--large">{{ s.value }}</span>
+        <span class="label {{ muted }}" data-clamp="2">{{ s.label }}</span>
+      </div>
+      {%- endfor -%}
+    </div>
+  {%- endcapture -%}
+  {%- capture year_block -%}<div class="{{ info_span }}">{{ x_same_year }}</div>{%- endcapture -%}
+  <div class="divider hidden lg:block"></div>
+  <div class="grid grid--cols-12 gap--large w--full hidden lg:grid portrait:hidden">
+    {%- if art_second -%}{{ year_block }}{{ stats_block }}{%- else -%}{{ stats_block }}{{ year_block }}{%- endif -%}
+  </div>
+  {%- endif -%}
 </div>
 {%- endif -%}
 

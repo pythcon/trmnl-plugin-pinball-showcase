@@ -35,6 +35,19 @@ def test_payload_shape(dataset: Dataset) -> None:
     assert {"label": "Released", "value": "29 years ago"} in p["facts"]
 
 
+def test_stats_are_the_facts_as_big_numbers(dataset: Dataset) -> None:
+    stats = render(dataset, "GAAAA", datetime(2026, 10, 5))["stats"]
+    assert stats[0] == {"value": "29", "label": "years old"}
+    assert all(set(s) == {"value", "label"} for s in stats)
+    assert any(s["label"].startswith("from 1997") for s in stats)
+
+
+def test_stats_for_a_machine_from_this_year(dataset: Dataset) -> None:
+    year = dataset.by_group["GAAAA"].year
+    stats = render(dataset, "GAAAA", datetime(year, 12, 31))["stats"]
+    assert stats[0] == {"value": "New", "label": "this year"}
+
+
 def test_credits_one_row_per_role(dataset: Dataset) -> None:
     # Dan Forden is credited for music and sound: he appears on both rows.
     credits = render(dataset, "GAAAA", datetime(2026, 10, 5))["credits"]

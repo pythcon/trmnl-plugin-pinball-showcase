@@ -124,6 +124,24 @@
       "value": "4 variants"
     }
   ],
+  "stats": [
+    {
+      "value": "48",
+      "label": "years old"
+    },
+    {
+      "value": "114",
+      "label": "of 203 Bally"
+    },
+    {
+      "value": "1 of 79",
+      "label": "from 1978"
+    },
+    {
+      "value": "4",
+      "label": "editions"
+    }
+  ],
   "fun_fact": "Built in 4 variants.",
   "same_year": [
     {
@@ -161,12 +179,12 @@
   },
   "featured": {
     "label": "Pinball of the Day",
-    "updated_label": "Oct 7, 2026 2:25 PM EDT",
+    "updated_label": "Oct 15, 2026 2:40 AM EDT",
     "timezone": "EDT",
-    "date": "2026-10-07",
-    "date_label": "Wednesday, October 7",
-    "date_short": "Oct 7",
-    "period": "2026-10-07",
+    "date": "2026-10-15",
+    "date_label": "Thursday, October 15",
+    "date_short": "Oct 15",
+    "period": "2026-10-15",
     "rotation": "daily",
     "pool_size": 1,
     "filter_label": null
@@ -174,7 +192,7 @@
   "source": {
     "name": "OPDB",
     "url": "https://opdb.org",
-    "updated": "2026-10-07"
+    "updated": "2026-10-15"
   },
   "error": null
 }

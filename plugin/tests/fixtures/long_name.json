@@ -126,6 +126,24 @@
       "value": "3 variants"
     }
   ],
+  "stats": [
+    {
+      "value": "7",
+      "label": "years old"
+    },
+    {
+      "value": "5",
+      "label": "of 12 Jersey Jack Pinball"
+    },
+    {
+      "value": "1 of 15",
+      "label": "from 2019"
+    },
+    {
+      "value": "3",
+      "label": "editions"
+    }
+  ],
   "fun_fact": "Players call it WONKA.",
   "same_year": [
     {
@@ -163,7 +181,7 @@
   },
   "featured": {
     "label": "Pinball of the Day",
-    "updated_label": "Oct 5, 2026 6:25 PM UTC",
+    "updated_label": "Oct 5, 2026 6:40 AM UTC",
     "timezone": "UTC",
     "date": "2026-10-05",
     "date_label": "Monday, October 5",
@@ -176,7 +194,7 @@
   "source": {
     "name": "OPDB",
     "url": "https://opdb.org",
-    "updated": "2026-10-07"
+    "updated": "2026-10-15"
   },
   "error": null
 }

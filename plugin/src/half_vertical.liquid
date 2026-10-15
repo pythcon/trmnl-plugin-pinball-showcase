@@ -41,10 +41,23 @@
 </div>
 
 {%- else -%}
-{%- if mode == 'gallery' -%}{%- assign art_height = 'h--[72cqh]' -%}{%- else -%}{%- assign art_height = 'h--[56cqh]' -%}{%- endif -%}
+{%- if mode == 'gallery' -%}{%- assign art_height = 'h--[72cqh]' -%}{%- else -%}{%- assign art_height = 'h--[56cqh] lg:h--[42cqh]' -%}{%- endif -%}
 {%- capture art_block -%}
-  <div class="w--full {{ art_height }}">
-    {% render "art_grid", images: images, types: art_hv, count: art_hv_count, fit: fit_class, medium: false, name: machine.name %}
+  <div class="flex flex--row flex--left gap w--full {{ art_height }}">
+    <div class="w--full h--full">
+      {% render "art_grid", images: images, types: art_hv, count: art_hv_count, fit: fit_class, medium: false, name: machine.name %}
+    </div>
+    {%- comment -%} TRMNL X: three stats beside the art instead of white margins. {%- endcomment -%}
+    {%- if mode != 'gallery' and has_stats -%}
+    <div class="hidden lg:flex flex--col flex--between flex--left no-shrink h--full">
+      {%- for s in stats limit: 3 -%}
+      <div class="flex flex--col flex--left">
+        <span class="value value--base">{{ s.value }}</span>
+        <span class="label {{ muted }}">{{ s.label }}</span>
+      </div>
+      {%- endfor -%}
+    </div>
+    {%- endif -%}
   </div>
 {%- endcapture -%}
 {%- capture info_block -%}
@@ -65,8 +78,25 @@
     {%- if edition_badge and machine.name.size > 16 -%}{%- assign credit_lines = credit_lines | minus: 1 -%}{%- endif -%}
     {%- if mode != 'gallery' and show_credits and credits.size > 0 and credit_lines > 0 -%}
     {%- for credit in credits limit: credit_lines -%}
-    <span class="w--full label {{ muted }}" data-clamp="1">{{ credit.role }}: {{ credit.names }}</span>
+    <span class="w--full label {{ muted }} lg:hidden" data-clamp="1">{{ credit.role }}: {{ credit.names }}</span>
     {%- endfor -%}
+    {%- endif -%}
+    {%- comment -%} TRMNL X: the summary, every credit and the fun fact fill the column. {%- endcomment -%}
+    {%- if mode != 'gallery' -%}
+    <div class="hidden lg:flex flex--col flex--left gap--xsmall w--full">
+      <span class="label {{ muted }}" data-clamp="1">{{ machine.summary }}</span>
+      {%- if show_credits -%}
+      {%- for credit in credits limit: 8 -%}
+      <div class="flex flex--row flex--left gap--small w--full">
+        <span class="label {{ muted }} w--[112px] no-shrink">{{ credit.role }}</span>
+        <span class="label w--full" data-clamp="1">{{ credit.names }}</span>
+      </div>
+      {%- endfor -%}
+      {%- endif -%}
+      {%- if show_fun_fact and fun_fact -%}
+      <div class="{{ accent_fill }} p--2 w--full"><span class="w--full label" data-clamp="2">{{ fun_fact }}</span></div>
+      {%- endif -%}
+    </div>
     {%- endif -%}
   </div>
 {%- endcapture -%}

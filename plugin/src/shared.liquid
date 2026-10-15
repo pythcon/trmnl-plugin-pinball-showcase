@@ -27,6 +27,8 @@
 {%- assign show_facts = true -%}{%- if hidden contains 'facts' -%}{%- assign show_facts = false -%}{%- endif -%}
 {%- assign show_fun_fact = true -%}{%- if hidden contains 'fun_fact' -%}{%- assign show_fun_fact = false -%}{%- endif -%}
 {%- assign show_tags = true -%}{%- if hidden contains 'tags' -%}{%- assign show_tags = false -%}{%- endif -%}
+{%- comment -%} `stats`: the fast facts as big numbers for TRMNL X; older self-hosted APIs lack it. {%- endcomment -%}
+{%- assign has_stats = false -%}{%- if show_facts and stats and stats.size > 0 -%}{%- assign has_stats = true -%}{%- endif -%}
 {%- assign show_qr = true -%}{%- if hidden contains 'qr' or qr == nil -%}{%- assign show_qr = false -%}{%- endif -%}
 
 {%- comment -%}
@@ -162,15 +164,17 @@
 {%- comment -%}
   Photo grid: up to three photos side by side in a 12-column grid. The backglass, which
   is landscape, gets the most room. Params: images, types (image keys), count, fit,
-  medium (true = smaller files), name.
+  medium (true = smaller files), name, spans (optional, e.g. '8,4').
 {%- endcomment -%}
 {% template art_grid %}
 {%- assign first = types.first -%}
+{%- if spans -%}{%- assign spans = spans | split: ',' -%}{%- else -%}
 {%- case count -%}
   {%- when 2 -%}{%- if first == 'backglass' -%}{%- assign spans = '9,3' | split: ',' -%}{%- else -%}{%- assign spans = '6,6' | split: ',' -%}{%- endif -%}
   {%- when 3 -%}{%- assign spans = '6,3,3' | split: ',' -%}
   {%- else -%}{%- assign spans = '12' | split: ',' -%}
 {%- endcase -%}
+{%- endif -%}
 <div class="grid grid--cols-12 gap--small w--full h--full">
   {%- for t in types limit: count -%}
   {%- assign img = images[t] -%}

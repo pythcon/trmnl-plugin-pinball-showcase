@@ -32,7 +32,7 @@
 
 {%- else -%}
 {%- capture art_block -%}
-    <div class="col--span-6 h--[100cqh]">
+    <div class="col--span-6 h--full">
       {% render "art_grid", images: images, types: art_q, count: art_q_count, fit: fit_class, medium: true, name: machine.name %}
     </div>
 {%- endcapture -%}
@@ -45,9 +45,21 @@
       {%- if art_q_from != '' -%}<span class="label {{ muted }}">Art from {{ art_q_from }}</span>{%- endif -%}
     </div>
 {%- endcapture -%}
-<div class="layout layout--row layout--left">
-  <div class="grid grid--cols-12 gap h--full w--full">
+<div class="layout layout--col layout--top layout--left gap--small">
+  <div class="grid grid--cols-12 gap h--full lg:h--[52cqh] w--full">
     {%- if art_second -%}{{ info_block }}{{ art_block }}{%- else -%}{{ art_block }}{{ info_block }}{%- endif -%}
+  </div>
+  {%- comment -%} TRMNL X: the summary, lead credits and the fun fact under the art. {%- endcomment -%}
+  <div class="hidden lg:flex flex--col flex--left gap--xsmall w--full">
+    <span class="label {{ muted }}" data-clamp="1">{{ machine.summary }}</span>
+    {%- if show_credits and credits.size > 0 -%}
+    <div class="flex flex--row flex--left gap--small w--full">
+      {%- for credit in credits limit: 2 -%}<span class="label {{ muted }}">{{ credit.role }}</span><span class="label">{{ credit.names }}</span>{%- endfor -%}
+    </div>
+    {%- endif -%}
+    {%- if show_fun_fact and fun_fact -%}
+    <div class="{{ accent_fill }} p--1 w--full"><span class="w--full label" data-clamp="1">{{ fun_fact }}</span></div>
+    {%- endif -%}
   </div>
 </div>
 {%- endif -%}

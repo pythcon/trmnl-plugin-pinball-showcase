@@ -24,111 +24,29 @@ no_screen_padding: 'no'
 dark_mode: 'no'
 static_data: ''
 custom_fields:
+# ---- Always visible: about, layout style and how often the machine changes ----------
 - keyname: about
   name: About This Plugin
   field_type: author_bio
   category: games,entertainment
-  description: A different pinball machine every day, with backglass and playfield art, release details, designers, editions and trivia from the Open Pinball Database (OPDB). Filter by era, decade, manufacturer, designer, theme and more, or rotate through your own favorites.
   github_url: https://github.com/pythcon/trmnl-plugin-pinball-showcase
   learn_more_url: https://trmnlplugins.com
-
-# ---- Look ------------------------------------------------------------------------------
+  description: "A different pinball machine every day, with backglass and playfield art, release details, designers, editions and trivia from the Open Pinball Database (OPDB). Filter by era, decade, manufacturer, designer, theme and more, or rotate through your own favorites. Every setting below is optional: with none set you get a new machine from the whole catalogue on every refresh."
 - keyname: display_mode
   name: Layout Style
   field_type: select
   optional: true
+  description: "Optional. How to balance the artwork against the machine details. Starts on Showcase."
   options:
   - "Showcase (art and details)": "showcase"
   - "Gallery (art first)": "gallery"
   - "Spec Sheet (details first)": "spec"
   default: showcase
-  description: How to balance the artwork against the machine details.
-- keyname: art_full
-  name: Photos - Full Screen
-  field_type: select
-  multiple: true
-  optional: true
-  options:
-  - "Backglass": "backglass"
-  - "Playfield": "playfield"
-  - "Cabinet": "cabinet"
-  - "None (text only)": "none"
-  description: Pick one, or several to show side by side (up to 3). Leave empty to choose automatically (the edition's own backglass or photo first). If an edition has no photo of a type, another edition's is used and labelled.
-- keyname: art_half_horizontal
-  name: Photos - Half Horizontal
-  field_type: select
-  multiple: true
-  optional: true
-  options:
-  - "Backglass": "backglass"
-  - "Playfield": "playfield"
-  - "Cabinet": "cabinet"
-  - "None (text only)": "none"
-  description: Up to 2 side by side. Leave empty to choose automatically.
-- keyname: art_half_vertical
-  name: Photos - Half Vertical
-  field_type: select
-  multiple: true
-  optional: true
-  options:
-  - "Backglass": "backglass"
-  - "Playfield": "playfield"
-  - "Cabinet": "cabinet"
-  - "None (text only)": "none"
-  description: Up to 2. Leave empty to choose automatically (playfield first, which fits the tall slot best).
-- keyname: art_quadrant
-  name: Photos - Quadrant
-  field_type: select
-  multiple: true
-  optional: true
-  options:
-  - "Backglass": "backglass"
-  - "Playfield": "playfield"
-  - "Cabinet": "cabinet"
-  - "None (text only)": "none"
-  description: Shows the first one you pick. Leave empty to choose automatically.
-- keyname: art_fit
-  name: Photo Style
-  field_type: select
-  optional: true
-  options:
-  - "Fit (show the whole photo)": "fit"
-  - "Fill (crop to use all the space)": "fill"
-  default: fit
-- keyname: art_position
-  name: Artwork Position
-  field_type: select
-  optional: true
-  options:
-  - "Left (top in half vertical)": "left"
-  - "Right (bottom in half vertical)": "right"
-  default: left
-- keyname: hide_details
-  name: Hide Details
-  field_type: select
-  multiple: true
-  optional: true
-  description: Everything is shown by default. Pick anything you'd rather hide.
-  options:
-  - "Credits (design, art, code, sound)": "credits"
-  - "Fast facts": "facts"
-  - "Fun fact": "fun_fact"
-  - "Feature tags (widebody, cocktail...)": "tags"
-  - "QR code to the machine page": "qr"
-- keyname: color_accents
-  name: Color Accents
-  field_type: select
-  optional: true
-  options:
-  - "On (red and yellow on color screens, gray elsewhere)": "on"
-  - "Off (pure black and white)": "off"
-  default: "on"
-
-# ---- Rotation ---------------------------------------------------------------------------
 - keyname: rotation
   name: New Machine
   field_type: select
   optional: true
+  description: "Optional. How often a new machine appears. Starts on Every refresh, so your playlist sets the pace. Every option except Shuffle shows each machine in your selection once before any repeats; Shuffle never shows the same machine twice in a row."
   options:
   - "Once a day (midnight, your time)": "daily"
   - "Every hour": "1h"
@@ -138,28 +56,136 @@ custom_fields:
   - "Every 12 hours": "12h"
   - "Every refresh (follows this plugin's refresh rate)": "refresh"
   - "Shuffle (new machine on every refresh, even a forced one)": "shuffle"
-  default: daily
-  description: Every option except Shuffle shows each machine in your selection once before any repeats. Shuffle never shows the same machine twice in a row.
+  default: refresh
+
+# ---- Photos ------------------------------------------------------------------------------
+- keyname: art_full
+  name: Photos - Full Screen
+  group: "Photos"
+  field_type: select
+  multiple: true
+  optional: true
+  description: "Optional. Pick one, or several to show side by side (up to 3). Leave empty to choose automatically (the edition's own backglass or photo first). If an edition has no photo of a type, another edition's is used and labelled."
+  options:
+  - "Backglass": "backglass"
+  - "Playfield": "playfield"
+  - "Cabinet": "cabinet"
+  - "None (text only)": "none"
+- keyname: art_half_horizontal
+  name: Photos - Half Horizontal
+  group: "Photos"
+  field_type: select
+  multiple: true
+  optional: true
+  description: "Optional. Up to 2 side by side. Leave empty to choose automatically."
+  options:
+  - "Backglass": "backglass"
+  - "Playfield": "playfield"
+  - "Cabinet": "cabinet"
+  - "None (text only)": "none"
+- keyname: art_half_vertical
+  name: Photos - Half Vertical
+  group: "Photos"
+  field_type: select
+  multiple: true
+  optional: true
+  description: "Optional. Up to 2. Leave empty to choose automatically (playfield first, which fits the tall slot best)."
+  options:
+  - "Backglass": "backglass"
+  - "Playfield": "playfield"
+  - "Cabinet": "cabinet"
+  - "None (text only)": "none"
+- keyname: art_quadrant
+  name: Photos - Quadrant
+  group: "Photos"
+  field_type: select
+  multiple: true
+  optional: true
+  description: "Optional. Shows the first one you pick. Leave empty to choose automatically."
+  options:
+  - "Backglass": "backglass"
+  - "Playfield": "playfield"
+  - "Cabinet": "cabinet"
+  - "None (text only)": "none"
+- keyname: art_fit
+  name: Photo Style
+  group: "Photos"
+  field_type: select
+  optional: true
+  description: "Optional. Starts on Fit, which shows the whole photo."
+  options:
+  - "Fit (show the whole photo)": "fit"
+  - "Fill (crop to use all the space)": "fill"
+  default: fit
+- keyname: art_position
+  name: Artwork Position
+  group: "Photos"
+  field_type: select
+  optional: true
+  description: "Optional. Starts on Left."
+  options:
+  - "Left (top in half vertical)": "left"
+  - "Right (bottom in half vertical)": "right"
+  default: left
+
+# ---- What to Show ------------------------------------------------------------------------
+- keyname: hide_details
+  name: Hide Details
+  group: "What to Show"
+  field_type: select
+  multiple: true
+  optional: true
+  description: "Optional. Everything is shown by default. Pick anything you'd rather hide."
+  options:
+  - "Credits (design, art, code, sound)": "credits"
+  - "Fast facts": "facts"
+  - "Fun fact": "fun_fact"
+  - "Feature tags (widebody, cocktail...)": "tags"
+  - "QR code to the machine page": "qr"
+- keyname: color_accents
+  name: Color Accents
+  group: "What to Show"
+  field_type: select
+  optional: true
+  description: "Optional. Starts on On: red and yellow on color screens, gray elsewhere."
+  options:
+  - "On (red and yellow on color screens, gray elsewhere)": "on"
+  - "Off (pure black and white)": "off"
+  default: "on"
+
+# ---- Pick Machines -----------------------------------------------------------------------
 - keyname: pinned_machine
   name: Pin One Machine
+  group: "Pick Machines"
   field_type: string
   optional: true
   placeholder: G5pe4
-  description: Always show this machine. Search pinball-showcase.trmnlplugins.com and copy the id from the page address; an edition's id (e.g. GWyBj-MdEbK-AOPdq) pins that exact edition.
+  description: "Optional. Always show this machine instead of rotating. Search pinball-showcase.trmnlplugins.com and copy the id from the page address; an edition's id (e.g. GWyBj-MdEbK-AOPdq) pins that exact edition."
 - keyname: favorites
   name: Favorites Only
+  group: "Pick Machines"
   field_type: text
   rows: 2
   optional: true
   placeholder: G5pe4, GrqZX, GweeP
-  description: Comma-separated OPDB ids (find them with the search at pinball-showcase.trmnlplugins.com). When set, only these machines rotate; other filters still apply.
+  description: "Optional. Comma-separated OPDB ids (find them with the search at pinball-showcase.trmnlplugins.com). When set, only these machines rotate; other filters still apply. Leave empty to rotate through everything."
+- keyname: exclude_ids
+  name: Never Show
+  group: "Pick Machines"
+  field_type: text
+  rows: 2
+  optional: true
+  placeholder: G4ODR, GRBE4
+  description: "Optional. Comma-separated OPDB ids to skip."
 
-# ---- Filters (all optional; pick any combination; empty = everything) -------------------
+# ---- Era and Year ------------------------------------------------------------------------
 - keyname: eras
   name: Eras
+  group: "Era and Year"
   field_type: select
   multiple: true
   optional: true
+  description: "Optional. Leave empty for every era."
   options:
   - "Electro-mechanical": "em"
   - "Early solid state (alphanumeric, lights)": "early_ss"
@@ -167,9 +193,11 @@ custom_fields:
   - "Modern LCD era": "modern"
 - keyname: decades
   name: Decades
+  group: "Era and Year"
   field_type: select
   multiple: true
   optional: true
+  description: "Optional. Leave empty for every decade."
   options:
   - "1940s": "1940"
   - "1950s": "1950"
@@ -182,24 +210,31 @@ custom_fields:
   - "2020s": "2020"
 - keyname: min_year
   name: From Year
+  group: "Era and Year"
   field_type: number
   optional: true
   min: 1930
   max: 2100
   placeholder: 1978
+  description: "Optional. The earliest release year to show. Leave empty for no lower limit."
 - keyname: max_year
   name: To Year
+  group: "Era and Year"
   field_type: number
   optional: true
   min: 1930
   max: 2100
   placeholder: 1999
+  description: "Optional. The latest release year to show. Leave empty for no upper limit."
+
+# ---- Manufacturer ------------------------------------------------------------------------
 - keyname: manufacturers
   name: Manufacturers
+  group: "Manufacturer"
   field_type: select
   multiple: true
   optional: true
-  description: Show only machines from these makers. Leave empty for all.
+  description: "Optional. Show only machines from these makers. Leave empty for all."
   options:
   - "A.A. Amusements": "a.a. amusements"
   - "A.M.I.": "a.m.i."
@@ -323,15 +358,18 @@ custom_fields:
   - "Zidware": "zidware"
 - keyname: other_manufacturers
   name: Other Manufacturers
+  group: "Manufacturer"
   field_type: string
   optional: true
   placeholder: Mr. Game, Premier
-  description: Makers not in the list above, comma-separated. Partial names match.
+  description: "Optional. Makers not in the list above, comma-separated. Partial names match."
 - keyname: exclude_manufacturers
   name: Exclude Manufacturers
+  group: "Manufacturer"
   field_type: select
   multiple: true
   optional: true
+  description: "Optional. Never show machines from these makers."
   options:
   - "A.A. Amusements": "a.a. amusements"
   - "A.M.I.": "a.m.i."
@@ -453,27 +491,37 @@ custom_fields:
   - "Wonderland Amusements": "wonderland amusements"
   - "Zaccaria": "zaccaria"
   - "Zidware": "zidware"
+
+# ---- Theme and People --------------------------------------------------------------------
 - keyname: keywords
   name: Title Keywords (Themes)
+  group: "Theme and People"
   field_type: string
   optional: true
   placeholder: star wars, batman, monster, space
-  description: Show only machines whose title contains any of these words.
+  description: "Optional. Show only machines whose title contains any of these words. Leave empty for every title."
 - keyname: exclude_keywords
   name: Exclude Title Keywords
+  group: "Theme and People"
   field_type: string
   optional: true
+  description: "Optional. Skip machines whose title contains any of these words, comma-separated."
 - keyname: people
   name: Designers and Artists
+  group: "Theme and People"
   field_type: string
   optional: true
   placeholder: Steve Ritchie, Pat Lawlor, John Youssi
-  description: Comma-separated names of anyone credited (design, art, code, sound, music).
+  description: "Optional. Comma-separated names of anyone credited (design, art, code, sound, music). Leave empty for everyone."
+
+# ---- Machine Type ------------------------------------------------------------------------
 - keyname: displays
   name: Score Display
+  group: "Machine Type"
   field_type: select
   multiple: true
   optional: true
+  description: "Optional. Leave empty for every kind of score display."
   options:
   - "Score reels": "reels"
   - "Alphanumeric": "alphanumeric"
@@ -483,9 +531,11 @@ custom_fields:
   - "CGA monitor": "cga"
 - keyname: players
   name: Player Count
+  group: "Machine Type"
   field_type: select
   multiple: true
   optional: true
+  description: "Optional. Leave empty for any player count."
   options:
   - "1 player": "1"
   - "2 players": "2"
@@ -493,10 +543,11 @@ custom_fields:
   - "6 players": "6"
 - keyname: features
   name: Must Have
+  group: "Machine Type"
   field_type: select
   multiple: true
   optional: true
-  description: Show machines with any of these.
+  description: "Optional. Show machines with any of these. Leave empty for no requirement."
   options:
   - "Widebody": "widebody"
   - "Cocktail table": "cocktail"
@@ -514,9 +565,11 @@ custom_fields:
   - "Multiple editions": "multi_edition"
 - keyname: exclude_features
   name: Must Not Have
+  group: "Machine Type"
   field_type: select
   multiple: true
   optional: true
+  description: "Optional. Never show machines with any of these."
   options:
   - "Widebody": "widebody"
   - "Cocktail table": "cocktail"
@@ -534,24 +587,17 @@ custom_fields:
   - "Multiple editions": "multi_edition"
 - keyname: require_playfield
   name: Only Machines With Playfield Photos
-  field_type: select
+  group: "Machine Type"
+  field_type: boolean
   optional: true
-  options:
-  - "No": "false"
-  - "Yes": "true"
-  default: "false"
-- keyname: exclude_ids
-  name: Never Show
-  field_type: text
-  rows: 2
-  optional: true
-  placeholder: G4ODR, GRBE4
-  description: Comma-separated OPDB ids to skip.
+  description: "Optional. Turn on to show only machines that have a playfield photo."
+  default: false
 
-# ---- Advanced ---------------------------------------------------------------------------
+# ---- Advanced ----------------------------------------------------------------------------
 - keyname: api_url
   name: Self-hosted API URL
+  group: "Advanced"
   field_type: url
   optional: true
   placeholder: https://pinball.example.com
-  description: Leave empty to use the hosted API. If you run your own copy (see GitHub), enter its address without a trailing slash.
+  description: "Optional. Leave empty to use the hosted API. If you run your own copy (see GitHub), enter its address without a trailing slash."
