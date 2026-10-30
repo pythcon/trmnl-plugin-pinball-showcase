@@ -36,6 +36,7 @@
   {%- endfor -%}
   {%- endif -%}
   {%- if show_fun_fact and fun_fact -%}
+  <div class="stretch-y"></div>
   <div class="{{ accent_fill }} p--2 w--full"><span class="w--full label label--large" data-clamp="3">{{ fun_fact }}</span></div>
   {%- endif -%}
 </div>
@@ -49,7 +50,7 @@
     </div>
     {%- comment -%} TRMNL X: three stats beside the art instead of white margins. {%- endcomment -%}
     {%- if mode != 'gallery' and has_stats -%}
-    <div class="hidden lg:flex flex--col flex--between flex--left no-shrink h--full">
+    <div class="hidden lg:flex lg:portrait:hidden flex--col flex--between flex--left no-shrink h--full">
       {%- for s in stats limit: 3 -%}
       <div class="flex flex--col flex--left">
         <span class="value value--base">{{ s.value }}</span>
@@ -61,7 +62,7 @@
   </div>
 {%- endcapture -%}
 {%- capture info_block -%}
-  <div class="flex flex--col flex--left w--full">
+  <div class="flex flex--col flex--left w--full lg:stretch-y">
     <div class="flex flex--row flex--wrap flex--left flex--center-y gap--small w--full">
       <span class="title title--large lg:title--xlarge text--bold" data-clamp="2">{{ machine.name }}</span>
       {%- if edition_badge -%}<span class="label {{ badge_class }} no-shrink">{{ edition_badge_short }}</span>{%- endif -%}
@@ -93,8 +94,34 @@
       </div>
       {%- endfor -%}
       {%- endif -%}
+      {%- comment -%} Room for the editions and "Also released" only beside four credits or fewer. {%- endcomment -%}
+      {%- assign x_extras = true -%}{%- if show_credits and credits.size > 4 -%}{%- assign x_extras = false -%}{%- endif -%}
+      {%- if show_editions and x_extras -%}
+      <div class="flex flex--row flex--left gap--small w--full">
+        <span class="label {{ muted }} w--[112px] no-shrink">{{ editions_title }}</span>
+        <span class="label w--full" data-clamp="2">{{ edition_line }}</span>
+      </div>
+      {%- endif -%}
+    </div>
+    {%- comment -%} "Also released" and the fun fact sit at the bottom; white space goes above them. {%- endcomment -%}
+    <div class="stretch-y hidden lg:block"></div>
+    <div class="hidden lg:flex flex--col flex--left gap--small w--full">
+      {%- if x_extras -%}{{ x_same_year }}{%- endif -%}
       {%- if show_fun_fact and fun_fact -%}
       <div class="{{ accent_fill }} p--2 w--full"><span class="w--full label" data-clamp="2">{{ fun_fact }}</span></div>
+      {%- endif -%}
+      {%- comment -%} Portrait: the stats move from beside the art to tiles along the bottom. {%- endcomment -%}
+      {%- if has_stats -%}
+      <div class="hidden lg:portrait:block w--full">
+        <div class="grid grid--cols-3 gap--small w--full">
+          {%- for s in stats limit: 3 -%}
+          <div class="outline p--1 flex flex--col flex--center-x">
+            <span class="value value--small">{{ s.value }}</span>
+            <span class="label label--small {{ muted }} text--center" data-clamp="1">{{ s.label }}</span>
+          </div>
+          {%- endfor -%}
+        </div>
+      </div>
       {%- endif -%}
     </div>
     {%- endif -%}

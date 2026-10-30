@@ -162,6 +162,23 @@
 {%- assign instance_title = trmnl.plugin_settings.instance_name | default: 'Pinball Showcase' -%}
 
 {%- comment -%}
+  TRMNL X only (hidden on OG): `x_same_year` lists other titles from the same year.
+{%- endcomment -%}
+{%- capture x_same_year -%}
+  {%- if show_facts and same_year.size > 0 -%}
+  <div class="hidden lg:flex flex--col flex--left gap--xsmall w--full">
+    <span class="label label--small {{ muted }}">Also released in {{ machine.year }}</span>
+    <div class="flex flex--row flex--wrap flex--left gap--small w--full">
+      {%- for t in same_year limit: 4 -%}
+      <span class="label">{{ t.name }}</span><span class="label {{ muted }}">{{ t.manufacturer }}{% unless forloop.last %} ·{% endunless %}</span>
+      {%- endfor -%}
+      {%- assign more = same_year_count | minus: 4 -%}{%- if more > 0 -%}<span class="label {{ muted }}">+{{ more }} more</span>{%- endif -%}
+    </div>
+  </div>
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- comment -%}
   Photo grid: up to three photos side by side in a 12-column grid. The backglass, which
   is landscape, gets the most room. Params: images, types (image keys), count, fit,
   medium (true = smaller files), name, spans (optional, e.g. '8,4').

@@ -60,6 +60,18 @@ the plugin's Name.
 - New payload field `stats` (`[{value, label}]`, the facts as big numbers).
 - Tell Mario it's ready for another review once it's pushed and uploaded.
 
+### ~~3c. TRMNL review round 2 (Mario, 2026-10-30)~~ (done, awaiting re-review)
+
+Approved mockup: https://claude.ai/artifact/FFXN7MhxDc1Mwv6fLyYPtQ. All TRMNL X only.
+- Half horizontal portrait (`lg:portrait:`): art + name on top (44cqh), full-width
+  credits below, "Also released", fun fact, then stat tiles at the bottom.
+- Quadrant: stat tiles (3) + fun fact pinned to the bottom; role/name rows; names over
+  20 characters stay `title--medium` on X (the badge overlapped the title).
+- Half vertical: other editions + "Also released" fill the space (skipped above four
+  credits); portrait moves the stats to tiles at the bottom.
+- Fun fact and "Also released" sit at the bottom of their column on every layout.
+- `x_same_year` now lives in `shared.liquid`.
+
 ### 4. Publish checklist (owner does these on trmnl.com)
 
 1. Upload the plugin icon: `plugin/assets/icon.png` (one-colour mark; no API for icons).
@@ -79,6 +91,9 @@ the plugin's Name.
     `hidden lg:block` div.
   - Inline `<span>`s inside a `label` break its line layout (words run together or
     stack); use separate `label` elements in a wrapping flex row.
+  - `lg:portrait:` prefixes (display, `h--[Ncqh]`, `col--span-N`) and `lg:stretch-y` work.
+  - A title squeezed in a fixed-height flex column overlaps the next element even
+    without `data-clamp`; use a smaller size instead.
   - Stats use `value--large` (Showcase) / `value--base` (elsewhere); `value--xlarge` is
     too big. `value--medium` isn't a valid responsive size.
 

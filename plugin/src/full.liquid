@@ -3,23 +3,7 @@
   The name and maker sit in a full-width header so they never truncate; art and details
   share the space below. The title bar shows when the data was fetched (viewer's zone).
 {%- endcomment -%}
-{%- comment -%}
-  TRMNL X extras (hidden on OG): `stats` are the fast facts as big numbers ("29" over
-  "years old"); `x_same_year` lists other titles from the same year.
-{%- endcomment -%}
-{%- capture x_same_year -%}
-  {%- if show_facts and same_year.size > 0 -%}
-  <div class="hidden lg:flex flex--col flex--left gap--xsmall w--full">
-    <span class="label label--small {{ muted }}">Also released in {{ machine.year }}</span>
-    <div class="flex flex--row flex--wrap flex--left gap--small w--full">
-      {%- for t in same_year limit: 4 -%}
-      <span class="label">{{ t.name }}</span><span class="label {{ muted }}">{{ t.manufacturer }}{% unless forloop.last %} ·{% endunless %}</span>
-      {%- endfor -%}
-      {%- assign more = same_year_count | minus: 4 -%}{%- if more > 0 -%}<span class="label {{ muted }}">+{{ more }} more</span>{%- endif -%}
-    </div>
-  </div>
-  {%- endif -%}
-{%- endcapture -%}
+{%- comment -%} TRMNL X extras (hidden on OG): `stats` as big numbers, `x_same_year` (shared.liquid). {%- endcomment -%}
 {%- assign long_name = false -%}{%- if machine.name.size > 38 -%}{%- assign long_name = true -%}{%- endif -%}
 {%- capture header -%}
   <div class="flex flex--row flex--between flex--top gap w--full">
@@ -109,7 +93,7 @@
 {%- if show_fun_fact and fun_fact -%}{%- assign with_fun = spec_used | plus: spec_credit_cost | plus: 2 -%}{%- if with_fun <= spec_budget -%}{%- assign spec_fun = true -%}{%- endif -%}{%- endif -%}
 <div class="layout layout--col layout--top layout--left gap">
   {{ header }}
-  <div class="grid grid--cols-12 gap--large w--full">
+  <div class="grid grid--cols-12 gap--large w--full stretch-y">
     <div class="col--span-8 flex flex--col flex--left flex--top gap--small">
       <div class="grid grid--cols-3 gap w--full">
         <div class="flex flex--col flex--left w--full"><span class="value value--small lg:value--base" data-fit-value="true">{{ machine.type_label | default: '-' }}</span><span class="label {{ muted }}">Type</span></div>
@@ -140,6 +124,7 @@
       {%- endfor -%}
       {%- endif -%}
       {%- if show_fun_fact and fun_fact -%}
+      <div class="stretch-y"></div>
       <div class="{{ accent_fill }} p--2 w--full {% unless spec_fun %}hidden lg:block{% endunless %}"><span class="w--full label" data-clamp="2">{{ fun_fact }}</span></div>
       {%- endif -%}
     </div>
@@ -169,6 +154,7 @@
       </div>
       {%- endif -%}
       {%- endif -%}
+      <div class="stretch-y hidden lg:block"></div>
       {{ x_same_year }}
     </div>
   </div>
@@ -232,8 +218,9 @@
       </div>
       {%- endfor -%}
       {%- endif -%}
+      {%- comment -%} The fun fact and "Also released" sit at the bottom of the column on every screen. {%- endcomment -%}
+      <div class="stretch-y"></div>
       {%- if show_fun_fact and fun_fact -%}
-      <div class="stretch-y lg:hidden"></div>
       <div class="{{ accent_fill }} p--2 w--full {% unless fun_on_og %}hidden lg:block{% endunless %}"><span class="w--full label" data-clamp="2" data-clamp-lg="3">{{ fun_fact }}</span></div>
       {%- endif -%}
       {%- if has_stats -%}<div class="w--full portrait:hidden">{{ x_same_year }}</div>{%- endif -%}
