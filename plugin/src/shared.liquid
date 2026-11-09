@@ -168,9 +168,11 @@
   {%- if show_facts and same_year.size > 0 -%}
   <div class="hidden lg:flex flex--col flex--left gap--xsmall w--full">
     <span class="label label--small {{ muted }}">Also released in {{ machine.year }}</span>
-    <div class="flex flex--row flex--wrap flex--left gap--small w--full">
+    <div class="flex flex--col flex--left gap--xsmall w--full">
       {%- for t in same_year limit: 4 -%}
-      <span class="label">{{ t.name }}</span><span class="label {{ muted }}">{{ t.manufacturer }}{% unless forloop.last %} ·{% endunless %}</span>
+      <div class="flex flex--row flex--wrap flex--left gap--xsmall w--full">
+        <span class="label">{{ t.name }}</span><span class="label {{ muted }}">{{ t.manufacturer }}</span>
+      </div>
       {%- endfor -%}
       {%- assign more = same_year_count | minus: 4 -%}{%- if more > 0 -%}<span class="label {{ muted }}">+{{ more }} more</span>{%- endif -%}
     </div>

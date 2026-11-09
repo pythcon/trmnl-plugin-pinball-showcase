@@ -209,6 +209,8 @@
       </div>
       {%- endfor -%}
       {%- endif -%}
+      {%- comment -%} TRMNL X: "Also released" fits only when editions and credits take nine rows or fewer. {%- endcomment -%}
+      {%- assign x_rows = used -%}
       {%- if show_facts -%}
       {%- for fact in facts limit: 3 -%}
       {%- assign used = used | plus: 1 -%}
@@ -223,7 +225,7 @@
       {%- if show_fun_fact and fun_fact -%}
       <div class="{{ accent_fill }} p--2 w--full {% unless fun_on_og %}hidden lg:block{% endunless %}"><span class="w--full label" data-clamp="2" data-clamp-lg="3">{{ fun_fact }}</span></div>
       {%- endif -%}
-      {%- if has_stats -%}<div class="w--full portrait:hidden">{{ x_same_year }}</div>{%- endif -%}
+      {%- if has_stats and x_rows <= 9 -%}<div class="w--full portrait:hidden">{{ x_same_year }}</div>{%- endif -%}
     </div>
 {%- endcapture -%}
 <div class="layout layout--col layout--top layout--left gap">

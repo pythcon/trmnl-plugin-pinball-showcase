@@ -39,7 +39,7 @@
 {%- capture info_block -%}
     <div class="col--span-6 flex flex--col flex--left flex--center-y gap--small">
       {%- comment -%} TRMNL X: names over 20 characters stay medium, or the badge and maker overflow the column. {%- endcomment -%}
-      <span class="title title--medium{% if machine.name.size <= 20 %} lg:title--large{% endif %} text--bold" data-clamp="3">{{ machine.name }}</span>
+      <span class="title{% if machine.name.size <= 20 %} lg:title--large{% endif %} text--bold" data-clamp="3">{{ machine.name }}</span>
       {%- if edition_badge -%}<span class="label {{ badge_class }}">{{ edition_badge_short }}</span>{%- endif -%}
       <span class="label label--large">{{ machine.manufacturer }}</span>
       <span class="label label--large {{ accent_text }}">{{ machine.year }}</span>

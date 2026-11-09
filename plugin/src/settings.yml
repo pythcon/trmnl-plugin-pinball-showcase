@@ -30,7 +30,7 @@ custom_fields:
   field_type: author_bio
   category: games,entertainment
   github_url: https://github.com/pythcon/trmnl-plugin-pinball-showcase
-  learn_more_url: https://trmnlplugins.com
+  learn_more_url: https://pinball-showcase.trmnlplugins.com
   description: "A different pinball machine every day, with backglass and playfield art, release details, designers, editions and trivia from the Open Pinball Database (OPDB). Filter by era, decade, manufacturer, designer, theme and more, or rotate through your own favorites. Every setting below is optional: with none set you get a new machine from the whole catalogue on every refresh."
 - keyname: display_mode
   name: Layout Style

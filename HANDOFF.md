@@ -17,6 +17,11 @@ Read `CLAUDE.md` first (project rules), then this file. Everything below is eith
   test on every master push touching `plugin/**` (or Run workflow on master). Verified
   2026-10-09 (`9ea9a8b`): same plugin id, every file matches the repo, instance custom-field
   values kept. Don't upload via MCP any more.
+- **The TRMNL reviewer may edit the plugin on trmnl.com.** CI's `push --force` overwrites
+  those edits, so before pushing `plugin/**` compare the live files
+  (`AccountPluginSettingsReadTool getPluginSettingFiles {plugin_setting_id: 497284}`,
+  ignore CRLF) with the last pushed commit and pull any changes into the repo first.
+  Mario's 2026-11 edits (Also released one per line, quadrant title size) are in.
 
 ## Tasks, in order
 
