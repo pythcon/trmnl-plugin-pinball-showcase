@@ -540,6 +540,7 @@ custom_fields:
   - "1 player": "1"
   - "2 players": "2"
   - "4 players": "4"
+  - "5 players": "5"
   - "6 players": "6"
 - keyname: features
   name: Must Have
